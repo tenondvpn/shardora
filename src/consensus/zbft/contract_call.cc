@@ -145,12 +145,19 @@ int ContractCall::HandleTx(
 
         if (from_balance > gas_used * block_tx.gas_price()) {
             from_balance -= gas_used * block_tx.gas_price();
-            gas_used += consensus::CalcKvStorageGas(
-                tx_info->key().size(), tx_info->value().size(), true);
-            if (gas_limit < gas_used) {
-                block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-                SHARDORA_DEBUG("1 balance error: %lu, %lu, %lu",
-                    from_balance, gas_limit, gas_used);
+            // Only account for KV-storage gas when EVM execution actually succeeded.
+            // On any EVM error (status != EVMC_SUCCESS), gas_left is 0 per EVMC spec,
+            // which means gas_used already equals the full gas_limit.  Adding KV-storage
+            // gas on top would push gas_used beyond gas_limit and incorrectly overwrite
+            // the real EVMC error status with kConsensusUserSetGasLimitError.
+            if (evmc_res.status_code == EVMC_SUCCESS) {
+                gas_used += consensus::CalcKvStorageGas(
+                    tx_info->key().size(), tx_info->value().size(), true);
+                if (gas_limit < gas_used) {
+                    block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
+                    SHARDORA_DEBUG("1 balance error: %lu, %lu, %lu",
+                        from_balance, gas_limit, gas_used);
+                }
             }
         } else {
             block_tx.set_status(consensus::kConsensusAccountBalanceError);
