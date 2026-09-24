@@ -54,10 +54,15 @@ public:
     std::string QueryContract(const std::string& addr);
     std::string QueryGasPresets();
     std::string QueryChainInfo();
+    // shard_id is supplied by the caller because the upsert can create the row
+    // before block sync has seen the deploy. The column defaults to 0, which is
+    // not a live shard, so an insert that omits it leaves a contract that no
+    // shard will answer a query for. 0 here means "unknown" and is not written.
     std::string UpdateContract(const std::string& addr,
                                const std::string& source_code,
                                const std::string& abi,
-                               const std::string& bytecode);
+                               const std::string& bytecode,
+                               int shard_id = 0);
     std::string DeleteContract(const std::string& addr);
 
 private:

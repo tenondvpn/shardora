@@ -361,11 +361,19 @@ void Explorer::WriteBlock(sqlite3* db, const std::shared_ptr<hotstuff::ViewBlock
                 }
             }
 
+            // ON CONFLICT rather than OR IGNORE: the upsert path above can create
+            // a row before sync reaches the deploy block, and it does so without a
+            // shard. Ignoring the conflict would leave such a row at shard_id 0
+            // forever, which no shard query can reach. Repair only the shard so a
+            // sync never clobbers source_code/abi that the upsert may have stored.
             const char* sql =
-                "INSERT OR IGNORE INTO contracts"
+                "INSERT INTO contracts"
                 "(addr,creator_addr,create_tx_hash,create_height,create_timestamp,"
                 " shard_id,pool_index,is_library,is_clone,bytecode,source_code,abi,updated_at)"
-                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);";
+                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                " ON CONFLICT(addr) DO UPDATE SET"
+                "  shard_id=CASE WHEN contracts.shard_id=0 AND excluded.shard_id!=0"
+                "                THEN excluded.shard_id ELSE contracts.shard_id END;";
             sqlite3_stmt* stmt = nullptr;
             if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
                 sqlite3_bind_text (stmt, 1,  to_hex.c_str(),         -1, SQLITE_TRANSIENT);
@@ -1021,12 +1029,21 @@ std::string Explorer::QueryChainInfo() {
 std::string Explorer::UpdateContract(const std::string& addr,
                                      const std::string& source_code,
                                      const std::string& abi,
-                                     const std::string& bytecode) {
+                                     const std::string& bytecode,
+                                     int shard_id) {
     // UPSERT: insert if not exists, update source_code/abi/bytecode if it does.
+    //
+    // shard_id is written on insert only when the caller knows it (> 0). On
+    // conflict the stored shard is kept unless the row still holds the column
+    // default of 0 and the caller can now supply the real one — that repairs
+    // rows written before the shard was threaded through, without letting a
+    // stale or defaulted value overwrite a shard that sync already resolved.
     const char* sql =
-        "INSERT INTO contracts(addr,source_code,abi,bytecode,updated_at)"
-        " VALUES(?,?,?,?,?)"
+        "INSERT INTO contracts(addr,shard_id,source_code,abi,bytecode,updated_at)"
+        " VALUES(?,?,?,?,?,?)"
         " ON CONFLICT(addr) DO UPDATE SET"
+        "  shard_id=CASE WHEN contracts.shard_id=0 AND excluded.shard_id!=0"
+        "                THEN excluded.shard_id ELSE contracts.shard_id END,"
         "  source_code=excluded.source_code,"
         "  abi=excluded.abi,"
         "  bytecode=CASE WHEN excluded.bytecode!='' THEN excluded.bytecode ELSE bytecode END,"
@@ -1037,10 +1054,11 @@ std::string Explorer::UpdateContract(const std::string& addr,
     if (sqlite3_prepare_v2(write_db_, sql, -1, &stmt, nullptr) != SQLITE_OK)
         return JsonErr("prepare failed");
     sqlite3_bind_text (stmt, 1, addr.c_str(),        -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text (stmt, 2, source_code.c_str(), -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text (stmt, 3, abi.c_str(),         -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text (stmt, 4, bytecode.c_str(),    -1, SQLITE_TRANSIENT);
-    sqlite3_bind_int64(stmt, 5, now_ms);
+    sqlite3_bind_int  (stmt, 2, shard_id);
+    sqlite3_bind_text (stmt, 3, source_code.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 4, abi.c_str(),         -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 5, bytecode.c_str(),    -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(stmt, 6, now_ms);
     int rc = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
     if (rc != SQLITE_DONE) return JsonErr(std::string("update failed: ") + sqlite3_errmsg(write_db_));

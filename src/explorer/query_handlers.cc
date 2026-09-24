@@ -190,11 +190,12 @@ void ExplorerSearch(const init::UWSRequest& req, init::UWSResponse& res) {
 }
 
 // POST /explorer/contract/update
-// Body (JSON): {"addr":"...","source_code":"...","abi":"...","bytecode":"..."}
+// Body (JSON): {"addr":"...","shard_id":3,"source_code":"...","abi":"...","bytecode":"..."}
 void ExplorerUpdateContract(const init::UWSRequest& req, init::UWSResponse& res) {
     if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
 
     std::string addr, source_code, abi, bytecode;
+    int shard_id = 0;
     if (!req.body.empty()) {
         try {
             auto j = nlohmann::json::parse(req.body);
@@ -202,18 +203,20 @@ void ExplorerUpdateContract(const init::UWSRequest& req, init::UWSResponse& res)
             source_code = j.value("source_code", "");
             abi         = j.value("abi", "");
             bytecode    = j.value("bytecode", "");
+            shard_id    = j.value("shard_id", 0);
         } catch (...) {}
     }
     if (addr.empty())        addr        = ParamStr(req, "addr");
     if (source_code.empty()) source_code = ParamStr(req, "source_code");
     if (abi.empty())         abi         = ParamStr(req, "abi");
     if (bytecode.empty())    bytecode    = ParamStr(req, "bytecode");
+    if (shard_id == 0)       shard_id    = ParamInt(req, "shard_id", 0);
 
     if (addr.empty()) {
         res.set_content(R"({"code":-1,"msg":"addr required"})", kJson);
         return;
     }
-    res.set_content(g_explorer->UpdateContract(addr, source_code, abi, bytecode), kJson);
+    res.set_content(g_explorer->UpdateContract(addr, source_code, abi, bytecode, shard_id), kJson);
 }
 
 // POST /explorer/contract/delete
