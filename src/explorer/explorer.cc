@@ -1,6 +1,7 @@
 #include "explorer/explorer.h"
 #include "explorer/schema.h"
 
+#include <cctype>
 #include <sstream>
 #include <set>
 
@@ -793,6 +794,82 @@ std::string Explorer::QueryAddresses(uint32_t shard_id, int pool_index,
         next_cursor = arr.back()["id"].get<int64_t>();
     }
     return JsonList(arr, next_cursor, has_more);
+}
+
+std::string Explorer::SearchAddresses(const std::string& prefix, int limit) {
+    std::string p = prefix;
+    // Normalize: lowercase, strip 0x, keep hex only
+    if (p.size() >= 2 && p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) p = p.substr(2);
+    for (auto& c : p) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    if (p.empty()) return JsonErr("prefix required");
+
+    const std::string like = p + "%";
+    json arr = json::array();
+
+    // 1) Exact match first (full 40-hex account/contract or 80-hex prefund address)
+    {
+        const char* sql =
+            "SELECT rowid,addr,addr_type,shard_id,pool_index,is_contract,"
+            "balance,nonce,first_seen,last_seen,tx_count"
+            " FROM addresses WHERE addr=? LIMIT 1;";
+        sqlite3_stmt* stmt = nullptr;
+        if (sqlite3_prepare_v2(read_db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, p.c_str(), -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                json obj;
+                obj["id"]          = sqlite3_column_int64(stmt, 0);
+                auto ad = sqlite3_column_text(stmt, 1);
+                obj["addr"]        = ad ? (const char*)ad : "";
+                obj["addr_type"]   = sqlite3_column_int(stmt, 2);
+                obj["shard_id"]    = sqlite3_column_int(stmt, 3);
+                obj["pool_index"]  = sqlite3_column_int(stmt, 4);
+                obj["is_contract"] = sqlite3_column_int(stmt, 5);
+                obj["balance"]     = sqlite3_column_int64(stmt, 6);
+                obj["nonce"]       = sqlite3_column_int64(stmt, 7);
+                obj["first_seen"]  = sqlite3_column_int64(stmt, 8);
+                obj["last_seen"]   = sqlite3_column_int64(stmt, 9);
+                obj["tx_count"]    = sqlite3_column_int64(stmt, 10);
+                obj["exact"]       = true;
+                arr.push_back(obj);
+            }
+            sqlite3_finalize(stmt);
+        }
+    }
+
+    // 2) Prefix matches (addr LIKE 'prefix%' — uses addr PRIMARY KEY index range scan).
+    //    Exclude the exact hit already emitted above.
+    if (p.size() >= 40) {
+        const char* sql =
+            "SELECT rowid,addr,addr_type,shard_id,pool_index,is_contract,"
+            "balance,nonce,first_seen,last_seen,tx_count"
+            " FROM addresses WHERE addr LIKE ? AND addr<>? LIMIT ?;";
+        sqlite3_stmt* stmt = nullptr;
+        if (sqlite3_prepare_v2(read_db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text (stmt, 1, like.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text (stmt, 2, p.c_str(),    -1, SQLITE_TRANSIENT);
+            sqlite3_bind_int  (stmt, 3, limit);
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                json obj;
+                obj["id"]          = sqlite3_column_int64(stmt, 0);
+                auto ad = sqlite3_column_text(stmt, 1);
+                obj["addr"]        = ad ? (const char*)ad : "";
+                obj["addr_type"]   = sqlite3_column_int(stmt, 2);
+                obj["shard_id"]    = sqlite3_column_int(stmt, 3);
+                obj["pool_index"]  = sqlite3_column_int(stmt, 4);
+                obj["is_contract"] = sqlite3_column_int(stmt, 5);
+                obj["balance"]     = sqlite3_column_int64(stmt, 6);
+                obj["nonce"]       = sqlite3_column_int64(stmt, 7);
+                obj["first_seen"]  = sqlite3_column_int64(stmt, 8);
+                obj["last_seen"]   = sqlite3_column_int64(stmt, 9);
+                obj["tx_count"]    = sqlite3_column_int64(stmt, 10);
+                obj["exact"]       = false;
+                arr.push_back(obj);
+            }
+            sqlite3_finalize(stmt);
+        }
+    }
+
+    return JsonList(arr, 0, false);
 }
 
 std::string Explorer::QueryContracts(int is_library, int is_clone,

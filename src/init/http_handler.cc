@@ -3044,6 +3044,7 @@ void HttpHandler::Run() {
     .get("/explorer/gas-presets",   explorerHandler(explorer::ExplorerGasPresets,  "/explorer/gas-presets"))
     .get("/explorer/chain-info",    explorerHandler(explorer::ExplorerChainInfo,   "/explorer/chain-info"))
     .get("/explorer/addresses",     explorerHandler(explorer::ExplorerAddresses,   "/explorer/addresses"))
+    .get("/explorer/search",        explorerHandler(explorer::ExplorerSearch,      "/explorer/search"))
     .post("/explorer/contract/update", explorerHandler(explorer::ExplorerUpdateContract, "/explorer/contract/update"))
     .post("/explorer/contract/delete", explorerHandler(explorer::ExplorerDeleteContract, "/explorer/contract/delete"))
     .listen("0.0.0.0", http_port_, [this](auto *listen_socket) {

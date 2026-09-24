@@ -172,6 +172,23 @@ void ExplorerAddresses(const init::UWSRequest& req, init::UWSResponse& res) {
         kJson);
 }
 
+// GET /explorer/search?q=<hex>&limit=50
+// q is a hex address prefix (0x optional, case-insensitive). Exact match (full
+// 40-hex account/contract or 80-hex prefund address) is returned first, then
+// prefix matches once q reaches 40 hex chars.
+void ExplorerSearch(const init::UWSRequest& req, init::UWSResponse& res) {
+    if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
+    std::string q = ParamStr(req, "q");
+    if (q.empty()) q = ParamStr(req, "prefix");
+    int limit = ParamInt(req, "limit", 50);
+    if (limit <= 0 || limit > 200) limit = 50;
+    if (q.empty()) {
+        res.set_content(R"({"code":-1,"msg":"q required"})", kJson);
+        return;
+    }
+    res.set_content(g_explorer->SearchAddresses(q, limit), kJson);
+}
+
 // POST /explorer/contract/update
 // Body (JSON): {"addr":"...","source_code":"...","abi":"...","bytecode":"..."}
 void ExplorerUpdateContract(const init::UWSRequest& req, init::UWSResponse& res) {
