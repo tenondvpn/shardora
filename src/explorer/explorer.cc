@@ -803,70 +803,56 @@ std::string Explorer::SearchAddresses(const std::string& prefix, int limit) {
     for (auto& c : p) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     if (p.empty()) return JsonErr("prefix required");
 
-    const std::string like = p + "%";
+    // Stored rows are written by HexStr(), which prefixes "0x", so an account is
+    // 42 chars and a prefund address 82. Rows written by other paths (and some
+    // contracts rows) have no prefix. Match both spellings, since the caller's
+    // 0x is stripped above.
+    const std::string with_0x  = "0x" + p;
+    const std::string bare     = p;
+
+    // A prefix shorter than a full address cannot select anything meaningful —
+    // it would just be a table scan returning unrelated rows.
+    if (p.size() < 40) return JsonList(json::array(), 0, false);
+
+    // One scan, both spellings. `exact` marks rows whose stored addr equals the
+    // normalized input in either form, which sorts first.
+    const char* sql =
+        "SELECT rowid,addr,addr_type,shard_id,pool_index,is_contract,"
+        "balance,nonce,first_seen,last_seen,tx_count"
+        " FROM addresses"
+        " WHERE (addr LIKE ? OR addr LIKE ?)"
+        " ORDER BY (addr=? OR addr=?) DESC, rowid"
+        " LIMIT ?;";
+
     json arr = json::array();
-
-    // 1) Exact match first (full 40-hex account/contract or 80-hex prefund address)
-    {
-        const char* sql =
-            "SELECT rowid,addr,addr_type,shard_id,pool_index,is_contract,"
-            "balance,nonce,first_seen,last_seen,tx_count"
-            " FROM addresses WHERE addr=? LIMIT 1;";
-        sqlite3_stmt* stmt = nullptr;
-        if (sqlite3_prepare_v2(read_db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, p.c_str(), -1, SQLITE_TRANSIENT);
-            if (sqlite3_step(stmt) == SQLITE_ROW) {
-                json obj;
-                obj["id"]          = sqlite3_column_int64(stmt, 0);
-                auto ad = sqlite3_column_text(stmt, 1);
-                obj["addr"]        = ad ? (const char*)ad : "";
-                obj["addr_type"]   = sqlite3_column_int(stmt, 2);
-                obj["shard_id"]    = sqlite3_column_int(stmt, 3);
-                obj["pool_index"]  = sqlite3_column_int(stmt, 4);
-                obj["is_contract"] = sqlite3_column_int(stmt, 5);
-                obj["balance"]     = sqlite3_column_int64(stmt, 6);
-                obj["nonce"]       = sqlite3_column_int64(stmt, 7);
-                obj["first_seen"]  = sqlite3_column_int64(stmt, 8);
-                obj["last_seen"]   = sqlite3_column_int64(stmt, 9);
-                obj["tx_count"]    = sqlite3_column_int64(stmt, 10);
-                obj["exact"]       = true;
-                arr.push_back(obj);
-            }
-            sqlite3_finalize(stmt);
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(read_db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        const std::string like_0x = with_0x + "%";
+        const std::string like_b  = bare + "%";
+        sqlite3_bind_text(stmt, 1, like_0x.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2, like_b.c_str(),  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, with_0x.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 4, bare.c_str(),    -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int (stmt, 5, limit);
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            auto ad = sqlite3_column_text(stmt, 1);
+            const std::string addr = ad ? (const char*)ad : "";
+            json obj;
+            obj["id"]          = sqlite3_column_int64(stmt, 0);
+            obj["addr"]        = addr;
+            obj["addr_type"]   = sqlite3_column_int(stmt, 2);
+            obj["shard_id"]    = sqlite3_column_int(stmt, 3);
+            obj["pool_index"]  = sqlite3_column_int(stmt, 4);
+            obj["is_contract"] = sqlite3_column_int(stmt, 5);
+            obj["balance"]     = sqlite3_column_int64(stmt, 6);
+            obj["nonce"]       = sqlite3_column_int64(stmt, 7);
+            obj["first_seen"]  = sqlite3_column_int64(stmt, 8);
+            obj["last_seen"]   = sqlite3_column_int64(stmt, 9);
+            obj["tx_count"]    = sqlite3_column_int64(stmt, 10);
+            obj["exact"]       = (addr == with_0x || addr == bare);
+            arr.push_back(obj);
         }
-    }
-
-    // 2) Prefix matches (addr LIKE 'prefix%' — uses addr PRIMARY KEY index range scan).
-    //    Exclude the exact hit already emitted above.
-    if (p.size() >= 40) {
-        const char* sql =
-            "SELECT rowid,addr,addr_type,shard_id,pool_index,is_contract,"
-            "balance,nonce,first_seen,last_seen,tx_count"
-            " FROM addresses WHERE addr LIKE ? AND addr<>? LIMIT ?;";
-        sqlite3_stmt* stmt = nullptr;
-        if (sqlite3_prepare_v2(read_db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text (stmt, 1, like.c_str(), -1, SQLITE_TRANSIENT);
-            sqlite3_bind_text (stmt, 2, p.c_str(),    -1, SQLITE_TRANSIENT);
-            sqlite3_bind_int  (stmt, 3, limit);
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
-                json obj;
-                obj["id"]          = sqlite3_column_int64(stmt, 0);
-                auto ad = sqlite3_column_text(stmt, 1);
-                obj["addr"]        = ad ? (const char*)ad : "";
-                obj["addr_type"]   = sqlite3_column_int(stmt, 2);
-                obj["shard_id"]    = sqlite3_column_int(stmt, 3);
-                obj["pool_index"]  = sqlite3_column_int(stmt, 4);
-                obj["is_contract"] = sqlite3_column_int(stmt, 5);
-                obj["balance"]     = sqlite3_column_int64(stmt, 6);
-                obj["nonce"]       = sqlite3_column_int64(stmt, 7);
-                obj["first_seen"]  = sqlite3_column_int64(stmt, 8);
-                obj["last_seen"]   = sqlite3_column_int64(stmt, 9);
-                obj["tx_count"]    = sqlite3_column_int64(stmt, 10);
-                obj["exact"]       = false;
-                arr.push_back(obj);
-            }
-            sqlite3_finalize(stmt);
-        }
+        sqlite3_finalize(stmt);
     }
 
     return JsonList(arr, 0, false);
