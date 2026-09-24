@@ -1,0 +1,535 @@
+{
+  "info": {
+    "_postman_id": "b7c4e1a2-3f6d-4a91-9e2b-5d0c8a7f4e13",
+    "name": "shardora-mm-DID",
+    "description": "mm.sol DID 合约（7635433bbc9edb01939555bd79719169986380a1，shard 3）的 registerDID / queryDID 接口。\n\n导入方式：Apipost → 导入 → 选择本文件（Postman Collection 2.1，Apipost 原生识别）。导入后环境变量在「环境」中，请求体里的 {{...}} 会自动替换。\n\n重要：\n1. 所有接口都是 application/x-www-form-urlencoded，不是 JSON；响应是 text/plain。\n2. 永远不要发到 shard 2（root 分片，不处理交易共识）。\n3. 写交易（registerDID）的签名无法在 Apipost 内计算，必须用 did_mm.py 生成后粘贴；非ce 可以靠前置脚本自动取。\n4. step 8 的 nonce 属于 prefund 账户（contract||account，80 hex），不是调用者也不是合约。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// 解析 prefund 账户的当前 nonce，供写交易请求使用。",
+          "// 脚本只填 nonce 变量；sign_r/sign_s/sign_v/pubkey 仍需从 did_mm.py 粘贴。",
+          "pm.sendRequest({",
+          "  url: pm.variables.get('base') + '/api/shard' + pm.variables.get('shard') + '/query_account',",
+          "  method: 'POST',",
+          "  header: { 'Content-Type': 'application/x-www-form-urlencoded' },",
+          "  body: { mode: 'urlencoded', urlencoded: [",
+          "    { key: 'address', value: pm.variables.get('prefund') }",
+          "  ]}",
+          "}, function (err, res) {",
+          "  if (err || !res || res.code !== 200) { return; }",
+          "  try {",
+          "    var j = JSON.parse(res.stream.toString());",
+          "    pm.variables.set('next_nonce', String(parseInt(j.nonce, 10) + 1));",
+          "  } catch (e) { /* 账户行尚未出现，保持占位值 */ }",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://47.111.109.8:8080",
+      "type": "string"
+    },
+    {
+      "key": "shard",
+      "value": "3",
+      "type": "string"
+    },
+    {
+      "key": "contract",
+      "value": "7635433bbc9edb01939555bd79719169986380a1",
+      "type": "string"
+    },
+    {
+      "key": "account",
+      "value": "af1770b8ad6c70e144b5508f8c9d40ac79f9065b",
+      "type": "string"
+    },
+    {
+      "key": "prefund",
+      "value": "7635433bbc9edb01939555bd79719169986380a1af1770b8ad6c70e144b5508f8c9d40ac79f9065b",
+      "type": "string"
+    },
+    {
+      "key": "nonce",
+      "value": "5",
+      "type": "string"
+    },
+    {
+      "key": "next_nonce",
+      "value": "5",
+      "type": "string"
+    },
+    {
+      "key": "pubkey",
+      "value": "04<从 did_mm.py 复制：65 字节非压缩公钥 hex>",
+      "type": "string"
+    },
+    {
+      "key": "sign_r",
+      "value": "<从 did_mm.py 复制>",
+      "type": "string"
+    },
+    {
+      "key": "sign_s",
+      "value": "<从 did_mm.py 复制>",
+      "type": "string"
+    },
+    {
+      "key": "sign_v",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "gas_limit",
+      "value": "999999",
+      "type": "string"
+    },
+    {
+      "key": "gas_price",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "prepay",
+      "value": "999999999",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. 前置：查询账户（校验 nonce / 余额）",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "address",
+              "value": "{{prefund}}",
+              "type": "text",
+              "description": "改成 {{account}} 可查调用者本账户"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base}}/api/shard{{shard}}/query_account",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "shard{{shard}}",
+            "query_account"
+          ]
+        },
+        "description": "返回 text/plain 的 JSON 文本，含 nonce / balance / shardingId / latestHeight。\n\nprefund 账户行只有在创建或执行交易上链后才出现。刚部署完立即查询可能读到 'get address failed from cache'，需要重试。\n\n示例返回：\n{\"pubkey\":\"\",\"balance\":\"98014571\",\"shardingId\":3,\"poolIndex\":19,\"addr\":\"djVDO7ye2wGTlVW9eXGRaZhjgKGvF3C4rWxw4US1UI+MnUCsefkGWw==\",\"type\":\"kNormal\",\"latestHeight\":\"393\",\"txIndex\":0,\"nonce\":\"4\"}"
+      }
+    },
+    {
+      "name": "1. registerDID（注册 DID，写交易）",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// 提交后轮询 prefund 的 nonce，确认是否上链。",
+              "var t = pm.response.text().trim();",
+              "if (t === 'ok') {",
+              "  var tries = 0;",
+              "  var poll = function () {",
+              "    pm.sendRequest({",
+              "      url: pm.variables.get('base') + '/api/shard' + pm.variables.get('shard') + '/query_account',",
+              "      method: 'POST',",
+              "      header: { 'Content-Type': 'application/x-www-form-urlencoded' },",
+              "      body: { mode: 'urlencoded', urlencoded: [",
+              "        { key: 'address', value: pm.variables.get('prefund') }",
+              "      ]}",
+              "    }, function (err, res) {",
+              "      if (err || !res) { return; }",
+              "      var j = null;",
+              "      try { j = JSON.parse(res.stream.toString()); } catch (e) { }",
+              "      if (j && j.nonce === pm.variables.get('nonce')) {",
+              "        console.log('已上链，prefund nonce = ' + j.nonce);",
+              "      } else if (++tries < 10) {",
+              "        setTimeout(poll, 3000);",
+              "      } else {",
+              "        console.warn('30 秒内未观察到 nonce 变化，请检查交易状态');",
+              "      }",
+              "    });",
+              "  };",
+              "  setTimeout(poll, 3000);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "nonce",
+              "value": "{{next_nonce}}",
+              "type": "text",
+              "description": "prefund 账户当前 nonce + 1。前置脚本会自动填 {{next_nonce}}"
+            },
+            {
+              "key": "pubkey",
+              "value": "{{pubkey}}",
+              "type": "text",
+              "description": "65 字节非压缩公钥 hex，必须带 04 前缀"
+            },
+            {
+              "key": "to",
+              "value": "{{contract}}",
+              "type": "text"
+            },
+            {
+              "key": "type",
+              "value": "8",
+              "type": "text",
+              "description": "8 = kContractExcute"
+            },
+            {
+              "key": "amount",
+              "value": "0",
+              "type": "text"
+            },
+            {
+              "key": "gas_limit",
+              "value": "{{gas_limit}}",
+              "type": "text"
+            },
+            {
+              "key": "gas_price",
+              "value": "{{gas_price}}",
+              "type": "text"
+            },
+            {
+              "key": "shard_id",
+              "value": "{{shard}}",
+              "type": "text"
+            },
+            {
+              "key": "prefund",
+              "value": "{{prepay}}",
+              "type": "text",
+              "description": "预充值额度，注意字段名是 prefund，不是 prepay"
+            },
+            {
+              "key": "input",
+              "value": "279d814300000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000000d6469643a6578616d706c653a31000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006706572736f6e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006706b2d6f6e6500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006706b2d74776f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000097369672d76616c75650000000000000000000000000000000000000000000000",
+              "type": "text",
+              "description": "selector 279d8143 + ABI 编码的 5 个 string：_did, _userType, _publicKey1, _publicKey2, _signatureValue"
+            },
+            {
+              "key": "sign_r",
+              "value": "{{sign_r}}",
+              "type": "text"
+            },
+            {
+              "key": "sign_s",
+              "value": "{{sign_s}}",
+              "type": "text"
+            },
+            {
+              "key": "sign_v",
+              "value": "{{sign_v}}",
+              "type": "text",
+              "description": "恢复 id，0..3"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base}}/api/shard{{shard}}/transaction",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "shard{{shard}}",
+            "transaction"
+          ]
+        },
+        "description": "提交 step=8（kContractExcute）交易，调用 registerDID(string,string,string,string,string)。\n\n签名无法在 Apipost 内计算 —— 签名是对固定字段布局（nonce||pubkey||to||amount||gas_limit||gas_price||step||input||prefund）做 keccak256 后用 secp256k1 可恢复签名，不是 EIP-155，也没有 RLP。\n\n正确做法：\n  python did_mm.py register --did did:example:1 --user-type person --pk1 k1 --pk2 k2 --sig s1\n脚本会打印出 nonce / pubkey / sign_r / sign_s / sign_v，复制到环境变量即可。\n\n成功返回：ok\n失败返回：kTxUserNonceInvalid / kTxInvalidAddress / DID already exists 等文本。",
+        "example_success": "ok"
+      }
+    },
+    {
+      "name": "2. queryDID（查询 DID 文档，视图调用）",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "address",
+              "value": "{{contract}}",
+              "type": "text"
+            },
+            {
+              "key": "input",
+              "value": "6f21cb640000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000d6469643a6578616d706c653a3100000000000000000000000000000000000000",
+              "type": "text",
+              "description": "selector 6f21cb64 + ABI string（这里编码的是 did:example:1）"
+            },
+            {
+              "key": "from",
+              "value": "{{account}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base}}/api/shard{{shard}}/abi_query_contract",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "shard{{shard}}",
+            "abi_query_contract"
+          ]
+        },
+        "description": "调用 queryDID(string)，返回 7 个值。\n\n成功 = 裸 hex（无 0x 前缀），需 ABI 解码。失败 = 0x 前缀的 ABI string 包体，去掉 0x 后按 [offset=0x20][length][utf-8 bytes] 解出的就是错误文本，例如 'query contract failed: 2, exec_res: 0'（DID 不存在，合约 require 失败）。\n\n── 返回布局（实测，非标准 ABI）──\n偏移量是绝对字节位置，且每个值前都带自己的 length 字：\n  slot 0 userType       -> 偏移 224，[len][payload]\n  slot 1 created        -> 偏移 320\n  slot 2 updated        -> 偏移 384\n  slot 3 publicKey1     -> 偏移 448\n  slot 4 publicKey2     -> 偏移 544\n  slot 5 signatureValue -> 偏移 640\n  slot 6 assets[]       -> 偏移 736\n按标准 ABI 从 0 起算（head_size + relative）会把 slot 7 的 0x40 当成偏移，导致所有字段整体错位一格、并混入下一个字段的长度字。\n\ncreated / updated 是二进制不是十进制字符串：mm.sol 的 uint2str 是 string(u256ToBytes(_i))，把 32 字节大端整数直接当字符串。必须取原始字节按大端读，得到毫秒时间戳，不要先做 utf-8 errors='replace' 解码（非 UTF-8 字节会被改写成 efbfbd，数值永久丢失）。\n\n解码后示例：\n{\"userType\":\"person\",\"created\":\"2026-09-24 08:50:49\",\"updated\":\"2026-09-24 08:50:49\",\"publicKey1\":\"pk-one\",\"publicKey2\":\"pk-two\",\"signatureValue\":\"sig-value\",\"assets\":[]}\n\nApipost 内可直接调用 did_mm.py 解码，或用「2b. 解码脚本」。"
+      }
+    },
+    {
+      "name": "2b. queryDID 解码脚本（Tests 标签粘贴）",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "address",
+              "value": "{{contract}}",
+              "type": "text"
+            },
+            {
+              "key": "input",
+              "value": "6f21cb640000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000d6469643a6578616d706c653a3100000000000000000000000000000000000000",
+              "type": "text"
+            },
+            {
+              "key": "from",
+              "value": "{{account}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base}}/api/shard{{shard}}/abi_query_contract",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "shard{{shard}}",
+            "abi_query_contract"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// 与 did_mm.py 的 decode_query_did 等价。粘贴到 Apipost 的「Tests / 后置脚本」即可。",
+              "var raw = pm.response.text().trim().replace(/^0x/, '');",
+              "",
+              "// ── 失败：0x 前缀的 ABI string 包体 ──",
+              "if (pm.response.text().trim().indexOf('0x') === 0) {",
+              "  var b = raw;",
+              "  var off = parseInt(b.slice(0, 64), 16) * 2;",
+              "  var len = parseInt(b.slice(off, off + 64), 16) * 2;",
+              "  var hex = b.slice(off + 64, off + 64 + len);",
+              "  var txt = '';",
+              "  for (var i = 0; i < hex.length; i += 2) txt += String.fromCharCode(parseInt(hex.substr(i, 2), 16));",
+              "  console.warn('合约错误：' + decodeURIComponent(escape(txt)));",
+              "  return;",
+              "}",
+              "",
+              "// ── 成功 ──",
+              "// 返回包 7 个 slot 组成 224 字节的头，每个 slot 存的是【绝对字节偏移】。",
+              "// 目标位置是 [length][payload] 结构。",
+              "var rawAt = function (byteOff, byteLen) { return raw.slice(byteOff * 2, (byteOff + byteLen) * 2); };",
+              "var word  = function (slot) { return parseInt(rawAt(slot * 32, 32), 16); };",
+              "var tail  = function (byteOff) { return rawAt(byteOff + 32, parseInt(rawAt(byteOff, 32), 16)); };",
+              "var text  = function (hex) {",
+              "  if (!hex) return '';",
+              "  var s = '';",
+              "  for (var i = 0; i < hex.length; i += 2) s += String.fromCharCode(parseInt(hex.substr(i, 2), 16));",
+              "  return decodeURIComponent(escape(s));",
+              "};",
+              "// created/updated 是 uint2str 的产物：32 字节大端整数被直接当成字符串，不是十进制数字。",
+              "var stamp = function (byteOff) {",
+              "  var h = tail(byteOff);",
+              "  if (!h) return null;",
+              "  var ms = parseInt(h, 16);",
+              "  var d = new Date(ms);",
+              "  var p = function (x) { return ('0' + x).slice(-2); };",
+              "  return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) + ' ' +",
+              "         p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ':' + p(d.getUTCSeconds());",
+              "};",
+              "",
+              "var out = {",
+              "  userType:       text(tail(word(0))),",
+              "  created:        stamp(word(1)),",
+              "  updated:        stamp(word(2)),",
+              "  publicKey1:     text(tail(word(3))),",
+              "  publicKey2:     text(tail(word(4))),",
+              "  signatureValue: text(tail(word(5)))",
+              "};",
+              "",
+              "// assets[]：动态数组。基址在头之后（7*32），其后 n 个槽各存一个相对基址的偏移。",
+              "var arrOff = word(6);",
+              "var count  = parseInt(rawAt(arrOff, 32), 16);",
+              "var base   = arrOff + 32;",
+              "out.assets = [];",
+              "for (var k = 0; k < count; k++) {",
+              "  var elem = base + parseInt(rawAt(base + k * 32, 32), 16);",
+              "  // AssetData{string assetId; uint8 rightType} 是动态 struct：",
+              "  // elem 的首字是 string 尾部相对 elem 的偏移；字符串数据在该长度字之后，故 +32。",
+              "  // rightType 紧跟在首字之后（uint8 在 ABI 里占满一个字）。",
+              "  out.assets.push({",
+              "    assetId:   text(tail(elem + parseInt(rawAt(elem, 32), 16))),",
+              "    rightType: parseInt(rawAt(elem + 32, 32), 16)",
+              "  });",
+              "}",
+              "console.log(JSON.stringify(out, null, 2));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. existsDID（辅助：判断 DID 是否存在）",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "address",
+              "value": "{{contract}}",
+              "type": "text"
+            },
+            {
+              "key": "input",
+              "value": "4eef0b150000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000d6469643a6578616d706c653a3100000000000000000000000000000000000000",
+              "type": "text",
+              "description": "selector 4eef0b15 + ABI string"
+            },
+            {
+              "key": "from",
+              "value": "{{account}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base}}/api/shard{{shard}}/abi_query_contract",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "shard{{shard}}",
+            "abi_query_contract"
+          ]
+        },
+        "description": "调用 existsDID(string)，返回 32 字节 hex：末位 1 = true，0 = false。"
+      }
+    },
+    {
+      "name": "4. getDIDCount（辅助：DID 总数）",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "address",
+              "value": "{{contract}}",
+              "type": "text"
+            },
+            {
+              "key": "input",
+              "value": "8cf592d6",
+              "type": "text",
+              "description": "selector 8cf592d6，无参数"
+            },
+            {
+              "key": "from",
+              "value": "{{account}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base}}/api/shard{{shard}}/abi_query_contract",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "shard{{shard}}",
+            "abi_query_contract"
+          ]
+        },
+        "description": "调用 getDIDCount()，返回 uint 的 32 字节 hex。实测值示例：...0002 表示 2 个 DID。"
+      }
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 third_party/lib
 chainbaas
 databaas-plus/
+.databaas_token
 social_cards/
 third_party/libs/
 tmp_batch_logs_jun16.txt
