@@ -1,1 +1,480 @@
-[{"inputs": [], "stateMutability": "nonpayable", "type": "constructor"}, {"anonymous": false, "inputs": [{"indexed": true, "internalType": "bytes32", "name": "dataId", "type": "bytes32"}, {"indexed": true, "internalType": "address", "name": "owner", "type": "address"}, {"indexed": false, "internalType": "uint256", "name": "price", "type": "uint256"}], "name": "DataCreated", "type": "event"}, {"anonymous": false, "inputs": [{"indexed": true, "internalType": "bytes32", "name": "dataId", "type": "bytes32"}, {"indexed": false, "internalType": "uint256", "name": "oldPrice", "type": "uint256"}, {"indexed": false, "internalType": "uint256", "name": "newPrice", "type": "uint256"}], "name": "DataPriceChanged", "type": "event"}, {"anonymous": false, "inputs": [{"indexed": true, "internalType": "bytes32", "name": "dataId", "type": "bytes32"}, {"indexed": true, "internalType": "address", "name": "seller", "type": "address"}, {"indexed": true, "internalType": "address", "name": "buyer", "type": "address"}, {"indexed": false, "internalType": "uint256", "name": "price", "type": "uint256"}], "name": "DataSold", "type": "event"}, {"anonymous": false, "inputs": [{"indexed": true, "internalType": "bytes32", "name": "dataId", "type": "bytes32"}, {"indexed": false, "internalType": "bytes32", "name": "newHash", "type": "bytes32"}], "name": "DataUpdated", "type": "event"}, {"inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "name": "allDataIds", "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "_dataId", "type": "bytes32"}, {"internalType": "string", "name": "_tradeNote", "type": "string"}], "name": "buyData", "outputs": [], "stateMutability": "payable", "type": "function"}, {"inputs": [], "name": "contractOwner", "outputs": [{"internalType": "address", "name": "", "type": "address"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "_dataId", "type": "bytes32"}, {"internalType": "string", "name": "_metadata", "type": "string"}, {"internalType": "uint256", "name": "_price", "type": "uint256"}], "name": "createData", "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}], "name": "currentLatestHash", "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}], "name": "dataOwner", "outputs": [{"internalType": "address", "name": "", "type": "address"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}], "name": "dataPrice", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "_offset", "type": "uint256"}, {"internalType": "uint256", "name": "_limit", "type": "uint256"}], "name": "getAllLatestRecords", "outputs": [{"components": [{"internalType": "bytes32", "name": "dataHash", "type": "bytes32"}, {"internalType": "bytes32", "name": "previousHash", "type": "bytes32"}, {"internalType": "address", "name": "owner", "type": "address"}, {"internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"internalType": "string", "name": "metadata", "type": "string"}], "internalType": "struct DataMarketProvenance.DataRecord[]", "name": "", "type": "tuple[]"}], "stateMutability": "view", "type": "function"}, {"inputs": [], "name": "getDataCount", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "_dataId", "type": "bytes32"}], "name": "getHistory", "outputs": [{"components": [{"internalType": "bytes32", "name": "dataHash", "type": "bytes32"}, {"internalType": "bytes32", "name": "previousHash", "type": "bytes32"}, {"internalType": "address", "name": "owner", "type": "address"}, {"internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"internalType": "string", "name": "metadata", "type": "string"}], "internalType": "struct DataMarketProvenance.DataRecord[]", "name": "", "type": "tuple[]"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "_dataId", "type": "bytes32"}], "name": "getPrice", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}, {"internalType": "uint256", "name": "", "type": "uint256"}], "name": "history", "outputs": [{"internalType": "bytes32", "name": "dataHash", "type": "bytes32"}, {"internalType": "bytes32", "name": "previousHash", "type": "bytes32"}, {"internalType": "address", "name": "owner", "type": "address"}, {"internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"internalType": "string", "name": "metadata", "type": "string"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "_dataId", "type": "bytes32"}, {"internalType": "uint256", "name": "_newPrice", "type": "uint256"}], "name": "setPrice", "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "_dataId", "type": "bytes32"}, {"internalType": "string", "name": "_newMetadata", "type": "string"}], "name": "updateData", "outputs": [], "stateMutability": "nonpayable", "type": "function"}]
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor",
+    "签名": "constructor",
+    "说明": "声明：constructor\n\nnonpayable\n\n参数：\n无参数。部署时把部署者地址写进 contractOwner。\n\n返回值：\n无返回值。"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "dataId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "price",
+        "type": "uint256"
+      }
+    ],
+    "name": "DataCreated",
+    "type": "event",
+    "说明": "发事件的条件：见对应写方法。\n\n参数：\n| 参数 | indexed | 类型 | 说明 |\n|---|---|---|---|\n| dataId | 是 | bytes32 | 新数据编号，可作 topic[1] 过滤 |\n| owner | 是 | address | 创建者 |\n| price | 否 | uint256 | 初始标价 |"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "dataId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "DataPriceChanged",
+    "type": "event",
+    "说明": "发事件的条件：见对应写方法。\n\n参数：\n| 参数 | indexed | 类型 | 说明 |\n|---|---|---|---|\n| dataId | 是 | bytes32 | 数据编号 |\n| oldPrice | 否 | uint256 | 改价前 |\n| newPrice | 否 | uint256 | 改价后 |"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "dataId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "seller",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "buyer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "price",
+        "type": "uint256"
+      }
+    ],
+    "name": "DataSold",
+    "type": "event",
+    "说明": "发事件的条件：见对应写方法。\n\n参数：\n| 参数 | indexed | 类型 | 说明 |\n|---|---|---|---|\n| dataId | 是 | bytes32 | 数据编号 |\n| seller | 是 | address | 原 owner |\n| buyer | 是 | address | 新 owner（msg.sender） |\n| price | 否 | uint256 | 成交价，即 dataPrice[dataId] |"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "dataId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "newHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "DataUpdated",
+    "type": "event",
+    "说明": "发事件的条件：见对应写方法。\n\n参数：\n| 参数 | indexed | 类型 | 说明 |\n|---|---|---|---|\n| dataId | 是 | bytes32 | 数据编号 |\n| newHash | 否 | bytes32 | 新版本摘要 |"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "allDataIds",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "签名": "allDataIds(uint256)",
+    "说明": "声明：allDataIds(uint256)\n\nview\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| 下标 | uint256 | 数组下标，0 <= i < getDataCount() |\n\n返回值：\nbytes32 —— 第 i 个数据编号。越界会 revert。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_dataId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_tradeNote",
+        "type": "string"
+      }
+    ],
+    "name": "buyData",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function",
+    "签名": "buyData(bytes32,string)",
+    "说明": "声明：buyData(bytes32,string)\n\npayable\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _dataId | bytes32 | 要买的数据编号 |\n| _tradeNote | string | 交易备注，随事件一起上链 |\n| msg.value | uint256 | payable，必须 >= dataPrice[_dataId]，不足则整个交易回滚；超付不找零 |\n\n返回值：\n无返回值。成功时发 DataSold(dataId, seller(原 owner), buyer(msg.sender), price)，并把 dataOwner[_dataId] 改成买家。"
+  },
+  {
+    "inputs": [],
+    "name": "contractOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "签名": "contractOwner()",
+    "说明": "声明：contractOwner()\n\nview\n\n参数：\n无参数。\n\n返回值：\naddress —— 部署者地址，只在构造函数里赋值一次。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_dataId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_metadata",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_price",
+        "type": "uint256"
+      }
+    ],
+    "name": "createData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "签名": "createData(bytes32,string,uint256)",
+    "说明": "声明：createData(bytes32,string,uint256)\n\nnonpayable\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _dataId | bytes32 | 数据编号，调用方自行生成（通常是 keccak256 摘要），全局唯一；已存在则拒绝 |\n| _metadata | string | 元信息描述，任意 UTF-8 文本，存在链上 |\n| _price | uint256 | 标价，单位与链的原生币一致（wei） |\n\n返回值：\n无返回值。成功时发 DataCreated；同时写入 dataOwner[msg.sender]、dataPrice[_price]，并生成该 dataId 的第一条 DataRecord（previousHash=0，dataHash=计算出的摘要，timestamp=出块时间）。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "currentLatestHash",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "签名": "currentLatestHash(bytes32)",
+    "说明": "声明：currentLatestHash(bytes32)\n\nview\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _dataId | bytes32 | 数据编号 |\n\n返回值：\nbytes32 —— 最新版本的摘要，等价于 getHistory(_dataId) 最后一条的 dataHash。未注册返回 0。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "dataOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "签名": "dataOwner(bytes32)",
+    "说明": "声明：dataOwner(bytes32)\n\nview\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _dataId | bytes32 | 数据编号 |\n\n返回值：\naddress —— 当前所有者。从未注册过的 dataId 返回 0x0，可用它判断数据是否存在。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "dataPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "签名": "dataPrice(bytes32)",
+    "说明": "声明：dataPrice(bytes32)\n\nview\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _dataId | bytes32 | 数据编号 |\n\n返回值：\nuint256 —— 当前标价（wei）。与 getPrice 同一份存储。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_offset",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAllLatestRecords",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "dataHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "previousHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "metadata",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct DataMarketProvenance.DataRecord[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "签名": "getAllLatestRecords(uint256,uint256)",
+    "说明": "声明：getAllLatestRecords(uint256,uint256)\n\nview\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _offset | uint256 | 起始下标，从 0 开始 |\n| _limit | uint256 | 最多返回几条 |\n\n返回值：\nDataRecord[]（字段同上）—— 取 allDataIds[_offset, _offset+_limit) 这一段，每条只给它的**最新**版本。\n越界时 offset >= 总数 返回空数组；limit 超出剩余条数时按剩余的给，不报错。\n分页遍历用：offset 从 0 递增，空数组即为结束。"
+  },
+  {
+    "inputs": [],
+    "name": "getDataCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "签名": "getDataCount()",
+    "说明": "声明：getDataCount()\n\nview\n\n参数：\n无参数。\n\n返回值：\nuint256 —— 当前数据条目总数，等于 allDataIds.length。返回 0 表示链上还没有任何数据。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_dataId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getHistory",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "dataHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "previousHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "metadata",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct DataMarketProvenance.DataRecord[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "签名": "getHistory(bytes32)",
+    "说明": "声明：getHistory(bytes32)\n\nview\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _dataId | bytes32 | 数据编号 |\n\n返回值：\nDataRecord[] —— 按时间从旧到新的完整版本链。每条 DataRecord：\n\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| dataHash | bytes32 | 本版本的摘要 |\n| previousHash | bytes32 | 上一版本的 dataHash；首条为 0 |\n| owner | address | 本版本产生时的数据所有者 |\n| timestamp | uint256 | 本版本上链时间（秒） |\n| metadata | string | 本版本的元信息 |\n\ndataId 不存在时返回空数组。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_dataId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "签名": "getPrice(bytes32)",
+    "说明": "声明：getPrice(bytes32)\n\nview\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _dataId | bytes32 | 数据编号 |\n\n返回值：\nuint256 —— 该数据的当前标价（wei）。dataId 不存在时返回 0，不 revert。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "history",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "dataHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "previousHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "metadata",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "签名": "history(bytes32,uint256)",
+    "说明": "声明：history(bytes32,uint256)\n\nview\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _dataId | bytes32 | 数据编号 |\n| 下标 | uint256 | 版本号，0 是最早的一版 |\n\n返回值：\n5 个值，按 ABI 顺序展开 —— 这是 public 数组自动生成的 getter，返回的是**多个返回值**而不是 struct：\n\n| 位置 | 类型 | 字段 |\n|---|---|---|\n| 0 | bytes32 | dataHash |\n| 1 | bytes32 | previousHash |\n| 2 | address | owner |\n| 3 | uint256 | timestamp |\n| 4 | string | metadata |\n\n越界 revert。只读某一条时用这个更省，全量用 getHistory。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_dataId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_newPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPrice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "签名": "setPrice(bytes32,uint256)",
+    "说明": "声明：setPrice(bytes32,uint256)\n\nnonpayable\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _dataId | bytes32 | 数据编号 |\n| _newPrice | uint256 | 新标价（wei） |\n\n返回值：\n无返回值。成功时发 DataPriceChanged(dataId, oldPrice, newPrice)。只有 owner 能调，否则回滚。"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_dataId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_newMetadata",
+        "type": "string"
+      }
+    ],
+    "name": "updateData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "签名": "updateData(bytes32,string)",
+    "说明": "声明：updateData(bytes32,string)\n\nnonpayable\n\n参数：\n| 参数 | 类型 | 说明 |\n|---|---|---|\n| _dataId | bytes32 | 数据编号 |\n| _newMetadata | string | 新的元信息，替换旧值并把旧值留在历史里 |\n\n返回值：\n无返回值。成功时发 DataUpdated(dataId, newHash)，往 history[_dataId] 追加一条 DataRecord\n（previousHash=调用前的 currentLatestHash，dataHash=新摘要，timestamp=出块时间），并更新 currentLatestHash[_dataId]。只有 owner 能调。"
+  }
+]

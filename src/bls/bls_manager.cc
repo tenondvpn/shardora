@@ -87,6 +87,9 @@ void BlsManager::OnNewElectBlock(
         uint64_t elect_height,
         uint64_t prev_elect_height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
+#ifdef NDEBUG
+    return;
+#endif
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
         finish_networks_map_.erase(iter);

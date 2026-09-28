@@ -419,7 +419,6 @@ private:
             return nullptr;
         }
 
-        return (*members)[pool_idx_ % members->size()];
         auto elect_item = elect_info_->GetElectItemWithShardingId(
             common::GlobalInfo::Instance()->network_id());
         auto leaders = members;

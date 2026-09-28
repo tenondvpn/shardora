@@ -37,6 +37,9 @@ BlockManager::BlockManager(
         std::shared_ptr<ck::ClickHouseClient> ck_client,
         std::shared_ptr<explorer::Explorer> explorer)
     : net_handler_(net_handler), ck_client_(ck_client), explorer_(std::move(explorer)) {
+#ifdef NDEBUG
+        explorer_ = nullptr;
+#endif
 }
 
 BlockManager::~BlockManager() {

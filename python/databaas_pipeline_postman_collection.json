@@ -22,7 +22,7 @@
               }
             ],
             "url": "{{base_url}}/api/rest_token/",
-            "description": "整个集合唯一的 JSON body 接口（DRF 的 TokenObtainPairView），其余接口一律表单编码。\n\npassword 必须是 md5(md5(md5(明文)))，不是明文——库里存的就是这个串。\n用例：用户 shardora，明文 test -> 25ab3b38f7afc116f18fa9821e44d561。\n（如果密码字面就是 \"shardora test\"，那个值换成 acaa980fe939b376a0b9645cfce36485。）\n\n返回 {\"access\": ..., \"refresh\": ...}，access 有效期 30 天、refresh 5 天。\n响应脚本会自动把 access 写进集合变量 access_token，后续请求不用手动粘。\n\nJS 里现算（集合前置脚本已内置，失败时回落到变量默认值）：\n  var h1 = CryptoJS.MD5(plain).toString();\n  var h2 = CryptoJS.MD5(h1).toString();\n  var h3 = CryptoJS.MD5(h2).toString();  // 这个才是要传的\nPython 等价写法：\n  import hashlib\n  h1 = hashlib.md5(text.encode()).hexdigest()\n  h2 = hashlib.md5(h1.encode()).hexdigest()\n  h3 = hashlib.md5(h2.encode()).hexdigest()  # 这个才是要传的",
+            "description": "整个集合唯一的 JSON body 接口（DRF 的 TokenObtainPairView），其余接口一律表单编码。\n\npassword 必须是 md5(md5(md5(明文)))，不是明文——库里存的就是这个串。\n用例：用户 shardora，明文 test -> 25ab3b38f7afc116f18fa9821e44d561。\n（如果密码字面就是 \"shardora test\"，那个值换成 acaa980fe939b376a0b9645cfce36485。）\n\n返回 {\"access\": ..., \"refresh\": ...}，access 有效期 30 天、refresh 5 天。\n响应脚本会自动把 access 写进集合变量 access_token，后续请求不用手动粘。\n\nJS 里现算（集合前置脚本已内置，失败时回落到变量默认值）：\n  var h1 = CryptoJS.MD5(plain).toString();\n  var h2 = CryptoJS.MD5(h1).toString();\n  var h3 = CryptoJS.MD5(h2).toString();  // 这个才是要传的\nPython 等价写法：\n  import hashlib\n  h1 = hashlib.md5(text.encode()).hexdigest()\n  h2 = hashlib.md5(h1.encode()).hexdigest()\n  h3 = hashlib.md5(h2.encode()).hexdigest()  # 这个才是要传的\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| username | string | 是 | 用户名，本集合默认 shardora |\n| password | string | 是 | md5(md5(md5(明文)))，不是明文。test -> 25ab3b38f7afc116f18fa9821e44d561 |\n\nContent-Type 必须是 application/json —— 全集合只有这一个接口走 JSON body。\n",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password_md5}}\"\n}",
@@ -33,7 +33,43 @@
               }
             }
           },
-          "response": [],
+          "response": [
+            {
+              "name": "登录成功",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{base_url}}/api/rest_token/",
+                "description": "整个集合唯一的 JSON body 接口（DRF 的 TokenObtainPairView），其余接口一律表单编码。\n\npassword 必须是 md5(md5(md5(明文)))，不是明文——库里存的就是这个串。\n用例：用户 shardora，明文 test -> 25ab3b38f7afc116f18fa9821e44d561。\n（如果密码字面就是 \"shardora test\"，那个值换成 acaa980fe939b376a0b9645cfce36485。）\n\n返回 {\"access\": ..., \"refresh\": ...}，access 有效期 30 天、refresh 5 天。\n响应脚本会自动把 access 写进集合变量 access_token，后续请求不用手动粘。\n\nJS 里现算（集合前置脚本已内置，失败时回落到变量默认值）：\n  var h1 = CryptoJS.MD5(plain).toString();\n  var h2 = CryptoJS.MD5(h1).toString();\n  var h3 = CryptoJS.MD5(h2).toString();  // 这个才是要传的\nPython 等价写法：\n  import hashlib\n  h1 = hashlib.md5(text.encode()).hexdigest()\n  h2 = hashlib.md5(h1.encode()).hexdigest()\n  h3 = hashlib.md5(h2.encode()).hexdigest()  # 这个才是要传的\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| username | string | 是 | 用户名，本集合默认 shardora |\n| password | string | 是 | md5(md5(md5(明文)))，不是明文。test -> 25ab3b38f7afc116f18fa9821e44d561 |\n\nContent-Type 必须是 application/json —— 全集合只有这一个接口走 JSON body。\n",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password_md5}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc5MTAxMzA2OCwiaWF0IjoxNzkwNTgxMDY4LCJqdGkiOiIzYjk2YWEwODhhYTI0ODViYWZmZDdiMjEyYmI5OGY2OCIsInVzZXJfaWQiOiIxIn0.b5ud8u1NGohjy9H9hBaNFwArYZprwN9OrplCg3jfGrQ\",\n  \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzMTczMDY4LCJpYXQiOjE3OTA1ODEwNjgsImp0aSI6ImFhZmRlMzlmNzgyMTRmYTRiMzE4ZTk5MGI5Y2Y4MjNjIiwidXNlcl9pZCI6IjEifQ.<签名>\"\n}"
+            }
+          ],
           "event": [
             {
               "listen": "test",
@@ -89,13 +125,45 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/get_pipelines/",
-            "description": "返回全部流程：{\"status\":0, \"pipeline_list\":[{\"id\":46,\"name\":\"helloworld\"}, ...]}，实测 127 条。\n\n这个视图少写了 @permission_classes，带上 token 也行、不带也能读。\n集合里统一带了 Authorization，只是为了格式一致。",
+            "description": "返回全部流程：{\"status\":0, \"pipeline_list\":[{\"id\":46,\"name\":\"helloworld\"}, ...]}，实测 127 条。\n\n这个视图少写了 @permission_classes，带上 token 也行、不带也能读。\n集合里统一带了 Authorization，只是为了格式一致。\n━━ 参数 ━━\n无。空 body 即可。\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功 |\n| pipeline_list | array | 流程数组，实测 127 条 |\n| pipeline_list[].id | int | 流程 id，传给 1.2 / 3.2 / 4.1 |\n| pipeline_list[].name | string | 流程名 |\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": []
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "实测响应（截取部分，共 127 条）",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/get_pipelines/",
+                "description": "返回全部流程：{\"status\":0, \"pipeline_list\":[{\"id\":46,\"name\":\"helloworld\"}, ...]}，实测 127 条。\n\n这个视图少写了 @permission_classes，带上 token 也行、不带也能读。\n集合里统一带了 Authorization，只是为了格式一致。\n━━ 参数 ━━\n无。空 body 即可。\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功 |\n| pipeline_list | array | 流程数组，实测 127 条 |\n| pipeline_list[].id | int | 流程 id，传给 1.2 / 3.2 / 4.1 |\n| pipeline_list[].name | string | 流程名 |\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": 0,\n  \"pipeline_list\": [\n    {\n      \"id\": 34,\n      \"name\": \"数据名114\"\n    },\n    {\n      \"id\": 35,\n      \"name\": \"同步schema测试\"\n    },\n    {\n      \"id\": 36,\n      \"name\": \"11\"\n    },\n    {\n      \"id\": 37,\n      \"name\": \"测试99\"\n    },\n    {\n      \"id\": 38,\n      \"name\": \"ceshi\"\n    },\n    {\n      \"id\": 39,\n      \"name\": \"测试打印版本2\"\n    },\n    {\n      \"id\": 40,\n      \"name\": \"k8s\"\n    },\n    {\n      \"id\": 41,\n      \"name\": \"打印版本3\"\n    },\n    {\n      \"id\": 42,\n      \"name\": \"打印4\"\n    },\n    {\n      \"id\": 43,\n      \"name\": \"docker\"\n    },\n    {\n      \"id\": 44,\n      \"name\": \"docker版本1\"\n    },\n    {\n      \"id\": 45,\n      \"name\": \"docker_hellwolrd\"\n    },\n    {\n      \"id\": 46,\n      \"name\": \"helloworld\"\n    },\n    {\n      \"id\": 47,\n      \"name\": \"测试docker（最新）\"\n    },\n    {\n      \"id\": 48,\n      \"name\": \"测试docker-czx\"\n    },\n    {\n      \"id\": 49,\n      \"name\": \"docker-wtf\"\n    },\n    {\n      \"id\": 50,\n      \"name\": \"k8s测试\"\n    },\n    {\n      \"id\": 51,\n      \"name\": \"测试helloworld-0826\"\n    },\n    {\n      \"id\": 52,\n      \"name\": \"PDF解析\"\n    },\n    {\n      \"id\": 53,\n      \"name\": \"liuyang\"\n    },\n    {\n      \"id\": 54,\n      \"name\": \"PDF解析-v100\"\n    },\n    {\n      \"id\": 55,\n      \"name\": \"测试脚本\"\n    },\n    {\n      \"id\": 56,\n      \"name\": \"PDF-copy\"\n    },\n    {\n      \"id\": 58,\n      \"name\": \"创建节点链接逻辑分支\"\n    },\n    {\n      \"id\": 59,\n      \"name\": \"根据任务返回值执行分支\"\n    },\n    {\n      \"id\": 60,\n      \"name\": \"基座模型算法\"\n    },\n    {\n      \"id\": 61,\n      \"name\": \"本地脚本执行\"\n    },\n    {\n      \"id\": 62,\n      \"name\": \"K8S提交job\"\n    },\n    {\n      \"id\": 63,\n      \"name\": \"v100调用\"\n    },\n    {\n      \"id\": 64,\n      \"name\": \"k8s集群提交job\"\n    },\n    {\n      \"id\": 66,\n      \"name\": \"分支逻辑\"\n    },\n    {\n      \"id\": 67,\n      \"name\": \"clickhouse\"\n    },\n    {\n      \"id\": 68,\n      \"name\": \"odps任务\"\n    },\n    {\n      \"id\": 69,\n      \"name\": \"本地脚本\"\n    },\n    {\n      \"id\": 70,\n      \"name\": \"本地单机docker执行\"\n    },\n    {\n      \"id\": 71,\n      \"name\": \"基于git运行脚本程序\"\n    },\n    {\n      \"id\": 72,\n      \"name\": \"mysql数据同步并定时运行\"\n    },\n    {\n      \"id\": 74,\n      \"name\": \"shell脚本\"\n    },\n    {\n      \"id\": 75,\n      \"name\": \"url下载数据并保存到oss\"\n    },\n    {\n      \"id\": 76,\n      \"name\": \"mysql2mysql\"\n    },\n    {\n      \"id\": 77,\n      \"name\": \"mysql-2-mysql\"\n    },\n    {\n      \"id\": 78,\n      \"name\": \"医院-用户数据\"\n    },\n    {\n      \"id\": 79,\n      \"name\": \"确权溯源验证\"\n    },\n    {\n      \"id\": 80,\n      \"name\": \"信号灯\"\n    },\n    {\n      \"id\": 81,\n      \"name\": \"监控节点\"\n    },\n    {\n      \"id\": 82,\n      \"name\": \"inspur\"\n    },\n    {\n      \"id\": 83,\n      \"name\": \"合规测试\"\n    },\n    {\n      \"id\": 85,\n      \"name\": \"供应商评分体系\"\n    },\n    {\n      \"id\": 87,\n      \"name\": \"课题3-3：模型水印嵌入和获取\"\n    },\n    {\n      \"id\": 88,\n      \"name\": \"111\"\n    },\n    {\n      \"id\": 89,\n      \"name\": \"datacomp流程复现\"\n    },\n    {\n      \"id\": 90,\n      \"name\": \"科技治超\"\n    },\n    {\n      \"id\": 91,\n      \"name\": \"ak111\"\n    },\n    {\n      \"id\": 92,\n      \"name\": \"交通数据读取与上报\"\n    },\n    {\n      \"id\": 93,\n      \"name\": \"dolma流程复现\"\n    },\n    {\n      \"id\": 94,\n      \"name\": \"datatrove流程复现\"\n    },\n    {\n      \"id\": 100,\n      \"name\": \"课题2.1 利用集合环签名算法解决医疗、能源、交通多组织之间投票决策问题\"\n    },\n    {\n      \"id\": 101,\n      \"name\": \"课题5 要素化全流程-发布数据\"\n    },\n    {\n      \"id\": 102,\n      \"name\": \"课题5 要素化全流程-发布算力\"\n    },\n    {\n      \"id\": 103,\n      \"name\": \"课题5 要素化全流程-发布模型\"\n    },\n    {\n      \"id\": 104,\n      \"name\": \"课题5 算力、模型、数据购买使用\"\n    },\n    {\n      \"id\": 105,\n      \"name\": \"区块链网络性能压测\"\n    },\n    {\n      \"id\": 107,\n      \"name\": \"供应商流程\"\n    },\n    {\n      \"id\": 108,\n      \"name\": \"cc-test_10000.jsonl\"\n    },\n    {\n      \"id\": 109,\n      \"name\": \"1000用户合约调用执行\"\n    },\n    {\n      \"id\": 112,\n      \"name\": \"cpabe_test\"\n    },\n    {\n      \"id\": 114,\n      \"name\": \"流程测试\"\n    },\n    {\n      \"id\": 116,\n      \"name\": \"课题一算子管理测试\"\n    },\n    {\n      \"id\": 118,\n      \"name\": \"要素化流通交易测试\"\n    },\n    {\n      \"id\": 119,\n      \"name\": \"datacomp图文对\"\n    },\n    {\n      \"id\": 120,\n      \"name\": \"测试图文对\"\n    },\n    {\n      \"id\": 121,\n      \"name\": \"cc数据图文对\"\n    },\n    {\n      \"id\": 123,\n      \"name\": \"大规模用户实现交易撮合\"\n    },\n    {\n      \"id\": 124,\n      \"name\": \"数据确权和写入数据库\"\n    },\n    {\n      \"id\": 131,\n      \"name\": \"CJK8S\"\n    },\n    {\n      \"id\": 132,\n      \"name\": \"测试节点可用性\"\n    },\n    {\n      \"id\": 133,\n      \"name\": \"聚合环签名\"\n    },\n    {\n      \"id\": 134,\n      \"name\": \"数据测试环境\"\n    },\n    {\n      \"id\": 137,\n      \"name\": \"部署测试数据、模型、算力\"\n    },\n    {\n      \"id\": 138,\n      \"name\": \"发布模型数据算力测试-00002\"\n    },\n    {\n      \"id\": 139,\n      \"name\": \"要素化预处理00003\"\n    },\n    {\n      \"id\": 140,\n      \"name\": \"要素化预处理00004\"\n    },\n    {\n      \"id\": 141,\n      \"name\": \"mm.sol合约全流程调用执行\"\n    },\n    {\n      \"id\": 142,\n      \"name\": \"合约datacollection部署测试验证\"\n    },\n    {\n      \"id\": 143,\n      \"name\": \"hashtree.sol全流程创建调用\"\n    },\n    {\n      \"id\": 144,\n      \"name\": \"assethashtree.sol合约部署测试\"\n    },\n    {\n      \"id\": 147,\n      \"name\": \"交通图片数据合规性过滤上架预处理\"\n    },\n    {\n      \"id\": 149,\n      \"name\": \"数据多方审批流程并上架预处理\"\n    },\n    {\n      \"id\": 150,\n      \"name\": \"测试数据、模型、算力部署和执行\"\n    },\n    {\n      \"id\": 151,\n      \"name\": \"区块链网络、数据、模型、算力部署和执行\"\n    },\n    {\n      \"id\": 153,\n      \"name\": \"发布要素化全流程\"\n    },\n    {\n      \"id\": 154,\n      \"name\": \"数据、模型、算力部署 002\"\n    },\n    {\n      \"id\": 155,\n      \"name\": \"数据、模型、算力部署003\"\n    },\n    {\n      \"id\": 157,\n      \"name\": \"测试确权溯源\"\n    },\n    {\n      \"id\": 158,\n      \"name\": \"状态通道-流程\"\n    },\n    {\n      \"id\": 160,\n      \"name\": \"测试1TB数据确权\"\n    },\n    {\n      \"id\": 161,\n      \"name\": \"功能闭环测试\"\n    },\n    {\n      \"id\": 163,\n      \"name\": \"数据确权和完整性验证\"\n    },\n    {\n      \"id\": 164,\n      \"name\": \"交易撮合全流程\"\n    },\n    {\n      \"id\": 165,\n      \"name\": \"上架要素化预处理全流程\"\n    },\n    {\n      \"id\": 167,\n      \"name\": \"A机构文件上链发布\"\n    },\n    {\n      \"id\": 168,\n      \"name\": \"全流程预处理上架\"\n    },\n    {\n      \"id\": 169,\n      \"name\": \"A机构文件上链测试\"\n    },\n    {\n      \"id\": 170,\n      \"name\": \"购买的数据、模型、算力使用验证和上架流通\"\n    },\n    {\n      \"id\": 172,\n      \"name\": \"DataComplianceManager.sol\"\n    },\n    {\n      \"id\": 173,\n      \"name\": \"可信计算合约验证\"\n    },\n    {\n      \"id\": 174,\n      \"name\": \"6.3 语义标识服务组件\"\n    },\n    {\n      \"id\": 175,\n      \"name\": \"6.5 分布式数据可信验证工具\"\n    },\n    {\n      \"id\": 176,\n      \"name\": \"6.7 分布式可信过程数据库原型\"\n    },\n    {\n      \"id\": 177,\n      \"name\": \"6.7 分布式可信过程数据库原型-确权\"\n    },\n    {\n      \"id\": 178,\n      \"name\": \"6.14 智能计算服务执行的验证工具\"\n    },\n    {\n      \"id\": 179,\n      \"name\": \"6.11 分布式智能模型可信执行保障方法\"\n    },\n    {\n      \"id\": 183,\n      \"name\": \"6.6 分布式数据确权工具\"\n    },\n    {\n      \"id\": 184,\n      \"name\": \"6.15 自主可控大规模分布式可信智能计算网络技术平台\"\n    },\n    {\n      \"id\": 186,\n      \"name\": \"演示视频流程\"\n    },\n    {\n      \"id\": 261,\n      \"name\": \"AI自动生成流程图\"\n    },\n    {\n      \"id\": 262,\n      \"name\": \"啊\"\n    },\n    {\n      \"id\": 279,\n      \"name\": \"test111\"\n    },\n    {\n      \"id\": 280,\n      \"name\": \"tsetse\"\n    },\n    {\n      \"id\": 281,\n      \"name\": \"test1\"\n    },\n    {\n      \"id\": 282,\n      \"name\": \"test3\"\n    },\n    {\n      \"id\": 294,\n      \"name\": \"数据提供方上传数据\"\n    },\n    {\n      \"id\": 298,\n      \"name\": \"可插拔\"\n    },\n    {\n      \"id\": 301,\n      \"name\": \"Falcon512算法链上交易\"\n    },\n    {\n      \"id\": 302,\n      \"name\": \"Dilithium2算法链上交易\"\n    },\n    {\n      \"id\": 332,\n      \"name\": \"用电量突增模型\"\n    },\n    {\n      \"id\": 339,\n      \"name\": \"基于大模型训练预测\"\n    }\n  ]\n}"
+            }
+          ]
         },
         {
           "name": "1.2 流程下的任务和连线",
@@ -110,7 +178,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/get_tasks/",
-            "description": "返回 task_list / edges / pipe_id / pipe_usr_graph。\n\n改参数前先看这个，能从 task_list 里拿到 config 原值和 prev_task_ids。\n注意 config 里是 \\r\\n 分隔的 key=value，回写时保持原格式。",
+            "description": "返回 task_list / edges / pipe_id / pipe_usr_graph。\n\n改参数前先看这个，能从 task_list 里拿到 config 原值和 prev_task_ids。\n注意 config 里是 \\r\\n 分隔的 key=value，回写时保持原格式。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| pipeline_id | int | 是 | 流程 id。不传 -> status=1 且 msg 是 int(None) 的 TypeError；传非数字 -> invalid literal；不存在 -> Pipeline matching query does not exist. |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功 |\n| task_list | array | 该流程下所有任务 |\n| task_list[].id | int | 任务 id |\n| task_list[].config | string | 任务参数原文，\\r\\n 分隔的 key=value |\n| task_list[].prev_task_ids / next_task_ids | string | DAG 上下游，逗号分隔 |\n| task_list[].proc_type | int | 处理器类型，回填 2.1 的 type |\n| task_list[].retry_count | int | 库值 0/1/5/-1，传给 2.1 前要翻成接口值 |\n| edges | array | 连线 |\n| pipe_id | int | 回显的流程 id |\n| pipe_usr_graph | string | 画布 JSON（ReactFlow cells），改它不影响后端 DAG |\n\n注意 config 里含数据库口令、OSS 密钥等明文，示例已脱敏。\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -124,7 +192,47 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "实测响应（流程 38 / 任务 134，口令已脱敏）",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/get_tasks/",
+                "description": "返回 task_list / edges / pipe_id / pipe_usr_graph。\n\n改参数前先看这个，能从 task_list 里拿到 config 原值和 prev_task_ids。\n注意 config 里是 \\r\\n 分隔的 key=value，回写时保持原格式。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| pipeline_id | int | 是 | 流程 id。不传 -> status=1 且 msg 是 int(None) 的 TypeError；传非数字 -> invalid literal；不存在 -> Pipeline matching query does not exist. |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功 |\n| task_list | array | 该流程下所有任务 |\n| task_list[].id | int | 任务 id |\n| task_list[].config | string | 任务参数原文，\\r\\n 分隔的 key=value |\n| task_list[].prev_task_ids / next_task_ids | string | DAG 上下游，逗号分隔 |\n| task_list[].proc_type | int | 处理器类型，回填 2.1 的 type |\n| task_list[].retry_count | int | 库值 0/1/5/-1，传给 2.1 前要翻成接口值 |\n| edges | array | 连线 |\n| pipe_id | int | 回显的流程 id |\n| pipe_usr_graph | string | 画布 JSON（ReactFlow cells），改它不影响后端 DAG |\n\n注意 config 里含数据库口令、OSS 密钥等明文，示例已脱敏。\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "pipeline_id",
+                      "value": "{{pipeline_id}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "流程 id，未知时先跑 1.1"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": 0,\n  \"task_list\": [\n    {\n      \"id\": 134,\n      \"pl_id\": 38,\n      \"pid\": 19,\n      \"next_task_ids\": \"\",\n      \"prev_task_ids\": \"\",\n      \"over_time\": 0,\n      \"name\": \"print_hello_world\",\n      \"config\": \"\\nxxx=\",\n      \"retry_count\": 0,\n      \"last_run_time\": \"202408081608\",\n      \"description\": \"ceshi\",\n      \"priority\": 9,\n      \"server_tag\": \"ALL\",\n      \"except_ret\": 0,\n      \"version_id\": 21,\n      \"pipeline_name\": \"ceshi\",\n      \"proc_name\": \"print\",\n      \"proc_type\": 1,\n      \"status\": 2\n    }\n  ],\n  \"edges\": [],\n  \"pipe_id\": 38,\n  \"pipe_usr_graph\": \"{\\n  \\\"cells\\\": [\\n    {\\n      \\\"position\\\": {\\n        \\\"x\\\": 80,\\n        \\\"y\\\": 44\\n      },\\n      \\\"size\\\": {\\n        \\\"width\\\": 200,\\n        \\\"height\\\": 60\\n      },\\n      \\\"attrs\\\": {\\n        \\\"text\\\": {\\n          \\\"fill\\\": \\\"rgba(255,255,255,1)\\\",\\n          \\\"fontFamily\\\": \\\"Arial\\\",\\n          \\\"text\\\": \\\"ceshi\\\",\\n          \\\"textWrap\\\": {\\n            \\\"width\\\": 130,\\n            \\\"height\\\": 60,\\n            \\\"ellipsis\\\": true\\n          }\\n        },\\n        \\\"body\\\": {\\n          \\\"stroke\\\": \\\"var(--el-color-success)\\\",\\n          \\\"rx\\\": 0,\\n          \\\"ry\\\": 0\\n        },\\n        \\\"image\\\": {\\n          \\\"y\\\": 5\\n        },\\n        \\\"title\\\": {\\n          \\\"text\\\": \\\"print_hello_world\\\",\\n          \\\"refY\\\": 5,\\n          \\\"fontSize\\\": 12,\\n          \\\"textWrap\\\": {\\n            \\\"width\\\": 150,\\n            \\\"height\\\": 110,\\n            \\\"ellipsis\\\": true\\n          }\\n        }\\n      },\\n      \\\"visible\\\": true,\\n      \\\"shape\\\": \\\"custom-rect\\\",\\n      \\\"ports\\\": {\\n        \\\"groups\\\": {\\n          \\\"top\\\": {\\n            \\\"position\\\": \\\"top\\\",\\n            \\\"attrs\\\": {\\n              \\\"circle\\\": {\\n                \\\"r\\\": 4,\\n                \\\"magnet\\\": true,\\n                \\\"stroke\\\": \\\"#5F95FF\\\",\\n                \\\"strokeWidth\\\": 1,\\n                \\\"fill\\\": \\\"#fff\\\",\\n                \\\"style\\\": {\\n                  \\\"visibility\\\": \\\"hidden\\\"\\n                }\\n              }\\n            }\\n          },\\n          \\\"right\\\": {\\n            \\\"position\\\": \\\"right\\\",\\n            \\\"attrs\\\": {\\n              \\\"circle\\\": {\\n                \\\"r\\\": 4,\\n                \\\"magnet\\\": true,\\n                \\\"stroke\\\": \\\"#5F95FF\\\",\\n                \\\"strokeWidth\\\": 1,\\n                \\\"fill\\\": \\\"#fff\\\",\\n                \\\"style\\\": {\\n                  \\\"visibility\\\": \\\"hidden\\\"\\n                }\\n              }\\n            }\\n          },\\n          \\\"bottom\\\": {\\n            \\\"position\\\": \\\"bottom\\\",\\n            \\\"attrs\\\": {\\n              \\\"circle\\\": {\\n                \\\"r\\\": 4,\\n                \\\"magnet\\\": true,\\n                \\\"stroke\\\": \\\"#5F95FF\\\",\\n                \\\"strokeWidth\\\": 1,\\n                \\\"fill\\\": \\\"#fff\\\",\\n                \\\"style\\\": {\\n                  \\\"visibility\\\": \\\"hidden\\\"\\n                }\\n              }\\n            }\\n          },\\n          \\\"left\\\": {\\n            \\\"position\\\": \\\"left\\\",\\n            \\\"attrs\\\": {\\n              \\\"circle\\\": {\\n                \\\"r\\\": 4,\\n                \\\"magnet\\\": true,\\n                \\\"stroke\\\": \\\"#5F95FF\\\",\\n                \\\"strokeWidth\\\": 1,\\n                \\\"fill\\\": \\\"#fff\\\",\\n                \\\"style\\\": {\\n                  \\\"visibility\\\": \\\"hidden\\\"\\n                }\\n              }\\n            }\\n          }\\n        },\\n        \\\"items\\\": [\\n          {\\n            \\\"id\\\": \\\"port-top\\\",\\n            \\\"group\\\": \\\"top\\\"\\n          },\\n          {\\n            \\\"id\\\": \\\"port-right\\\",\\n            \\\"group\\\": \\\"right\\\"\\n          },\\n          {\\n            \\\"id\\\": \\\"port-bottom\\\",\\n            \\\"group\\\": \\\"bottom\\\"\\n          },\\n          {\\n            \\\"id\\\": \\\"port-left\\\",\\n            \\\"group\\\": \\\"left\\\"\\n          }\\n        ]\\n      },\\n      \\\"id\\\": \\\"134\\\",\\n      \\\"_order\\\": 0,\\n      \\\"zIndex\\\": 2\\n    }\\n  ]\\n}\"\n}"
+            }
+          ]
         },
         {
           "name": "1.3 任务详情",
@@ -139,9 +247,37 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/get_task_detail/{{task_id}}/",
-            "description": "注意是 GET，task_id 在路径里，不是查询参数。\n\n返回里关键的两处：\n  task      —— 库里原始值，task.config 带 \\r\\n，回写要用这个\n  顶层 config —— 渲染后的展示串（\\n），只用来给人看\n\ntask 里没有 type，处理器类型字段叫 proc_type —— 这正是 2.1 要回填给 type 的值。\nretry_count 这里返回的是库里的值（0/1/5/-1），传给 2.1 之前要翻成接口值（1/2/3/4）。"
+            "description": "注意是 GET，task_id 在路径里，不是查询参数。\n\n返回里关键的两处：\n  task      —— 库里原始值，task.config 带 \\r\\n，回写要用这个\n  顶层 config —— 渲染后的展示串（\\n），只用来给人看\n\ntask 里没有 type，处理器类型字段叫 proc_type —— 这正是 2.1 要回填给 type 的值。\nretry_count 这里返回的是库里的值（0/1/5/-1），传给 2.1 之前要翻成接口值（1/2/3/4）。\n━━ 参数 ━━\ntask_id 在 URL 路径里，无 body。GET 请求。\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功 |\n| task | object | 库里原始值，config 带 \\r\\n，回写 2.1 用这一份 |\n| config | string | 渲染后的展示串（\\n），只给人和前端看，别回写 |\n| pipeline | object | 所属流程，含 owner_id / project_id / enable / life_cycle 等 |\n| processor 等 | object | 处理器信息 |\n\ntask 里没有 type 字段，处理器类型叫 proc_type —— 这正是 2.1 要回填给 type 的值。\ntask_id 不存在时返回 500 HTML（DoesNotExist 页面），不是 JSON。\n"
           },
-          "response": []
+          "response": [
+            {
+              "name": "实测响应（task 134，口令已脱敏）",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/get_task_detail/{{task_id}}/",
+                "description": "注意是 GET，task_id 在路径里，不是查询参数。\n\n返回里关键的两处：\n  task      —— 库里原始值，task.config 带 \\r\\n，回写要用这个\n  顶层 config —— 渲染后的展示串（\\n），只用来给人看\n\ntask 里没有 type，处理器类型字段叫 proc_type —— 这正是 2.1 要回填给 type 的值。\nretry_count 这里返回的是库里的值（0/1/5/-1），传给 2.1 之前要翻成接口值（1/2/3/4）。\n━━ 参数 ━━\ntask_id 在 URL 路径里，无 body。GET 请求。\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功 |\n| task | object | 库里原始值，config 带 \\r\\n，回写 2.1 用这一份 |\n| config | string | 渲染后的展示串（\\n），只给人和前端看，别回写 |\n| pipeline | object | 所属流程，含 owner_id / project_id / enable / life_cycle 等 |\n| processor 等 | object | 处理器信息 |\n\ntask 里没有 type 字段，处理器类型叫 proc_type —— 这正是 2.1 要回填给 type 的值。\ntask_id 不存在时返回 500 HTML（DoesNotExist 页面），不是 JSON。\n"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": 0,\n  \"task\": {\n    \"id\": 134,\n    \"pl_id\": 38,\n    \"pid\": 19,\n    \"next_task_ids\": \",\",\n    \"prev_task_ids\": \",\",\n    \"over_time\": 0,\n    \"name\": \"print_hello_world\",\n    \"config\": \"\\nxxx=\",\n    \"retry_count\": 0,\n    \"last_run_time\": \"202408081608\",\n    \"description\": \"ceshi\",\n    \"priority\": 9,\n    \"server_tag\": \"ALL\",\n    \"except_ret\": 0,\n    \"version_id\": 21,\n    \"pipeline_name\": \"ceshi\",\n    \"proc_name\": \"print\",\n    \"proc_type\": 1\n  },\n  \"config\": \"xxx=\",\n  \"pipeline\": {\n    \"id\": 38,\n    \"name\": \"ceshi\",\n    \"owner_id\": 1,\n    \"ct_time\": \"\",\n    \"update_time\": \"2024-08-08 16:07:58\",\n    \"enable\": 0,\n    \"type\": 0,\n    \"email_to\": \"\",\n    \"description\": \"ceshi\",\n    \"sms_to\": \"\",\n    \"tag\": \"\",\n    \"life_cycle\": \"20240815\",\n    \"monitor_way\": 1,\n    \"private\": 1,\n    \"project_id\": 2,\n    \"project_name\": \"测试\",\n    \"owner_list\": [\n      {\n        \"id\": 1,\n        \"username\": \"shardora\"\n      }\n    ],\n    \"principal_name_list\": \"shardora\",\n    \"principal_id_list\": \"1\"\n  },\n  \"processor\": {\n    \"id\": 19,\n    \"name\": \"print\",\n    \"type\": 1,\n    \"template\": \"\",\n    \"update_time\": \"2024-08-13 10:51:08\",\n    \"description\": \"\",\n    \"config\": \"xxx=H0\",\n    \"input_config\": \"\",\n    \"output_config\": \"\",\n    \"owner_id\": 1,\n    \"private\": 1,\n    \"tag\": \"\",\n    \"project_id\": -1,\n    \"tpl_files\": \"\",\n    \"user_list\": \"\",\n    \"userid_list\": \"\"\n  },\n  \"rely_tasks\": {},\n  \"server_tag\": \"ALL\",\n  \"cmd\": \"curl \\\"http://47.111.109.8/processor/upload_processor/\\\" -F \\\"user=shardora\\\" -F \\\"pass=<font color=red>${password}</font>\\\" -F \\\"proc_name=print\\\" -F \\\"package=@<font color=red>${package_name}</font>\\\" -F \\\"version_name=<font color=red>${version_name}</font>\\\" -F \\\"description=<font color=red>${description}</font>\\\"\",\n  \"is_super\": true,\n  \"version_list\": [\n    {\n      \"id\": 25,\n      \"upload_time\": \"2024-08-13 10:51:33\",\n      \"upload_user_id\": 1,\n      \"upload_user_name\": \"shardora\",\n      \"version\": \"4.0\",\n      \"status\": 0,\n      \"description\": \"desc\",\n      \"update_time\": \"2024-08-13 10:51:33\",\n      \"name\": \"4.0\",\n      \"type\": 1,\n      \"git_url\": null,\n      \"config\": \"xxx=H0\",\n      \"template\": \"\"\n    },\n    {\n      \"id\": 24,\n      \"upload_time\": \"2024-08-09 14:14:54\",\n      \"upload_user_id\": 1,\n      \"upload_user_name\": \"shardora\",\n      \"version\": \"3\",\n      \"status\": 0,\n      \"description\": \"\",\n      \"update_time\": \"2024-08-09 14:14:54\",\n      \"name\": \"3\",\n      \"type\": 1,\n      \"git_url\": null,\n      \"config\": \"xxx=H0\",\n      \"template\": \"\"\n    },\n    {\n      \"id\": 23,\n      \"upload_time\": \"2024-08-08 16:11:45\",\n      \"upload_user_id\": 1,\n      \"upload_user_name\": \"shardora\",\n      \"version\": \"2.0\",\n      \"status\": 0,\n      \"description\": \"\",\n      \"update_time\": \"2024-08-08 16:11:45\",\n      \"name\": \"2.0\",\n      \"type\": 1,\n      \"git_url\": null,\n      \"config\": \"xxx=H0\",\n      \"template\": \"\"\n    },\n    {\n      \"id\": 21,\n      \"upload_time\": \"2024-08-08 14:06:56\",\n      \"upload_user_id\": 1,\n      \"upload_user_name\": \"shardora\",\n      \"version\": \"1.0\",\n      \"status\": 0,\n      \"description\": \"\",\n      \"update_time\": \"2024-08-08 14:06:56\",\n      \"name\": \"1.0\",\n      \"type\": 1,\n      \"git_url\": null,\n      \"config\": \"xxx=H0\",\n      \"template\": \"\"\n    }\n  ]\n}"
+            }
+          ]
         }
       ]
     },
@@ -162,7 +298,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/update_task/{{task_id}}/",
-            "description": "有真实副作用：直接写库。\n\n后台是 TaskForm(request.POST, instance=task) 的全量表单，缺字段会被判为无效，\n所以这里所有字段都列出来了——不想改的字段要保持当前值，不是留空。\n\n四个容易踩的点：\n1. retry_count 要传接口值：1=不重试 2=重试1次 3=重试5次 4=一直重试。\n   传库里的 5 会报 Select a valid choice. 5 is not one of the available choices.，服务端再映射回 0/1/5/-1。\n2. 字段名是 type，但值取自 proc_type（1=python 2=spark 3=oozie 4=odps 5=shell 6=docker 7=clickhouse 8=v100）。\n3. config 里 \\n 和 \\r\\n 都能收，存进去统一是 \\r\\n。\n4. 请求体必须是表单编码。发 JSON 时所有字段都取到 None，紧接着 int(None) 直接 500。\n\n返回 {\"status\":0,\"msg\":\"OK\"} 即成功；status=1 时 msg 是表单校验错误文本。\n下面这份默认值抄自 pipeline 46 / task 142（helloworld），可直接发送。",
+            "description": "有真实副作用：直接写库。\n\n后台是 TaskForm(request.POST, instance=task) 的全量表单，缺字段会被判为无效，\n所以这里所有字段都列出来了——不想改的字段要保持当前值，不是留空。\n\n四个容易踩的点：\n1. retry_count 要传接口值：1=不重试 2=重试1次 3=重试5次 4=一直重试。\n   传库里的 5 会报 Select a valid choice. 5 is not one of the available choices.，服务端再映射回 0/1/5/-1。\n2. 字段名是 type，但值取自 proc_type（1=python 2=spark 3=oozie 4=odps 5=shell 6=docker 7=clickhouse 8=v100）。\n3. config 里 \\n 和 \\r\\n 都能收，存进去统一是 \\r\\n。\n4. 请求体必须是表单编码。发 JSON 时所有字段都取到 None，紧接着 int(None) 直接 500。\n\n返回 {\"status\":0,\"msg\":\"OK\"} 即成功；status=1 时 msg 是表单校验错误文本。\n下面这份默认值抄自 pipeline 46 / task 142（helloworld），可直接发送。\n━━ 参数 ━━（全量表单，缺字段会被判无效，不想改的要保持当前值）\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| name | string | 是 | 任务名 |\n| config | string | 是 | 任务参数，key=value 换行分隔（\\n 或 \\r\\n 都收，存进去统一 \\r\\n） |\n| template | string | 是 | 脚本模板，可空串 |\n| prev_task_ids | string | 是 | 前置任务 id，逗号分隔；决定 DAG 依赖 |\n| description | string | 是 | 描述，可空串 |\n| retry_count | int | 是 | 接口值！1=不重试 2=重试1次 3=重试5次 4=一直重试（库里存 0/1/5/-1） |\n| over_time | int | 是 | 超时秒数 |\n| priority | int | 是 | 6=P4 7=P3 8=P2 9=P1 10=P0 |\n| server_tag | string | 是 | 资源标签，ALL=不限 |\n| type | int | 是 | 处理器类型，值取自 task.proc_type（6=docker） |\n| version_id | int | 是 | 绑定的处理器版本，0=当前 |\n| use_processor | int | 是 | 是否使用处理器包 |\n\ntask_id 在 URL 路径里。请求体必须表单编码。\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功为 \"OK\"；失败为表单校验错误文本，如 Select a valid choice. 5 is not one of the available choices. |\n\n路径里的 task_id 不存在时不是 JSON —— 直接 500 HTML（DoesNotExist 页面）。\n\n━━ 错误示例 ━━\n{\"status\": 1, \"msg\": \"successors task is not exists!\"} 之类不会出现在这里；\n本接口的失败一律是表单校验文本，或 500。\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -253,7 +389,124 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "成功",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/update_task/{{task_id}}/",
+                "description": "有真实副作用：直接写库。\n\n后台是 TaskForm(request.POST, instance=task) 的全量表单，缺字段会被判为无效，\n所以这里所有字段都列出来了——不想改的字段要保持当前值，不是留空。\n\n四个容易踩的点：\n1. retry_count 要传接口值：1=不重试 2=重试1次 3=重试5次 4=一直重试。\n   传库里的 5 会报 Select a valid choice. 5 is not one of the available choices.，服务端再映射回 0/1/5/-1。\n2. 字段名是 type，但值取自 proc_type（1=python 2=spark 3=oozie 4=odps 5=shell 6=docker 7=clickhouse 8=v100）。\n3. config 里 \\n 和 \\r\\n 都能收，存进去统一是 \\r\\n。\n4. 请求体必须是表单编码。发 JSON 时所有字段都取到 None，紧接着 int(None) 直接 500。\n\n返回 {\"status\":0,\"msg\":\"OK\"} 即成功；status=1 时 msg 是表单校验错误文本。\n下面这份默认值抄自 pipeline 46 / task 142（helloworld），可直接发送。\n━━ 参数 ━━（全量表单，缺字段会被判无效，不想改的要保持当前值）\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| name | string | 是 | 任务名 |\n| config | string | 是 | 任务参数，key=value 换行分隔（\\n 或 \\r\\n 都收，存进去统一 \\r\\n） |\n| template | string | 是 | 脚本模板，可空串 |\n| prev_task_ids | string | 是 | 前置任务 id，逗号分隔；决定 DAG 依赖 |\n| description | string | 是 | 描述，可空串 |\n| retry_count | int | 是 | 接口值！1=不重试 2=重试1次 3=重试5次 4=一直重试（库里存 0/1/5/-1） |\n| over_time | int | 是 | 超时秒数 |\n| priority | int | 是 | 6=P4 7=P3 8=P2 9=P1 10=P0 |\n| server_tag | string | 是 | 资源标签，ALL=不限 |\n| type | int | 是 | 处理器类型，值取自 task.proc_type（6=docker） |\n| version_id | int | 是 | 绑定的处理器版本，0=当前 |\n| use_processor | int | 是 | 是否使用处理器包 |\n\ntask_id 在 URL 路径里。请求体必须表单编码。\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功为 \"OK\"；失败为表单校验错误文本，如 Select a valid choice. 5 is not one of the available choices. |\n\n路径里的 task_id 不存在时不是 JSON —— 直接 500 HTML（DoesNotExist 页面）。\n\n━━ 错误示例 ━━\n{\"status\": 1, \"msg\": \"successors task is not exists!\"} 之类不会出现在这里；\n本接口的失败一律是表单校验文本，或 500。\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "name",
+                      "value": "helloworld",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "必填，任务名"
+                    },
+                    {
+                      "key": "config",
+                      "value": "pod_name=helloworld-1723\nimage_name=hello-world",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "任务参数，key=value 换行分隔。改参数就是改这里"
+                    },
+                    {
+                      "key": "template",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "脚本模板，可空"
+                    },
+                    {
+                      "key": "prev_task_ids",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "前置任务 id，逗号分隔，决定 DAG 依赖"
+                    },
+                    {
+                      "key": "description",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "描述，可空"
+                    },
+                    {
+                      "key": "retry_count",
+                      "value": "3",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "接口值！1=不重试 2=重试1次 3=重试5次 4=一直重试（库里存的是 0/1/5/-1）"
+                    },
+                    {
+                      "key": "over_time",
+                      "value": "30",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "超时秒数"
+                    },
+                    {
+                      "key": "priority",
+                      "value": "6",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "6=P4 7=P3 8=P2 9=P1 10=P0"
+                    },
+                    {
+                      "key": "server_tag",
+                      "value": "ALL",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "资源标签，ALL 表示不限"
+                    },
+                    {
+                      "key": "type",
+                      "value": "6",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "处理器类型，取自 task.proc_type：6=docker"
+                    },
+                    {
+                      "key": "version_id",
+                      "value": "27",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "绑定的处理器版本，0=当前版本"
+                    },
+                    {
+                      "key": "use_processor",
+                      "value": "1",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "是否使用处理器包"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": 0,\n  \"msg\": \"OK\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -274,7 +527,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/run_one_task/",
-            "description": "有真实副作用：会往 k8s 提交 job，不是空跑。\n\ntask_id_list 逗号分隔可一次跑多个，例如 142,143；要么全成功要么全失败。\nrun_time 是 12 位 YYYYMMDDHHMM（精确到分钟），这里用 {{run_time_now}}，\n由集合前置脚本按当前时间算——平台记录的 run_time 就是到分钟的，形如 202609241438。\n服务端也支持单值 / 逗号多值 / 区间 2026092410-2026092510，以及天级和小时级后缀。\n\n返回 {\"status\":0,\"msg\":\"OK\"}。提交完用 4.1 轮询状态。",
+            "description": "有真实副作用：会往 k8s 提交 job，不是空跑。\n\ntask_id_list 逗号分隔可一次跑多个，例如 142,143；要么全成功要么全失败。\nrun_time 是 12 位 YYYYMMDDHHMM（精确到分钟），这里用 {{run_time_now}}，\n由集合前置脚本按当前时间算——平台记录的 run_time 就是到分钟的，形如 202609241438。\n服务端也支持单值 / 逗号多值 / 区间 2026092410-2026092510，以及天级和小时级后缀。\n\n返回 {\"status\":0,\"msg\":\"OK\"}。提交完用 4.1 轮询状态。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| task_id_list | string | 是 | 逗号分隔，可多个（如 142,143）；要么全成功要么全失败 |\n| run_time | string | 是 | 12 位 YYYYMMDDHHMM。也支持 8 位(天)/10 位(小时)/区间 a-b |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK,<任务id列表>\"；失败见下 |\n\n━━ 失败示例（实测，均为 200）━━\n| 场景 | 返回 |\n|---|---|\n| 任务不存在 | {\"status\": 1, \"msg\": \"succsessors task is not exists!\"} |\n| run_time 非法 | {\"status\": 1, \"msg\": \"<h>执行时间[...]错误: </h><br>...\"} |\n| 没权限 | {\"status\": 1, \"msg\": \"对不起，你没有权限启动这个流程的任务！\"} |\n| 超过提交上限 | {\"status\": 1, \"msg\": \"执行任务数超过了每次提交限制数[2500]\"} |\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -295,7 +548,54 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "成功",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/run_one_task/",
+                "description": "有真实副作用：会往 k8s 提交 job，不是空跑。\n\ntask_id_list 逗号分隔可一次跑多个，例如 142,143；要么全成功要么全失败。\nrun_time 是 12 位 YYYYMMDDHHMM（精确到分钟），这里用 {{run_time_now}}，\n由集合前置脚本按当前时间算——平台记录的 run_time 就是到分钟的，形如 202609241438。\n服务端也支持单值 / 逗号多值 / 区间 2026092410-2026092510，以及天级和小时级后缀。\n\n返回 {\"status\":0,\"msg\":\"OK\"}。提交完用 4.1 轮询状态。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| task_id_list | string | 是 | 逗号分隔，可多个（如 142,143）；要么全成功要么全失败 |\n| run_time | string | 是 | 12 位 YYYYMMDDHHMM。也支持 8 位(天)/10 位(小时)/区间 a-b |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK,<任务id列表>\"；失败见下 |\n\n━━ 失败示例（实测，均为 200）━━\n| 场景 | 返回 |\n|---|---|\n| 任务不存在 | {\"status\": 1, \"msg\": \"succsessors task is not exists!\"} |\n| run_time 非法 | {\"status\": 1, \"msg\": \"<h>执行时间[...]错误: </h><br>...\"} |\n| 没权限 | {\"status\": 1, \"msg\": \"对不起，你没有权限启动这个流程的任务！\"} |\n| 超过提交上限 | {\"status\": 1, \"msg\": \"执行任务数超过了每次提交限制数[2500]\"} |\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "task_id_list",
+                      "value": "{{task_id}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "逗号分隔，可多个"
+                    },
+                    {
+                      "key": "run_time",
+                      "value": "{{run_time_now}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "12 位 YYYYMMDDHHMM，默认当前分钟"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": 0,\n  \"msg\": \"OK,142\"\n}"
+            }
+          ]
         },
         {
           "name": "3.2 执行整条流程",
@@ -310,7 +610,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/run_one_pipeline/",
-            "description": "有真实副作用：会把流程里所有任务按 DAG 顺序提交。\n\n参数是 pl_id_list（不是 task_id_list），同样支持逗号分隔多个流程。",
+            "description": "有真实副作用：会把流程里所有任务按 DAG 顺序提交。\n\n参数是 pl_id_list（不是 task_id_list），同样支持逗号分隔多个流程。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| pl_id_list | string | 是 | 流程 id，逗号分隔可多个（注意不是 task_id_list） |\n| run_time | string | 是 | 12 位 YYYYMMDDHHMM |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK\"；失败为文本 |\n\n━━ 失败示例（实测）━━\n{\"status\": 1, \"msg\": \"<h>执行时间[202609281430]错误: </h><br><h>1. 长度必须是8，10，12.</h><br><h>2. 不能超过当前时间!.</h><br><h>3. 执行任务数不能超过[2500]</h><br>\"}\n{\"status\": 1, \"msg\": \"this owner has no auth to run pipeline\"}\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -331,7 +631,54 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "成功",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/run_one_pipeline/",
+                "description": "有真实副作用：会把流程里所有任务按 DAG 顺序提交。\n\n参数是 pl_id_list（不是 task_id_list），同样支持逗号分隔多个流程。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| pl_id_list | string | 是 | 流程 id，逗号分隔可多个（注意不是 task_id_list） |\n| run_time | string | 是 | 12 位 YYYYMMDDHHMM |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK\"；失败为文本 |\n\n━━ 失败示例（实测）━━\n{\"status\": 1, \"msg\": \"<h>执行时间[202609281430]错误: </h><br><h>1. 长度必须是8，10，12.</h><br><h>2. 不能超过当前时间!.</h><br><h>3. 执行任务数不能超过[2500]</h><br>\"}\n{\"status\": 1, \"msg\": \"this owner has no auth to run pipeline\"}\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "pl_id_list",
+                      "value": "{{pipeline_id}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "流程 id，逗号分隔可多个"
+                    },
+                    {
+                      "key": "run_time",
+                      "value": "{{run_time_now}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "12 位 YYYYMMDDHHMM，默认当前分钟"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": 0,\n  \"msg\": \"OK\"\n}"
+            }
+          ]
         },
         {
           "name": "3.3 执行任务及其所有下游",
@@ -346,7 +693,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/run_task_with_all_successors/",
-            "description": "有真实副作用：除了指定任务，还会把它所有下游任务一起提交。\n\n适合「从中间某个节点重跑」的场景，注意下游范围可能比预期大。",
+            "description": "有真实副作用：除了指定任务，还会把它所有下游任务一起提交。\n\n适合「从中间某个节点重跑」的场景，注意下游范围可能比预期大。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| task_id_list | string | 是 | 逗号分隔（字段名叫 list，实际单个 id 为主） |\n| run_time | string | 是 | 12 位 YYYYMMDDHHMM，必须解析成唯一一个时间点 |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK\"；失败为文本 |\n\n━━ 失败示例（实测）━━\n{\"status\": 1, \"msg\": \"task is not exists!\"}\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -367,7 +714,54 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "成功",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/run_task_with_all_successors/",
+                "description": "有真实副作用：除了指定任务，还会把它所有下游任务一起提交。\n\n适合「从中间某个节点重跑」的场景，注意下游范围可能比预期大。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| task_id_list | string | 是 | 逗号分隔（字段名叫 list，实际单个 id 为主） |\n| run_time | string | 是 | 12 位 YYYYMMDDHHMM，必须解析成唯一一个时间点 |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK\"；失败为文本 |\n\n━━ 失败示例（实测）━━\n{\"status\": 1, \"msg\": \"task is not exists!\"}\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "task_id_list",
+                      "value": "{{task_id}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "逗号分隔，可多个"
+                    },
+                    {
+                      "key": "run_time",
+                      "value": "{{run_time_now}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "12 位 YYYYMMDDHHMM，默认当前分钟"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": 0,\n  \"msg\": \"OK\"\n}"
+            }
+          ]
         },
         {
           "name": "3.4 批量执行（每个任务各自的 run_time）",
@@ -382,7 +776,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/run_some_task/",
-            "description": "有真实副作用。\n\ntasklist 和 runtimelist 按下标一一对应，逐个提交，可以让不同任务落在不同 run_time 上。\n两个列表长度必须一致：tasklist=142,143&runtimelist=202609240000,202609250000。",
+            "description": "有真实副作用。\n\ntasklist 和 runtimelist 按下标一一对应，逐个提交，可以让不同任务落在不同 run_time 上。\n两个列表长度必须一致：tasklist=142,143&runtimelist=202609240000,202609250000。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| tasklist | string | 是 | 逗号分隔的任务 id |\n| runtimelist | string | 是 | 逗号分隔的 run_time，与 tasklist 按下标一一对应，长度必须一致 |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK\"；失败为文本 |\n\n━━ 失败示例（实测）━━\n{\"status\": 1, \"msg\": \"task is not exists!\"}\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -403,7 +797,54 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "成功",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/run_some_task/",
+                "description": "有真实副作用。\n\ntasklist 和 runtimelist 按下标一一对应，逐个提交，可以让不同任务落在不同 run_time 上。\n两个列表长度必须一致：tasklist=142,143&runtimelist=202609240000,202609250000。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| tasklist | string | 是 | 逗号分隔的任务 id |\n| runtimelist | string | 是 | 逗号分隔的 run_time，与 tasklist 按下标一一对应，长度必须一致 |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK\"；失败为文本 |\n\n━━ 失败示例（实测）━━\n{\"status\": 1, \"msg\": \"task is not exists!\"}\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "tasklist",
+                      "value": "{{task_id}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "逗号分隔的任务 id"
+                    },
+                    {
+                      "key": "runtimelist",
+                      "value": "{{run_time_now}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "逗号分隔的 run_time，与 tasklist 按下标对应"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": 0,\n  \"msg\": \"OK\"\n}"
+            }
+          ]
         },
         {
           "name": "3.5 停止任务",
@@ -418,7 +859,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/stop_task/",
-            "description": "有真实副作用：会中断正在跑的作业，状态置为「被用户停止」(6)。\n\n这里 run_time 用 {{run_time}}（历史那次运行），要停哪次就填哪次的 run_time。",
+            "description": "有真实副作用：会中断正在跑的作业，状态置为「被用户停止」(6)。\n\n这里 run_time 用 {{run_time}}（历史那次运行），要停哪次就填哪次的 run_time。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| task_id | string | 是 | 单个任务 id，不是列表 |\n| run_time | string | 是 | 要停止的那次运行的 run_time |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK\"；失败为文本 |\n\n━━ 失败示例（实测）━━\n{\"status\": 1, \"msg\": \"task is not exists!\"}\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -439,7 +880,54 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "成功",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/stop_task/",
+                "description": "有真实副作用：会中断正在跑的作业，状态置为「被用户停止」(6)。\n\n这里 run_time 用 {{run_time}}（历史那次运行），要停哪次就填哪次的 run_time。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| task_id | string | 是 | 单个任务 id，不是列表 |\n| run_time | string | 是 | 要停止的那次运行的 run_time |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK\"；失败为文本 |\n\n━━ 失败示例（实测）━━\n{\"status\": 1, \"msg\": \"task is not exists!\"}\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "task_id",
+                      "value": "{{task_id}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "单个任务 id，不是列表"
+                    },
+                    {
+                      "key": "run_time",
+                      "value": "{{run_time}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "要停止的那次运行的 run_time"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": 0,\n  \"msg\": \"OK\"\n}"
+            }
+          ]
         },
         {
           "name": "3.6 手动置为成功",
@@ -454,7 +942,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/history/set_task_success/",
-            "description": "有真实副作用：绕过实际执行，直接把某次运行标记成成功。\n\n一般用于卡住的下游依赖解锁。路径带 history 前缀，别写成 /pipeline/set_task_success/。",
+            "description": "有真实副作用：绕过实际执行，直接把某次运行标记成成功。\n\n一般用于卡住的下游依赖解锁。路径带 history 前缀，别写成 /pipeline/set_task_success/。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| task_id | string | 是 | 单个任务 id |\n| run_time | string | 是 | 要置为成功的那次运行的 run_time |\n\n路径：/api/pipeline/history/set_task_success/，别丢 history 前缀。\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK\"；失败为文本 |\n\n━━ 失败示例（实测）━━\n{\"status\": 1, \"msg\": \"Task matching query does not exist.\"}\n{\"status\": 1, \"msg\": \"对不起，你没有权限修改这个流程的任务！\"}\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -475,7 +963,54 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "成功",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/history/set_task_success/",
+                "description": "有真实副作用：绕过实际执行，直接把某次运行标记成成功。\n\n一般用于卡住的下游依赖解锁。路径带 history 前缀，别写成 /pipeline/set_task_success/。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| task_id | string | 是 | 单个任务 id |\n| run_time | string | 是 | 要置为成功的那次运行的 run_time |\n\n路径：/api/pipeline/history/set_task_success/，别丢 history 前缀。\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| status | int | 0=成功，1=失败 |\n| msg | string | 成功 \"OK\"；失败为文本 |\n\n━━ 失败示例（实测）━━\n{\"status\": 1, \"msg\": \"Task matching query does not exist.\"}\n{\"status\": 1, \"msg\": \"对不起，你没有权限修改这个流程的任务！\"}\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "task_id",
+                      "value": "{{task_id}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "单个任务 id"
+                    },
+                    {
+                      "key": "run_time",
+                      "value": "{{run_time}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "要置为成功的那次运行的 run_time"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": 0,\n  \"msg\": \"OK\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -496,7 +1031,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/get_graph/",
-            "description": "查执行状态的主力接口：给一个 run_time，返回这次运行里每个节点的状态。\n\n参数名是 pipe_id，不是 pipeline_id，写错了会静默取到 None。\n\n状态码（horae/tools_util.py TaskState）：\n  0 等待中 / 1 运行中 / 2 执行成功 / 3 执行失败 / 4 已超时\n  5 已就绪(等待下发) / 6 被用户停止 / 7 前置任务失败\n终态是 2/3/4/6/7；整条流程成功 = 所有节点 status==2。\n\n响应脚本会把状态翻成中文打到 Console，并判断是否已到终态。\n没到终态就等几秒再点一次 Send —— 这就是轮询。",
+            "description": "查执行状态的主力接口：给一个 run_time，返回这次运行里每个节点的状态。\n\n参数名是 pipe_id，不是 pipeline_id，写错了会静默取到 None。\n\n状态码（horae/tools_util.py TaskState）：\n  0 等待中 / 1 运行中 / 2 执行成功 / 3 执行失败 / 4 已超时\n  5 已就绪(等待下发) / 6 被用户停止 / 7 前置任务失败\n终态是 2/3/4/6/7；整条流程成功 = 所有节点 status==2。\n\n响应脚本会把状态翻成中文打到 Console，并判断是否已到终态。\n没到终态就等几秒再点一次 Send —— 这就是轮询。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| pipe_id | int | 是 | 流程 id。参数名是 pipe_id，不是 pipeline_id；写错会静默取到 None |\n| run_time | string | 是 | 要查的那次运行，12 位 YYYYMMDDHHMM |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| res | array | 该次运行里每个节点的状态 |\n| res[].task_id | int | 任务 id |\n| res[].status | int | 0等待中 1运行中 2成功 3失败 4超时 5已就绪 6被用户停止 7前置失败 |\n| res[].schedule_id | int | 调 5.1 / 5.2 取日志用 |\n| res[].begin_time | string | 开始时间 |\n| res[].retried_count | int | 重试次数 |\n| res[].manager_list | array | 触发者 |\n| res[].un_succ_run_tasks | array | 未成功的上游任务 |\n\nrun_time 查不到数据时返回 {\"res\": []}，不是错误。\n缺 run_time 时 msg 是 \"'runhistory_list'\"（服务端 KeyError 的裸文本）。\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -517,7 +1052,54 @@
               ]
             }
           },
-          "response": [],
+          "response": [
+            {
+              "name": "实测响应（流程 38 / run_time 202609281430）",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/get_graph/",
+                "description": "查执行状态的主力接口：给一个 run_time，返回这次运行里每个节点的状态。\n\n参数名是 pipe_id，不是 pipeline_id，写错了会静默取到 None。\n\n状态码（horae/tools_util.py TaskState）：\n  0 等待中 / 1 运行中 / 2 执行成功 / 3 执行失败 / 4 已超时\n  5 已就绪(等待下发) / 6 被用户停止 / 7 前置任务失败\n终态是 2/3/4/6/7；整条流程成功 = 所有节点 status==2。\n\n响应脚本会把状态翻成中文打到 Console，并判断是否已到终态。\n没到终态就等几秒再点一次 Send —— 这就是轮询。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| pipe_id | int | 是 | 流程 id。参数名是 pipe_id，不是 pipeline_id；写错会静默取到 None |\n| run_time | string | 是 | 要查的那次运行，12 位 YYYYMMDDHHMM |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| res | array | 该次运行里每个节点的状态 |\n| res[].task_id | int | 任务 id |\n| res[].status | int | 0等待中 1运行中 2成功 3失败 4超时 5已就绪 6被用户停止 7前置失败 |\n| res[].schedule_id | int | 调 5.1 / 5.2 取日志用 |\n| res[].begin_time | string | 开始时间 |\n| res[].retried_count | int | 重试次数 |\n| res[].manager_list | array | 触发者 |\n| res[].un_succ_run_tasks | array | 未成功的上游任务 |\n\nrun_time 查不到数据时返回 {\"res\": []}，不是错误。\n缺 run_time 时 msg 是 \"'runhistory_list'\"（服务端 KeyError 的裸文本）。\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "pipe_id",
+                      "value": "{{pipeline_id}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "流程 id。参数名是 pipe_id，不是 pipeline_id"
+                    },
+                    {
+                      "key": "run_time",
+                      "value": "{{run_time}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "要查的那次运行，12 位 YYYYMMDDHHMM"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"res\": [\n    {\n      \"task_id\": 134,\n      \"run_time\": \"202609281430\",\n      \"pl_id\": 38,\n      \"manager_list\": [\n        [\n          \"shardora\",\n          \"\"\n        ]\n      ],\n      \"begin_time\": \"2026-09-28 14:30:52\",\n      \"status\": 2,\n      \"schedule_id\": 328485,\n      \"pl_name\": \"ceshi\",\n      \"task_name\": \"print_hello_world\",\n      \"task_desc\": \"ceshi\",\n      \"proc_id\": 19,\n      \"proc_type\": 1,\n      \"next_task_ids\": \"\",\n      \"prev_task_ids\": \",\",\n      \"retried_count\": 0,\n      \"un_succ_run_tasks\": [],\n      \"id\": 134\n    }\n  ]\n}"
+            }
+          ],
           "event": [
             {
               "listen": "test",
@@ -568,7 +1150,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/run_history/",
-            "description": "DataTables 风格分页，返回 {\"draw\",\"recordsTotal\",\"recordsFiltered\",\"data\":[...]}。\n每条含 task_id / run_time / pl_name / task_name / status / start_time / schedule_id。\n\njust_owner 和 type 必须传，服务端对它们做 int() 强转：\n  缺了或传空串 -> 500 TypeError: int() argument must be ... not 'NoneType'\n  前端只传 just_owner 不传 type，所以浏览器上的历史页同样 500 —— 服务端的既有 bug，这里显式绕开。\njust_owner=1 只查自己发起的，0 查全部；type 固定 0。\n\n过滤字段都叫 search_*。实测 search_task_name=helloworld -> recordsTotal 44。\nsearch_use_time 支持比较前缀，例如 >=60、<300。\n\n跑完 4.1 想拿日志的话，schedule_id 就从这个响应的 data 里取（这里默认的 400 即来自它）。",
+            "description": "DataTables 风格分页，返回 {\"draw\",\"recordsTotal\",\"recordsFiltered\",\"data\":[...]}。\n每条含 task_id / run_time / pl_name / task_name / status / start_time / schedule_id。\n\njust_owner 和 type 必须传，服务端对它们做 int() 强转：\n  缺了或传空串 -> 500 TypeError: int() argument must be ... not 'NoneType'\n  前端只传 just_owner 不传 type，所以浏览器上的历史页同样 500 —— 服务端的既有 bug，这里显式绕开。\njust_owner=1 只查自己发起的，0 查全部；type 固定 0。\n\n过滤字段都叫 search_*。实测 search_task_name=helloworld -> recordsTotal 44。\nsearch_use_time 支持比较前缀，例如 >=60、<300。\n\n跑完 4.1 想拿日志的话，schedule_id 就从这个响应的 data 里取（这里默认的 400 即来自它）。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| draw | int | 是 | DataTables 回显序号，随便填 |\n| start | int | 是 | 偏移量 |\n| length | int | 是 | 每页条数 |\n| order_name | string | 是 | 排序字段，如 start_time |\n| order_type | string | 是 | desc / asc |\n| just_owner | int | 是 | 必传！1=只看自己发起的，0=全部 |\n| type | int | 是 | 必传！不传或空串会 500，固定 0 |\n| search_run_time | string | 否 | 按运行时间过滤 |\n| search_pl_name | string | 否 | 按流程名过滤 |\n| search_task_name | string | 否 | 按任务名过滤，如 helloworld |\n| search_status | string | 否 | 按状态过滤，取值同 4.1 |\n| search_start_time | string | 否 | 按开始时间过滤 |\n| search_end_time | string | 否 | 按结束时间过滤 |\n| search_use_time | string | 否 | 按耗时过滤，支持 >=60 / <300 |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| draw | int | 回显 |\n| recordsTotal | int | 总条数，实测 229603 |\n| recordsFiltered | int | 过滤后条数 |\n| data | array | 当前页 |\n| data[].schedule_id | int | 已调度过的才有值，未运行的记录是 0（拿 0 去查日志会报错） |\n| data[].status | int | 取值同 4.1 |\n| data[].ret_code | int | 作业退出码，0 正常 |\n| data[].use_time | int | 耗时（秒） |\n| data[].cpu / mem | int | 资源占用 |\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -673,7 +1255,138 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "实测响应（截取部分，recordsTotal=229603）",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/run_history/",
+                "description": "DataTables 风格分页，返回 {\"draw\",\"recordsTotal\",\"recordsFiltered\",\"data\":[...]}。\n每条含 task_id / run_time / pl_name / task_name / status / start_time / schedule_id。\n\njust_owner 和 type 必须传，服务端对它们做 int() 强转：\n  缺了或传空串 -> 500 TypeError: int() argument must be ... not 'NoneType'\n  前端只传 just_owner 不传 type，所以浏览器上的历史页同样 500 —— 服务端的既有 bug，这里显式绕开。\njust_owner=1 只查自己发起的，0 查全部；type 固定 0。\n\n过滤字段都叫 search_*。实测 search_task_name=helloworld -> recordsTotal 44。\nsearch_use_time 支持比较前缀，例如 >=60、<300。\n\n跑完 4.1 想拿日志的话，schedule_id 就从这个响应的 data 里取（这里默认的 400 即来自它）。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| draw | int | 是 | DataTables 回显序号，随便填 |\n| start | int | 是 | 偏移量 |\n| length | int | 是 | 每页条数 |\n| order_name | string | 是 | 排序字段，如 start_time |\n| order_type | string | 是 | desc / asc |\n| just_owner | int | 是 | 必传！1=只看自己发起的，0=全部 |\n| type | int | 是 | 必传！不传或空串会 500，固定 0 |\n| search_run_time | string | 否 | 按运行时间过滤 |\n| search_pl_name | string | 否 | 按流程名过滤 |\n| search_task_name | string | 否 | 按任务名过滤，如 helloworld |\n| search_status | string | 否 | 按状态过滤，取值同 4.1 |\n| search_start_time | string | 否 | 按开始时间过滤 |\n| search_end_time | string | 否 | 按结束时间过滤 |\n| search_use_time | string | 否 | 按耗时过滤，支持 >=60 / <300 |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| draw | int | 回显 |\n| recordsTotal | int | 总条数，实测 229603 |\n| recordsFiltered | int | 过滤后条数 |\n| data | array | 当前页 |\n| data[].schedule_id | int | 已调度过的才有值，未运行的记录是 0（拿 0 去查日志会报错） |\n| data[].status | int | 取值同 4.1 |\n| data[].ret_code | int | 作业退出码，0 正常 |\n| data[].use_time | int | 耗时（秒） |\n| data[].cpu / mem | int | 资源占用 |\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "draw",
+                      "value": "1",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "DataTables 回显序号，随便填"
+                    },
+                    {
+                      "key": "start",
+                      "value": "0",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "偏移量"
+                    },
+                    {
+                      "key": "length",
+                      "value": "50",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "每页条数"
+                    },
+                    {
+                      "key": "order_name",
+                      "value": "start_time",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "排序字段"
+                    },
+                    {
+                      "key": "order_type",
+                      "value": "desc",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "desc / asc"
+                    },
+                    {
+                      "key": "just_owner",
+                      "value": "1",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "必传！1=只看自己发起的 0=全部"
+                    },
+                    {
+                      "key": "type",
+                      "value": "0",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "必传！不传会 500，固定 0"
+                    },
+                    {
+                      "key": "search_run_time",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "按运行时间过滤"
+                    },
+                    {
+                      "key": "search_pl_name",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "按流程名过滤"
+                    },
+                    {
+                      "key": "search_task_name",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "按任务名过滤，如 helloworld"
+                    },
+                    {
+                      "key": "search_status",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "按状态过滤，取值同 4.1 的状态码"
+                    },
+                    {
+                      "key": "search_start_time",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "按开始时间过滤"
+                    },
+                    {
+                      "key": "search_end_time",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "按结束时间过滤"
+                    },
+                    {
+                      "key": "search_use_time",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "按耗时过滤，支持 >=60 / <300"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"draw\": 1,\n  \"recordsTotal\": 229603,\n  \"recordsFiltered\": 229603,\n  \"data\": [\n    {\n      \"id\": 328485,\n      \"task_id\": 134,\n      \"run_time\": \"202609281430\",\n      \"pl_id\": 38,\n      \"start_time\": \"2026-09-28 14:30:52\",\n      \"status\": 2,\n      \"schedule_id\": 328485,\n      \"pl_name\": \"ceshi\",\n      \"task_name\": \"print_hello_world\",\n      \"use_time\": 10,\n      \"cpu\": 0,\n      \"mem\": 0,\n      \"ret_code\": 0\n    },\n    {\n      \"id\": 328403,\n      \"task_id\": 276,\n      \"run_time\": \"202609280400\",\n      \"pl_id\": 72,\n      \"start_time\": \"2026-09-28 09:49:24\",\n      \"status\": 0,\n      \"schedule_id\": 0,\n      \"pl_name\": \"mysql数据同步并定时运行\",\n      \"task_name\": \"导出数据\",\n      \"use_time\": 0,\n      \"cpu\": 0,\n      \"mem\": 0,\n      \"ret_code\": 0\n    },\n    {\n      \"id\": 328404,\n      \"task_id\": 276,\n      \"run_time\": \"202609270400\",\n      \"pl_id\": 72,\n      \"start_time\": \"2026-09-28 09:49:24\",\n      \"status\": 0,\n      \"schedule_id\": 0,\n      \"pl_name\": \"mysql数据同步并定时运行\",\n      \"task_name\": \"导出数据\",\n      \"use_time\": 0,\n      \"cpu\": 0,\n      \"mem\": 0,\n      \"ret_code\": 0\n    },\n    {\n      \"id\": 328405,\n      \"task_id\": 276,\n      \"run_time\": \"202609260400\",\n      \"pl_id\": 72,\n      \"start_time\": \"2026-09-28 09:49:24\",\n      \"status\": 0,\n      \"schedule_id\": 0,\n      \"pl_name\": \"mysql数据同步并定时运行\",\n      \"task_name\": \"导出数据\",\n      \"use_time\": 0,\n      \"cpu\": 0,\n      \"mem\": 0,\n      \"ret_code\": 0\n    },\n    {\n      \"id\": 328406,\n      \"task_id\": 1911,\n      \"run_time\": \"202609280400\",\n      \"pl_id\": 72,\n      \"start_time\": \"2026-09-28 09:49:24\",\n      \"status\": 0,\n      \"schedule_id\": 0,\n      \"pl_name\": \"mysql数据同步并定时运行\",\n      \"task_name\": \"SETH数据导出\",\n      \"use_time\": 0,\n      \"cpu\": 0,\n      \"mem\": 0,\n      \"ret_code\": 0\n    }\n  ]\n}"
+            }
+          ]
         }
       ]
     },
@@ -694,7 +1407,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/get_task_log/",
-            "description": "返回 {\"list\":[\"result.md\",\"subdir/\",...],\"status\":0}，目录项以 / 结尾。\n\n入参是 schedule_id，不是 task_id 也不是 pipe_id —— 从 4.2 的响应里取（default 400 即 helloworld 那次）。\nsubpath 留空是根目录，进子目录时填 'results/'。",
+            "description": "返回 {\"list\":[\"result.md\",\"subdir/\",...],\"status\":0}，目录项以 / 结尾。\n\n入参是 schedule_id，不是 task_id 也不是 pipe_id —— 从 4.2 的响应里取（default 400 即 helloworld 那次）。\nsubpath 留空是根目录，进子目录时填 'results/'。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| schedule_id | int | 是 | 调度 id，从 4.2 的 data 里取；不是 task_id / pipe_id |\n| subpath | string | 否 | 子目录，留空=根目录，形如 results/ |\n| rerun_id | int | 否 | 重跑批次，0=首次运行 |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| list | array | 目录项，目录以 / 结尾，如 [\"run.py\",\"trace.log\",\"stdout.log\"] |\n| status | int | 0=成功 |\n| info | string | 提示文本，正常为 ok |\n\nschedule_id=0 或不存在时返回 {\"list\": \"error\"} —— 注意 list 从数组变成了字符串。\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -722,7 +1435,61 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "实测响应（schedule_id 328485）",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/get_task_log/",
+                "description": "返回 {\"list\":[\"result.md\",\"subdir/\",...],\"status\":0}，目录项以 / 结尾。\n\n入参是 schedule_id，不是 task_id 也不是 pipe_id —— 从 4.2 的响应里取（default 400 即 helloworld 那次）。\nsubpath 留空是根目录，进子目录时填 'results/'。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| schedule_id | int | 是 | 调度 id，从 4.2 的 data 里取；不是 task_id / pipe_id |\n| subpath | string | 否 | 子目录，留空=根目录，形如 results/ |\n| rerun_id | int | 否 | 重跑批次，0=首次运行 |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| list | array | 目录项，目录以 / 结尾，如 [\"run.py\",\"trace.log\",\"stdout.log\"] |\n| status | int | 0=成功 |\n| info | string | 提示文本，正常为 ok |\n\nschedule_id=0 或不存在时返回 {\"list\": \"error\"} —— 注意 list 从数组变成了字符串。\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "schedule_id",
+                      "value": "{{schedule_id}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "调度 id，从 4.2 的响应里取，不是 task_id"
+                    },
+                    {
+                      "key": "subpath",
+                      "value": "",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "子目录，留空=根目录，形如 results/"
+                    },
+                    {
+                      "key": "rerun_id",
+                      "value": "0",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "重跑批次，0 表示首次运行"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"list\": [\n    \"run.py\",\n    \"trace.log\",\n    \"run.conf\",\n    \"stdout.log\",\n    \"19-21.tar.gz\",\n    \"stderr.log\"\n  ],\n  \"status\": 0,\n  \"info\": \"ok\"\n}"
+            }
+          ]
         },
         {
           "name": "5.2 读日志正文",
@@ -737,7 +1504,7 @@
               }
             ],
             "url": "{{base_url}}/api/pipeline/get_log_content/",
-            "description": "返回 {\"file_content\":...,\"status\":0,\"len\":N}。\n\nfile_name 取自 5.1 的 list（如 result.md）。服务端固定最多读 10240 字节，超长内容会被截断。",
+            "description": "返回 {\"file_content\":...,\"status\":0,\"len\":N}。\n\nfile_name 取自 5.1 的 list（如 result.md）。服务端固定最多读 10240 字节，超长内容会被截断。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| schedule_id | int | 是 | 同 5.1 |\n| file_name | string | 是 | 文件名，取自 5.1 的 list |\n| rerun_id | int | 否 | 重跑批次，0=首次运行 |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| file_content | string | 文件正文，服务端固定最多读 10240 字节 |\n| status | int | 恒为 0，即使出错也是 0 |\n| len | int | 正文长度 |\n\n读不到文件时 status 仍是 0，错误文本塞在 file_content 里：\n  \"error:read file failed /opt/schedule/task_node/data/data_platform/<schedule_id>/nope.txt\"\n所以判断成功要看 file_content，不能只看 status。\n",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -765,7 +1532,61 @@
               ]
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "实测响应（schedule_id 328485 / stdout.log）",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text",
+                    "description": "simplejwt 只认 Bearer。写成 'JWT <token>' 会 401 Authentication credentials were not provided。"
+                  }
+                ],
+                "url": "{{base_url}}/api/pipeline/get_log_content/",
+                "description": "返回 {\"file_content\":...,\"status\":0,\"len\":N}。\n\nfile_name 取自 5.1 的 list（如 result.md）。服务端固定最多读 10240 字节，超长内容会被截断。\n━━ 参数 ━━\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| schedule_id | int | 是 | 同 5.1 |\n| file_name | string | 是 | 文件名，取自 5.1 的 list |\n| rerun_id | int | 否 | 重跑批次，0=首次运行 |\n\n━━ 返回值 ━━\n| 字段 | 类型 | 说明 |\n|---|---|---|\n| file_content | string | 文件正文，服务端固定最多读 10240 字节 |\n| status | int | 恒为 0，即使出错也是 0 |\n| len | int | 正文长度 |\n\n读不到文件时 status 仍是 0，错误文本塞在 file_content 里：\n  \"error:read file failed /opt/schedule/task_node/data/data_platform/<schedule_id>/nope.txt\"\n所以判断成功要看 file_content，不能只看 status。\n",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "schedule_id",
+                      "value": "{{schedule_id}}",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "同 5.1，从 4.2 的响应里取"
+                    },
+                    {
+                      "key": "file_name",
+                      "value": "stdout.log",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "文件名，取自 5.1 的 list。默认是实测存在的那个（result.md 不一定有）"
+                    },
+                    {
+                      "key": "rerun_id",
+                      "value": "0",
+                      "type": "text",
+                      "disabled": false,
+                      "description": "重跑批次，0 表示首次运行"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"file_content\": \"hello\\n3\\n\",\n  \"status\": 0,\n  \"len\": 8\n}"
+            }
+          ]
         }
       ]
     }
