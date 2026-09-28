@@ -110,6 +110,17 @@ std::atomic<bool> uv_transport_inited = false;
 // Lives only on the libuv loop thread — no locking needed.
 static std::unordered_set<std::string> pending_conns_;
 
+// Messages that could not be handed to the kernel, kept for the next pass.
+// output_queues_ is a single-producer/single-consumer queue owned by the sending
+// threads, so the loop thread must never push back into it. Like the other
+// transports' globals here, this is touched only by the libuv loop thread.
+static std::vector<std::shared_ptr<ClientItem>> deferred_items_[common::kMaxThreadCount];
+
+// A message aimed at a peer whose uv_tcp_connect is still in flight is retried
+// instead of discarded. uv_async_cb runs every ~10ms, so this bounds the wait at
+// roughly 3 seconds.
+static const uint32_t kMaxSendRetryTimes = 300u;
+
 static bool TcpOutputQueuesReady(const char* context) {
     if (output_queues_ == nullptr) {
         SHARDORA_ERROR("%s: TcpTransport output queue not ready (Init not called or already torn down).", context);
@@ -124,6 +135,7 @@ struct connect_ex_t {
     uint64_t hash64   = 0;
     uint32_t msg_type = 0;
     bool     is_retry = false;
+    uint32_t retry_count = 0;
 };
 
 // Owns write buffer until on_write; uv_write is async so stack buffers are unsafe.
@@ -135,7 +147,8 @@ struct write_ex_t {
     uint16_t des_port = 0;
     uint64_t hash64 = 0;
     uint32_t msg_type = 0;
-    bool is_retry = false;   // do not retry a second time
+    bool is_retry = false;
+    uint32_t retry_count = 0;
 };
 
 void on_close(uv_handle_t* handle) {
@@ -159,9 +172,11 @@ void on_write(uv_write_t* req, int status) {
         SHARDORA_WARN("[TCP_RECONN] on_write failed: %s:%d, status=%d (%s) — freeing connection",
             ex_uv_tcp->ip, ex_uv_tcp->port, status, uv_strerror(status));
 
-        // Re-queue the message for one retry so it is not silently lost when the
-        // connection drops between Send() and the actual kernel write.
-        if (!wr->is_retry && wr->des_port > 0 && !wr->payload.empty()) {
+        // Retry so the message is not silently lost when the connection drops
+        // between Send() and the actual kernel write. This runs on the libuv loop
+        // thread, so the item joins the loop-thread carry list rather than being
+        // pushed back into output_queues_, which is SPSC and owned by senders.
+        if (wr->retry_count < kMaxSendRetryTimes && wr->des_port > 0 && !wr->payload.empty()) {
             auto retry = std::make_shared<ClientItem>();
             retry->des_ip = std::string(wr->des_ip);
             retry->port   = wr->des_port;
@@ -169,10 +184,13 @@ void on_write(uv_write_t* req, int status) {
             retry->hash64 = wr->hash64;
             retry->type   = wr->msg_type;
             retry->is_retry = true;
-            output_queues_[0].push(retry);
-            uv_async_send(&async_handle);
-            SHARDORA_WARN("[TCP_RECONN] re-queued retry msg to %s:%d hash64=%lu",
-                wr->des_ip, wr->des_port, wr->hash64);
+            retry->retry_count = wr->retry_count + 1;
+            deferred_items_[0].emplace_back(std::move(retry));
+            SHARDORA_WARN("[TCP_RECONN] re-queued retry %u/%u msg to %s:%d hash64=%lu",
+                wr->retry_count + 1, kMaxSendRetryTimes, wr->des_ip, wr->des_port, wr->hash64);
+        } else if (wr->retry_count >= kMaxSendRetryTimes) {
+            SHARDORA_ERROR("[TCP_RECONN] drop msg after %u retries to %s:%d hash64=%lu",
+                wr->retry_count, wr->des_ip, wr->des_port, wr->hash64);
         }
 
         tcp_transport->FreeConnection(ex_uv_tcp);
@@ -392,7 +410,10 @@ void on_connect(uv_connect_t* connection, int status) {
         connect_ex_t* ex_conn = (connect_ex_t*)connection;
         // Re-queue the attached message so it is not silently lost.
         // Strip the PacketHeader prefix that was prepended in uv_async_cb.
-        if (ex_conn->msg && ex_conn->msg->size() > sizeof(PacketHeader) && !ex_conn->is_retry) {
+        // Loop-thread callback: the item goes on the carry list, not back into the
+        // sender-owned SPSC queue.
+        if (ex_conn->msg && ex_conn->msg->size() > sizeof(PacketHeader) &&
+                ex_conn->retry_count < kMaxSendRetryTimes) {
             auto retry = std::make_shared<ClientItem>();
             retry->des_ip   = std::string(ex_uv_tcp->ip);
             retry->port     = ex_uv_tcp->port;
@@ -400,10 +421,14 @@ void on_connect(uv_connect_t* connection, int status) {
             retry->hash64   = ex_conn->hash64;
             retry->type     = ex_conn->msg_type;
             retry->is_retry = true;
-            output_queues_[0].push(retry);
-            uv_async_send(&async_handle);
-            SHARDORA_WARN("[TCP_RECONN] connect failed, re-queued msg to %s:%d hash64=%lu",
+            retry->retry_count = ex_conn->retry_count + 1;
+            deferred_items_[0].emplace_back(std::move(retry));
+            SHARDORA_WARN("[TCP_RECONN] connect failed, re-queued msg %u/%u to %s:%d hash64=%lu",
+                ex_conn->retry_count + 1, kMaxSendRetryTimes,
                 ex_uv_tcp->ip, ex_uv_tcp->port, ex_conn->hash64);
+        } else if (ex_conn->msg && ex_conn->retry_count >= kMaxSendRetryTimes) {
+            SHARDORA_ERROR("[TCP_RECONN] drop msg after %u retries to %s:%d hash64=%lu",
+                ex_conn->retry_count, ex_uv_tcp->ip, ex_uv_tcp->port, ex_conn->hash64);
         }
         delete ex_conn->msg;
         free(ex_conn);
@@ -741,10 +766,21 @@ void uv_async_cb(uv_async_t* handle) {
             msg_handler_->HandleMessage(msg_ptr);
         }
 
+        // Messages that could not be handed to the kernel during this pass.
+        // output_queues_ is a single-producer/single-consumer queue owned by the
+        // sending thread, so the loop thread must not push back into it. Retries
+        // are carried here and retried on the next uv_async_cb pass.
+        auto& deferred = deferred_items_[i];
+        std::vector<std::shared_ptr<ClientItem>> retry_items;
+        retry_items.swap(deferred);
+        // Drained front-to-back. A stack would reverse the order, and with several
+        // messages to one peer that means sending a higher nonce before a lower one.
+        size_t retry_idx = 0;
         while (true) {
             std::shared_ptr<ClientItem> item_ptr = nullptr;
-            output_queues_[i].pop(&item_ptr);
-            if (item_ptr == nullptr) {
+            if (retry_idx < retry_items.size()) {
+                item_ptr = std::move(retry_items[retry_idx++]);
+            } else if (!output_queues_[i].pop(&item_ptr)) {
                 break;
             }
 
@@ -793,8 +829,15 @@ void uv_async_cb(uv_async_t* handle) {
                 // send or cause the first connection to be torn down on AddConnection.
                 std::string peer_key = des_ip + ":" + std::to_string(des_port);
                 if (pending_conns_.count(peer_key)) {
-                    SHARDORA_DEBUG("[TCP_RECONN] connect already pending for %s, dropping msg hash64=%lu",
-                        peer_key.c_str(), item_ptr->hash64);
+                    // The connect for this peer has not completed yet. Hold the
+                    // message rather than dropping it — a burst of sends to one
+                    // peer all land here while the first one is still connecting.
+                    if (++item_ptr->retry_count > kMaxSendRetryTimes) {
+                        SHARDORA_ERROR("[TCP_RECONN] drop msg after %u retries, connect still pending for %s, hash64=%lu",
+                            item_ptr->retry_count, peer_key.c_str(), item_ptr->hash64);
+                        continue;
+                    }
+                    deferred.emplace_back(std::move(item_ptr));
                     continue;
                 }
 
@@ -813,6 +856,7 @@ void uv_async_cb(uv_async_t* handle) {
                 ex_conn->hash64   = item_ptr->hash64;
                 ex_conn->msg_type = item_ptr->type;
                 ex_conn->is_retry = item_ptr->is_retry;
+                ex_conn->retry_count = item_ptr->retry_count;
                 ex_uv_tcp->msg_decoder = new MsgDecoder();
                 memcpy(ex_uv_tcp->ip, des_ip.c_str(), des_ip.size());
                 ex_uv_tcp->port = des_port;
@@ -830,6 +874,9 @@ void uv_async_cb(uv_async_t* handle) {
                     delete ex_uv_tcp->msg_decoder;
                     free(ex_uv_tcp);
                     free(ex_conn);
+                    if (++item_ptr->retry_count <= kMaxSendRetryTimes) {
+                        deferred.emplace_back(std::move(item_ptr));
+                    }
                 } else {
                     pending_conns_.insert(peer_key);
                     SHARDORA_DEBUG("[TCP_RECONN] initiated connect to %s:%d, hash64=%lu",
@@ -847,6 +894,7 @@ void uv_async_cb(uv_async_t* handle) {
                 wr->hash64   = item_ptr->hash64;
                 wr->msg_type = item_ptr->type;
                 wr->is_retry = item_ptr->is_retry;
+                wr->retry_count = item_ptr->retry_count;
                 uv_buf_t buf = uv_buf_init(const_cast<char*>(wr->msg.data()), wr->msg.size());
                 if (item_ptr->type == common::kHotstuffMessage) {
                     SHARDORA_DEBUG("[TCP_RECONN] sending to existing connection: %s:%d, hash64=%lu",
@@ -872,6 +920,9 @@ void uv_async_cb(uv_async_t* handle) {
                         des_ip.c_str(), des_port, wr_res, uv_strerror(wr_res), item_ptr->hash64);
                     delete wr;
                     transport::TcpTransport::Instance()->FreeConnection(ex_uv_tcp);
+                    if (++item_ptr->retry_count <= kMaxSendRetryTimes) {
+                        deferred.emplace_back(std::move(item_ptr));
+                    }
                 }
             }
         }

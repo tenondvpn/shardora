@@ -5732,8 +5732,11 @@ contract Exchange {
                     shard_addrs[s][i], "", "",
                     2000000000ULL, 210000, 1, funder_shard);
 
-                if (tx_msg_ptr && transport::TcpTransport::Instance()->Send(
-                        global_chain_node_ip, node_port, tx_msg_ptr->header) == 0) {
+                // Must go through the dedicated sender thread's queue: calling
+                // TcpTransport::Send directly from here makes this thread a second
+                // producer on a single-producer queue shared with tcp_sender7, which
+                // silently drops entries.
+                if (tx_msg_ptr && tcp_enq7(tx_msg_ptr, global_chain_node_ip, node_port)) {
                     ++sent_ok;
                 } else {
                     ++sent_fail;
@@ -5744,6 +5747,7 @@ contract Exchange {
                       << sent_ok.load() << " fail=" << sent_fail.load() << ")" << std::endl;
         }
 
+        tcp_drain7();
         auto send_secs = std::chrono::duration_cast<std::chrono::seconds>(
             std::chrono::steady_clock::now() - send_start).count();
         std::cout << "Sending: " << send_secs << "s, OK=" << sent_ok.load()
