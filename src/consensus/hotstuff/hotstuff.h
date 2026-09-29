@@ -294,7 +294,7 @@ private:
                 pool_idx_, qc_ptr->elect_height(), last_stable_leader_member_index_.load(),
                 last_vote_view_,
                 qc_ptr->view());
-            laste_vote_prev_view_tm_.Put(qc_ptr->view(), common::TimeUtils::TimestampUs());
+            laste_vote_prev_view_tm_.Put(qc_ptr->view(), common::TimeUtils::TimestampMs());
         }
 
         latest_qc_item_ptr_ = qc_ptr;
