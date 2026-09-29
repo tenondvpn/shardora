@@ -2525,6 +2525,8 @@ void Hotstuff::TryRecoverFromStuck(
         const transport::MessagePtr& msg_ptr, 
         bool has_user_tx, 
         bool has_system_tx) {
+    SHARDORA_DEBUG("TryRecoverFromStuck network: %d, pool: %d", 
+        common::GlobalInfo::Instance()->network_id(), pool_idx_);
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (latest_qc_item_ptr_ && update_latest_view_tm_) {
         laste_vote_prev_view_tm_.Put(latest_qc_item_ptr_->view(), now_tm_ms);
@@ -2594,17 +2596,17 @@ void Hotstuff::TryRecoverFromStuck(
     auto leader_block_tm = GetLeaderBlockTimestamp();
     if (!latest_qc_item_ptr_) {
         // if (pool_idx_ == common::kImmutablePoolSize) {
-        //     SHARDORA_DEBUG("pool %u: latest_qc_item_ptr_ is null, cannot get leader", pool_idx_);
+            SHARDORA_DEBUG("pool %u: latest_qc_item_ptr_ is null, cannot get leader", pool_idx_);
         // }
         return;
     }
     auto leader = GetLeader(local_idx, *latest_qc_item_ptr_, &out_view, leader_block_tm, false);
     if (!leader) {
-        // SHARDORA_DEBUG("pool index: %d, no leader", pool_idx_);
+        SHARDORA_DEBUG("pool index: %d, no leader", pool_idx_);
         return;
     }
 
-    // SHARDORA_DEBUG("pool: %u, get leader index: %u, local index: %u", pool_idx_, leader->index, local_idx);
+    SHARDORA_DEBUG("pool: %u, get leader index: %u, local index: %u", pool_idx_, leader->index, local_idx);
     if (leader->index != local_idx) {
         SyncLocalTxToLeader(msg_ptr, leader, has_system_tx);
         if (latest_leader_propose_message_) {
