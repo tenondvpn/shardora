@@ -2600,7 +2600,7 @@ void Hotstuff::TryRecoverFromStuck(
         // }
         return;
     }
-    auto leader = GetLeader(local_idx, *latest_qc_item_ptr_, &out_view, leader_block_tm, false);
+    auto leader = GetLeader(local_idx, *latest_qc_item_ptr_, &out_view, leader_block_tm, true);
     if (!leader) {
         SHARDORA_DEBUG("pool index: %d, no leader", pool_idx_);
         return;
