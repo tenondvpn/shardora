@@ -250,9 +250,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncHeightItem, pool_idx_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncHeightItem, height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncHeightItem, tag_),
-  1,
-  0,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncHeightItem, view_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncHeightItem, view_block_hash_),
   2,
+  1,
+  3,
+  4,
+  0,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::FlushDbItem, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::FlushDbItem, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -299,12 +303,20 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncResItem, pool_idx_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncResItem, height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncResItem, tag_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncResItem, latest_qc_item_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncResItem, qc_view_block_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncResItem, view_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncResItem, view_block_hash_),
   0,
   1,
+  5,
+  6,
+  7,
+  9,
   2,
   3,
+  8,
   4,
-  5,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncValueResponse, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncValueResponse, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -327,13 +339,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 7, sizeof(::shardora::sync::protobuf::SyncItem)},
   { 9, 15, sizeof(::shardora::sync::protobuf::SyncInfo)},
-  { 16, 24, sizeof(::shardora::sync::protobuf::SyncHeightItem)},
-  { 27, 35, sizeof(::shardora::sync::protobuf::FlushDbItem)},
-  { 38, 46, sizeof(::shardora::sync::protobuf::LatestSyncItem)},
-  { 49, 58, sizeof(::shardora::sync::protobuf::SyncValueRequest)},
-  { 62, 73, sizeof(::shardora::sync::protobuf::SyncResItem)},
-  { 79, 86, sizeof(::shardora::sync::protobuf::SyncValueResponse)},
-  { 88, 95, sizeof(::shardora::sync::protobuf::SyncMessage)},
+  { 16, 26, sizeof(::shardora::sync::protobuf::SyncHeightItem)},
+  { 31, 39, sizeof(::shardora::sync::protobuf::FlushDbItem)},
+  { 42, 50, sizeof(::shardora::sync::protobuf::LatestSyncItem)},
+  { 53, 62, sizeof(::shardora::sync::protobuf::SyncValueRequest)},
+  { 66, 81, sizeof(::shardora::sync::protobuf::SyncResItem)},
+  { 91, 98, sizeof(::shardora::sync::protobuf::SyncValueResponse)},
+  { 100, 107, sizeof(::shardora::sync::protobuf::SyncMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -372,29 +384,32 @@ void AddDescriptorsImpl() {
       "\n\021protos/sync.proto\022\026shardora.sync.proto"
       "buf\"&\n\010SyncItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 "
       "\001(\014\";\n\010SyncInfo\022/\n\005items\030\001 \003(\0132 .shardor"
-      "a.sync.protobuf.SyncItem\"\?\n\016SyncHeightIt"
+      "a.sync.protobuf.SyncItem\"f\n\016SyncHeightIt"
       "em\022\020\n\010pool_idx\030\001 \001(\r\022\016\n\006height\030\002 \001(\004\022\013\n\003"
-      "tag\030\003 \001(\r\"I\n\013FlushDbItem\022\025\n\rmax_vec_inde"
-      "x\030\001 \001(\004\022\022\n\nmax_height\030\002 \001(\004\022\017\n\007heights\030\003"
-      " \003(\004\"\\\n\016LatestSyncItem\022\022\n\nnetwork_id\030\001 \001"
-      "(\r\022\033\n\023pool_latest_heights\030\002 \003(\004\022\031\n\021globl"
-      "_pool_height\030\003 \001(\004\"\257\001\n\020SyncValueRequest\022"
-      "\022\n\nnetwork_id\030\001 \001(\r\022\014\n\004keys\030\002 \003(\014\0227\n\007hei"
-      "ghts\030\003 \003(\0132&.shardora.sync.protobuf.Sync"
-      "HeightItem\022@\n\020latest_sync_item\030\004 \001(\0132&.s"
-      "hardora.sync.protobuf.LatestSyncItem\"l\n\013"
+      "tag\030\003 \001(\r\022\014\n\004view\030\004 \001(\004\022\027\n\017view_block_ha"
+      "sh\030\005 \001(\014\"I\n\013FlushDbItem\022\025\n\rmax_vec_index"
+      "\030\001 \001(\004\022\022\n\nmax_height\030\002 \001(\004\022\017\n\007heights\030\003 "
+      "\003(\004\"\\\n\016LatestSyncItem\022\022\n\nnetwork_id\030\001 \001("
+      "\r\022\033\n\023pool_latest_heights\030\002 \003(\004\022\031\n\021globl_"
+      "pool_height\030\003 \001(\004\"\257\001\n\020SyncValueRequest\022\022"
+      "\n\nnetwork_id\030\001 \001(\r\022\014\n\004keys\030\002 \003(\014\0227\n\007heig"
+      "hts\030\003 \003(\0132&.shardora.sync.protobuf.SyncH"
+      "eightItem\022@\n\020latest_sync_item\030\004 \001(\0132&.sh"
+      "ardora.sync.protobuf.LatestSyncItem\"\302\001\n\013"
       "SyncResItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\022"
       "\022\n\nnetwork_id\030\003 \001(\r\022\020\n\010pool_idx\030\004 \001(\r\022\016\n"
-      "\006height\030\005 \001(\004\022\013\n\003tag\030\006 \001(\r\"Y\n\021SyncValueR"
-      "esponse\022\022\n\nnetwork_id\030\001 \001(\r\0220\n\003res\030\002 \003(\013"
-      "2#.shardora.sync.protobuf.SyncResItem\"\222\001"
-      "\n\013SyncMessage\022@\n\016sync_value_req\030\001 \001(\0132(."
-      "shardora.sync.protobuf.SyncValueRequest\022"
-      "A\n\016sync_value_res\030\002 \001(\0132).shardora.sync."
-      "protobuf.SyncValueResponse"
+      "\006height\030\005 \001(\004\022\013\n\003tag\030\006 \001(\r\022\026\n\016latest_qc_"
+      "item\030\007 \001(\014\022\025\n\rqc_view_block\030\010 \001(\014\022\014\n\004vie"
+      "w\030\t \001(\004\022\027\n\017view_block_hash\030\n \001(\014\"Y\n\021Sync"
+      "ValueResponse\022\022\n\nnetwork_id\030\001 \001(\r\0220\n\003res"
+      "\030\002 \003(\0132#.shardora.sync.protobuf.SyncResI"
+      "tem\"\222\001\n\013SyncMessage\022@\n\016sync_value_req\030\001 "
+      "\001(\0132(.shardora.sync.protobuf.SyncValueRe"
+      "quest\022A\n\016sync_value_res\030\002 \001(\0132).shardora"
+      ".sync.protobuf.SyncValueResponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 906);
+      descriptor, 1032);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/sync.proto", &protobuf_RegisterTypes);
 }
@@ -947,6 +962,8 @@ void SyncHeightItem::InitAsDefaultInstance() {
 const int SyncHeightItem::kPoolIdxFieldNumber;
 const int SyncHeightItem::kHeightFieldNumber;
 const int SyncHeightItem::kTagFieldNumber;
+const int SyncHeightItem::kViewFieldNumber;
+const int SyncHeightItem::kViewBlockHashFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SyncHeightItem::SyncHeightItem()
@@ -961,16 +978,21 @@ SyncHeightItem::SyncHeightItem(const SyncHeightItem& from)
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  view_block_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_view_block_hash()) {
+    view_block_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_block_hash_);
+  }
   ::memcpy(&height_, &from.height_,
-    static_cast<size_t>(reinterpret_cast<char*>(&tag_) -
-    reinterpret_cast<char*>(&height_)) + sizeof(tag_));
+    static_cast<size_t>(reinterpret_cast<char*>(&view_) -
+    reinterpret_cast<char*>(&height_)) + sizeof(view_));
   // @@protoc_insertion_point(copy_constructor:shardora.sync.protobuf.SyncHeightItem)
 }
 
 void SyncHeightItem::SharedCtor() {
+  view_block_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&height_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&tag_) -
-      reinterpret_cast<char*>(&height_)) + sizeof(tag_));
+      reinterpret_cast<char*>(&view_) -
+      reinterpret_cast<char*>(&height_)) + sizeof(view_));
 }
 
 SyncHeightItem::~SyncHeightItem() {
@@ -979,6 +1001,7 @@ SyncHeightItem::~SyncHeightItem() {
 }
 
 void SyncHeightItem::SharedDtor() {
+  view_block_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void SyncHeightItem::SetCachedSize(int size) const {
@@ -1002,10 +1025,13 @@ void SyncHeightItem::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 7u) {
+  if (cached_has_bits & 0x00000001u) {
+    view_block_hash_.ClearNonDefaultToEmptyNoArena();
+  }
+  if (cached_has_bits & 30u) {
     ::memset(&height_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&tag_) -
-        reinterpret_cast<char*>(&height_)) + sizeof(tag_));
+        reinterpret_cast<char*>(&view_) -
+        reinterpret_cast<char*>(&height_)) + sizeof(view_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -1063,6 +1089,32 @@ bool SyncHeightItem::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint64 view = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
+          set_has_view();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &view_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes view_block_hash = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_view_block_hash()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1091,18 +1143,29 @@ void SyncHeightItem::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 pool_idx = 1;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->pool_idx(), output);
   }
 
   // optional uint64 height = 2;
-  if (cached_has_bits & 0x00000001u) {
+  if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->height(), output);
   }
 
   // optional uint32 tag = 3;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->tag(), output);
+  }
+
+  // optional uint64 view = 4;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(4, this->view(), output);
+  }
+
+  // optional bytes view_block_hash = 5;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      5, this->view_block_hash(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1121,18 +1184,30 @@ void SyncHeightItem::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 pool_idx = 1;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->pool_idx(), target);
   }
 
   // optional uint64 height = 2;
-  if (cached_has_bits & 0x00000001u) {
+  if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->height(), target);
   }
 
   // optional uint32 tag = 3;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->tag(), target);
+  }
+
+  // optional uint64 view = 4;
+  if (cached_has_bits & 0x00000010u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(4, this->view(), target);
+  }
+
+  // optional bytes view_block_hash = 5;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        5, this->view_block_hash(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1152,7 +1227,14 @@ size_t SyncHeightItem::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 7u) {
+  if (_has_bits_[0 / 32] & 31u) {
+    // optional bytes view_block_hash = 5;
+    if (has_view_block_hash()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->view_block_hash());
+    }
+
     // optional uint64 height = 2;
     if (has_height()) {
       total_size += 1 +
@@ -1172,6 +1254,13 @@ size_t SyncHeightItem::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->tag());
+    }
+
+    // optional uint64 view = 4;
+    if (has_view()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->view());
     }
 
   }
@@ -1203,15 +1292,22 @@ void SyncHeightItem::MergeFrom(const SyncHeightItem& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 7u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
-      height_ = from.height_;
+      set_has_view_block_hash();
+      view_block_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_block_hash_);
     }
     if (cached_has_bits & 0x00000002u) {
-      pool_idx_ = from.pool_idx_;
+      height_ = from.height_;
     }
     if (cached_has_bits & 0x00000004u) {
+      pool_idx_ = from.pool_idx_;
+    }
+    if (cached_has_bits & 0x00000008u) {
       tag_ = from.tag_;
+    }
+    if (cached_has_bits & 0x00000010u) {
+      view_ = from.view_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -1241,9 +1337,12 @@ void SyncHeightItem::Swap(SyncHeightItem* other) {
 }
 void SyncHeightItem::InternalSwap(SyncHeightItem* other) {
   using std::swap;
+  view_block_hash_.Swap(&other->view_block_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(height_, other->height_);
   swap(pool_idx_, other->pool_idx_);
   swap(tag_, other->tag_);
+  swap(view_, other->view_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
@@ -2277,6 +2376,10 @@ const int SyncResItem::kNetworkIdFieldNumber;
 const int SyncResItem::kPoolIdxFieldNumber;
 const int SyncResItem::kHeightFieldNumber;
 const int SyncResItem::kTagFieldNumber;
+const int SyncResItem::kLatestQcItemFieldNumber;
+const int SyncResItem::kQcViewBlockFieldNumber;
+const int SyncResItem::kViewFieldNumber;
+const int SyncResItem::kViewBlockHashFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SyncResItem::SyncResItem()
@@ -2299,6 +2402,18 @@ SyncResItem::SyncResItem(const SyncResItem& from)
   if (from.has_value()) {
     value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_);
   }
+  latest_qc_item_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_latest_qc_item()) {
+    latest_qc_item_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.latest_qc_item_);
+  }
+  qc_view_block_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_qc_view_block()) {
+    qc_view_block_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.qc_view_block_);
+  }
+  view_block_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_view_block_hash()) {
+    view_block_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_block_hash_);
+  }
   ::memcpy(&network_id_, &from.network_id_,
     static_cast<size_t>(reinterpret_cast<char*>(&tag_) -
     reinterpret_cast<char*>(&network_id_)) + sizeof(tag_));
@@ -2308,6 +2423,9 @@ SyncResItem::SyncResItem(const SyncResItem& from)
 void SyncResItem::SharedCtor() {
   key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  latest_qc_item_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  qc_view_block_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  view_block_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&network_id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&tag_) -
       reinterpret_cast<char*>(&network_id_)) + sizeof(tag_));
@@ -2321,6 +2439,9 @@ SyncResItem::~SyncResItem() {
 void SyncResItem::SharedDtor() {
   key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  latest_qc_item_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  qc_view_block_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  view_block_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void SyncResItem::SetCachedSize(int size) const {
@@ -2344,18 +2465,32 @@ void SyncResItem::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       key_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000002u) {
       value_.ClearNonDefaultToEmptyNoArena();
     }
+    if (cached_has_bits & 0x00000004u) {
+      latest_qc_item_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000008u) {
+      qc_view_block_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000010u) {
+      view_block_hash_.ClearNonDefaultToEmptyNoArena();
+    }
   }
-  if (cached_has_bits & 60u) {
+  if (cached_has_bits & 224u) {
     ::memset(&network_id_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&height_) -
+        reinterpret_cast<char*>(&network_id_)) + sizeof(height_));
+  }
+  if (cached_has_bits & 768u) {
+    ::memset(&view_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&tag_) -
-        reinterpret_cast<char*>(&network_id_)) + sizeof(tag_));
+        reinterpret_cast<char*>(&view_)) + sizeof(tag_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -2451,6 +2586,56 @@ bool SyncResItem::MergePartialFromCodedStream(
         break;
       }
 
+      // optional bytes latest_qc_item = 7;
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_latest_qc_item()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes qc_view_block = 8;
+      case 8: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(66u /* 66 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_qc_view_block()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 view = 9;
+      case 9: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(72u /* 72 & 0xFF */)) {
+          set_has_view();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &view_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes view_block_hash = 10;
+      case 10: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(82u /* 82 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_view_block_hash()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2491,23 +2676,46 @@ void SyncResItem::SerializeWithCachedSizes(
   }
 
   // optional uint32 network_id = 3;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->network_id(), output);
   }
 
   // optional uint32 pool_idx = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->pool_idx(), output);
   }
 
   // optional uint64 height = 5;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000080u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->height(), output);
   }
 
   // optional uint32 tag = 6;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000200u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->tag(), output);
+  }
+
+  // optional bytes latest_qc_item = 7;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      7, this->latest_qc_item(), output);
+  }
+
+  // optional bytes qc_view_block = 8;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      8, this->qc_view_block(), output);
+  }
+
+  // optional uint64 view = 9;
+  if (cached_has_bits & 0x00000100u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(9, this->view(), output);
+  }
+
+  // optional bytes view_block_hash = 10;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      10, this->view_block_hash(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2540,23 +2748,49 @@ void SyncResItem::SerializeWithCachedSizes(
   }
 
   // optional uint32 network_id = 3;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->network_id(), target);
   }
 
   // optional uint32 pool_idx = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->pool_idx(), target);
   }
 
   // optional uint64 height = 5;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->height(), target);
   }
 
   // optional uint32 tag = 6;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000200u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->tag(), target);
+  }
+
+  // optional bytes latest_qc_item = 7;
+  if (cached_has_bits & 0x00000004u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        7, this->latest_qc_item(), target);
+  }
+
+  // optional bytes qc_view_block = 8;
+  if (cached_has_bits & 0x00000008u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        8, this->qc_view_block(), target);
+  }
+
+  // optional uint64 view = 9;
+  if (cached_has_bits & 0x00000100u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(9, this->view(), target);
+  }
+
+  // optional bytes view_block_hash = 10;
+  if (cached_has_bits & 0x00000010u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        10, this->view_block_hash(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2576,7 +2810,7 @@ size_t SyncResItem::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 63u) {
+  if (_has_bits_[0 / 32] & 255u) {
     // optional bytes key = 1;
     if (has_key()) {
       total_size += 1 +
@@ -2589,6 +2823,27 @@ size_t SyncResItem::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->value());
+    }
+
+    // optional bytes latest_qc_item = 7;
+    if (has_latest_qc_item()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->latest_qc_item());
+    }
+
+    // optional bytes qc_view_block = 8;
+    if (has_qc_view_block()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->qc_view_block());
+    }
+
+    // optional bytes view_block_hash = 10;
+    if (has_view_block_hash()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->view_block_hash());
     }
 
     // optional uint32 network_id = 3;
@@ -2610,6 +2865,15 @@ size_t SyncResItem::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->height());
+    }
+
+  }
+  if (_has_bits_[8 / 32] & 768u) {
+    // optional uint64 view = 9;
+    if (has_view()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->view());
     }
 
     // optional uint32 tag = 6;
@@ -2648,7 +2912,7 @@ void SyncResItem::MergeFrom(const SyncResItem& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 63u) {
+  if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_key();
       key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.key_);
@@ -2658,15 +2922,33 @@ void SyncResItem::MergeFrom(const SyncResItem& from) {
       value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_);
     }
     if (cached_has_bits & 0x00000004u) {
-      network_id_ = from.network_id_;
+      set_has_latest_qc_item();
+      latest_qc_item_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.latest_qc_item_);
     }
     if (cached_has_bits & 0x00000008u) {
-      pool_idx_ = from.pool_idx_;
+      set_has_qc_view_block();
+      qc_view_block_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.qc_view_block_);
     }
     if (cached_has_bits & 0x00000010u) {
-      height_ = from.height_;
+      set_has_view_block_hash();
+      view_block_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.view_block_hash_);
     }
     if (cached_has_bits & 0x00000020u) {
+      network_id_ = from.network_id_;
+    }
+    if (cached_has_bits & 0x00000040u) {
+      pool_idx_ = from.pool_idx_;
+    }
+    if (cached_has_bits & 0x00000080u) {
+      height_ = from.height_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+  if (cached_has_bits & 768u) {
+    if (cached_has_bits & 0x00000100u) {
+      view_ = from.view_;
+    }
+    if (cached_has_bits & 0x00000200u) {
       tag_ = from.tag_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -2701,9 +2983,16 @@ void SyncResItem::InternalSwap(SyncResItem* other) {
     GetArenaNoVirtual());
   value_.Swap(&other->value_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
+  latest_qc_item_.Swap(&other->latest_qc_item_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  qc_view_block_.Swap(&other->qc_view_block_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  view_block_hash_.Swap(&other->view_block_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(network_id_, other->network_id_);
   swap(pool_idx_, other->pool_idx_);
   swap(height_, other->height_);
+  swap(view_, other->view_);
   swap(tag_, other->tag_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);

@@ -117,6 +117,21 @@ void KeyValueSync::AddSyncHeight(
         item->key.c_str(), item->priority, network_id, pool_idx, height);
 }
 
+void KeyValueSync::AddSyncHeight(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        uint32_t priority,
+        uint64_t in_view,
+        const std::string& in_block_hash) {
+    auto item = std::make_shared<SyncItem>(
+        network_id, pool_idx, height, priority, kBlockHeight, in_view, in_block_hash);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    item_queues_[thread_idx].push(item);
+    SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu, view: %lu",
+        item->key.c_str(), item->priority, network_id, pool_idx, height, in_view);
+}
+
 void KeyValueSync::AddSyncView(
         uint32_t network_id,
         uint32_t pool_idx,
@@ -129,6 +144,272 @@ void KeyValueSync::AddSyncView(
     item_queues_[thread_idx].push(item);
     SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu",
         item->key.c_str(), item->priority, network_id, pool_idx, height);
+}
+
+// Decides which of the candidates collected at one height should be handed to
+// consensus.  Consensus itself is the arbiter of forks, so the rule here is
+// only about ordering the attempts:
+//   1. the branch already committed locally (a later sibling that lost the
+//      fork is dropped rather than re-verified forever),
+//   2. otherwise the highest view — deterministic across nodes, so all peers
+//      agree on which candidate is tried first,
+//   3. then the hash itself, purely to make the ordering total.
+ViewBlockPtr KeyValueSync::SelectHeightEntry(
+        const SyncedHeightMap& height_map,
+        uint64_t height,
+        uint32_t network_id,
+        uint32_t pool_idx,
+        const std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr,
+        uint32_t max_retry) {
+    auto height_iter = height_map.find(height);
+    if (height_iter == height_map.end() || height_iter->second.empty()) {
+        return nullptr;
+    }
+
+    auto selectable = [](const SyncedHeightEntry& entry) {
+        return entry.pb_vblock && !entry.dead;
+    };
+
+    std::string local_committed_hash;
+    if (hotstuff_mgr) {
+        auto chain = hotstuff_mgr->chain(pool_idx);
+        if (chain) {
+            auto committed = chain->LatestCommittedBlock();
+            if (committed && committed->has_block_info() &&
+                    committed->block_info().height() == height &&
+                    committed->qc().network_id() == network_id) {
+                local_committed_hash = committed->qc().view_block_hash();
+            }
+        }
+    }
+
+    if (!local_committed_hash.empty()) {
+        auto iter = height_iter->second.find(local_committed_hash);
+        if (iter != height_iter->second.end() && selectable(iter->second)) {
+            return iter->second.pb_vblock;
+        }
+    }
+
+    const SyncedHeightEntry* best = nullptr;
+    for (auto& kv : height_iter->second) {
+        const auto& entry = kv.second;
+        if (!selectable(entry)) {
+            continue;
+        }
+
+        // A candidate that already failed too often gets out of the way so the
+        // competing branch can be tried.  This is what keeps one bad fork from
+        // pinning the height: without it the highest-view candidate is picked
+        // again on every pass and the run never advances.
+        if (entry.verify_fail_count >= max_retry) {
+            continue;
+        }
+
+        if (best == nullptr) {
+            best = &entry;
+            continue;
+        }
+
+        // Prefer a candidate that has not been handed to consensus yet.  Once a
+        // block is pushed, a successor can only follow on the same branch, so
+        // re-picking an already-pushed one would stall the height.
+        if (best->pushed_to_consensus != entry.pushed_to_consensus) {
+            if (best->pushed_to_consensus) {
+                best = &entry;
+            }
+
+            continue;
+        }
+
+        auto best_view = best->pb_vblock->qc().view();
+        auto cur_view = entry.pb_vblock->qc().view();
+        if (cur_view > best_view) {
+            best = &entry;
+        } else if (cur_view == best_view &&
+                entry.pb_vblock->qc().view_block_hash() >
+                best->pb_vblock->qc().view_block_hash()) {
+            best = &entry;
+        }
+    }
+
+    return best != nullptr ? best->pb_vblock : nullptr;
+}
+
+bool KeyValueSync::HeightHasLiveCandidate(
+        const SyncedHeightMap& height_map,
+        uint64_t height,
+        uint64_t now_tm_us) {
+    auto height_iter = height_map.find(height);
+    if (height_iter == height_map.end()) {
+        return false;
+    }
+
+    for (auto& kv : height_iter->second) {
+        const auto& entry = kv.second;
+        if (!entry.pb_vblock || entry.dead) {
+            continue;
+        }
+
+        // An entry that has neither been verified nor touched for a full TTL is
+        // treated as abandoned: the peer that was going to answer is gone, and
+        // remembering it would keep the height permanently "answered" without
+        // ever producing a usable block.
+        if (!entry.verified && entry.recv_tm_us != 0 &&
+                entry.recv_tm_us + kHeightCandidateTtlUs <= now_tm_us) {
+            continue;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+// Once a height is settled only the chosen branch matters: a successor can only
+// extend it, and keeping the sibling would let it be re-picked on every pass.
+void KeyValueSync::DropLosingCandidates(
+        SyncedHeightMap* height_map,
+        uint64_t height,
+        const std::string& keep_hash,
+        uint32_t* dropped_count) {
+    if (height_map == nullptr) {
+        return;
+    }
+
+    auto height_iter = height_map->find(height);
+    if (height_iter == height_map->end()) {
+        return;
+    }
+
+    auto& hash_map = height_iter->second;
+    for (auto iter = hash_map.begin(); iter != hash_map.end(); ) {
+        if (iter->first == keep_hash) {
+            ++iter;
+            continue;
+        }
+
+        if (dropped_count != nullptr) {
+            ++(*dropped_count);
+        }
+
+        iter = hash_map.erase(iter);
+    }
+}
+
+// Walks up from latest_height + 1 and pushes every consecutive height that has
+// a verified candidate to consensus.  Returns the number of heights drained.
+// The branch choice per height is SelectHeightEntry's job; this function only
+// decides how far the run of consecutive heights reaches.
+uint32_t KeyValueSync::DrainConsecutiveHeights(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t latest_height,
+        SyncedHeightMap* height_map,
+        uint32_t max_drain) {
+    if (height_map == nullptr || latest_height == common::kInvalidUint64) {
+        return 0;
+    }
+
+    uint32_t drained = 0;
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    auto next_height = latest_height + 1;
+    auto height_iter = height_map->find(next_height);
+    while (height_iter != height_map->end() && drained < max_drain) {
+        auto pb_vblock = SelectHeightEntry(
+            *height_map,
+            next_height,
+            network_id,
+            pool_idx,
+            hotstuff_mgr_,
+            kMaxVerifyFailCount);
+        if (!pb_vblock) {
+            // Every candidate at this height is dead or retired, so the height
+            // can never advance.  Report it as missing instead of stopping the
+            // run silently, so the caller re-requests it.
+            break;
+        }
+
+        const auto& selected_hash = pb_vblock->qc().view_block_hash();
+        auto entry_iter = height_iter->second.find(selected_hash);
+        if (entry_iter == height_iter->second.end()) {
+            break;
+        }
+
+        auto& entry = entry_iter->second;
+        if (!entry.verified) {
+            // Ask a worker to verify the chosen branch, then stop the run: a
+            // later height cannot be committed ahead of this one.  The retry is
+            // throttled so a slow worker is not flooded, and the attempt is
+            // counted so a candidate that never verifies eventually makes way
+            // for its sibling instead of pinning the height.
+            if (entry.last_attempt_tm_us == 0 ||
+                    entry.last_attempt_tm_us + kSyncTimeoutPeriodUs <= now_tm_us) {
+                entry.last_attempt_tm_us = now_tm_us;
+                entry.recv_tm_us = now_tm_us;
+                std::string key = SyncedBlockKey(network_id, pool_idx, selected_hash);
+                EnqueueVerifyBlock(pb_vblock, key, kBlockHeight, false, 0);
+            }
+
+            break;
+        }
+
+        if (!entry.pushed_to_consensus) {
+            entry.pushed_to_consensus = true;
+            entry.recv_tm_us = now_tm_us;
+            EnqueueVerifiedBlock(pb_vblock);
+            ++drained;
+        }
+
+        // The chosen branch won at this height, so its siblings cannot be used
+        // any more: a successor extends the winner only.  Dropping them here is
+        // what makes a fork converge instead of being re-synced forever.
+        uint32_t dropped = 0;
+        DropLosingCandidates(height_map, next_height, selected_hash, &dropped);
+        if (dropped > 0 && network_id != network::kRootCongressNetworkId) {
+            if (dropped > not_root_synced_res_map_count_) {
+                not_root_synced_res_map_count_ = 0;
+            } else {
+                not_root_synced_res_map_count_ -= dropped;
+            }
+        }
+
+        ++next_height;
+        height_iter = height_map->find(next_height);
+    }
+
+    return drained;
+}
+
+// Drops every candidate at or below latest_height.  Those heights are settled
+// (either committed or abandoned), so keeping sibling branches around only
+// leaks memory and skews not_root_synced_res_map_count_.
+void KeyValueSync::EraseSyncedHeightsUpTo(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t latest_height,
+        SyncedHeightMap* height_map) {
+    if (height_map == nullptr || latest_height == common::kInvalidUint64) {
+        return;
+    }
+
+    auto erase_end = height_map->upper_bound(latest_height);
+    if (erase_end == height_map->begin()) {
+        return;
+    }
+
+    if (network_id != network::kRootCongressNetworkId) {
+        uint32_t erased_entries = 0;
+        for (auto iter = height_map->begin(); iter != erase_end; ++iter) {
+            erased_entries += static_cast<uint32_t>(iter->second.size());
+        }
+        if (erased_entries > not_root_synced_res_map_count_) {
+            not_root_synced_res_map_count_ = 0;
+        } else {
+            not_root_synced_res_map_count_ -= erased_entries;
+        }
+    }
+
+    height_map->erase(height_map->begin(), erase_end);
 }
 
 void KeyValueSync::HotstuffConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
@@ -352,14 +633,57 @@ void KeyValueSync::PopItems() {
                 break;
             }
             
+            // Dedup on what the item actually identifies.
+            //   - With a known hash: skip once that exact block has been
+            //     received, because re-asking for it can only return the same
+            //     block.
+            //   - With a known view: skip once any candidate at that height
+            //     carries that view, which is the same block by construction.
+            //   - With neither: this is a probe for "whatever height H is".
+            //     Any candidate at H means a peer answered this height, so
+            //     stop probing — but a *different* branch can never satisfy
+            //     it, which is why the branch-aware forms above exist.
             if (item->tag == kBlockHeight) {
-                auto iter = synced_res_map_.find(item->network_id);
-                if (iter != synced_res_map_.end()) {
-                    auto iter2 = iter->second.find(item->pool_idx);
-                    if (iter2 != iter->second.end()) {
-                        auto iter3 = iter2->second.find(item->height);
-                        if (iter3 != iter2->second.end()) {
-                            continue;
+                auto net_iter = synced_res_map_.find(item->network_id);
+                if (net_iter != synced_res_map_.end()) {
+                    auto pool_iter = net_iter->second.find(item->pool_idx);
+                    if (pool_iter != net_iter->second.end()) {
+                        auto height_iter = pool_iter->second.find(item->height);
+                        if (height_iter != pool_iter->second.end()) {
+                            if (item->HasIdentity()) {
+                                bool matched = false;
+                                for (auto& entry_iter : height_iter->second) {
+                                    auto& entry = entry_iter.second;
+                                    if (!entry.pb_vblock || entry.dead) {
+                                        continue;
+                                    }
+
+                                    if (!item->block_hash.empty() &&
+                                            entry.pb_vblock->qc().view_block_hash() != item->block_hash) {
+                                        continue;
+                                    }
+
+                                    if (item->view != common::kInvalidUint64 &&
+                                            entry.pb_vblock->qc().view() != item->view) {
+                                        continue;
+                                    }
+
+                                    matched = true;
+                                    break;
+                                }
+
+                                if (matched) {
+                                    continue;
+                                }
+                            } else if (HeightHasLiveCandidate(
+                                    pool_iter->second, item->height, now_tm)) {
+                                // A bare height probe is satisfied by any live
+                                // answer.  Candidates that died or expired do
+                                // not count, otherwise a height that only ever
+                                // received an unusable branch would look done
+                                // and never be re-requested.
+                                continue;
+                            }
                         }
                     }
                 }
@@ -394,8 +718,16 @@ void KeyValueSync::PopItems() {
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
-                SHARDORA_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d",
-                    item->network_id, item->pool_idx, item->height, item->tag);
+                if (item->view != common::kInvalidUint64) {
+                    height_item->set_view(item->view);
+                }
+
+                if (!item->block_hash.empty()) {
+                    height_item->set_view_block_hash(item->block_hash);
+                }
+
+                SHARDORA_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d, view: %lu",
+                    item->network_id, item->pool_idx, item->height, item->tag, item->view);
             } else {
                 sync_req->add_keys(item->key);
                 SHARDORA_DEBUG("success add to sync key: %s", 
@@ -811,8 +1143,39 @@ void KeyValueSync::ApplyVerifiedBlockResult(const VerifyBlockResult& result) {
 
     {
         auto& height_map = synced_res_map_[pb_vblock->qc().network_id()][pb_vblock->qc().pool_index()];
-        bool is_new_entry = (height_map.find(pb_vblock->block_info().height()) == height_map.end());
-        height_map[pb_vblock->block_info().height()] = std::make_pair((result.verify_res == 0), pb_vblock);
+        const auto& vblock_hash = pb_vblock->qc().view_block_hash();
+        auto& hash_map = height_map[pb_vblock->block_info().height()];
+        bool is_new_entry = (hash_map.find(vblock_hash) == hash_map.end());
+        auto& entry = hash_map[vblock_hash];
+        entry.verified = (result.verify_res == 0);
+        entry.pb_vblock = pb_vblock;
+        entry.last_attempt_tm_us = common::TimeUtils::TimestampUs();
+        if (is_new_entry) {
+            entry.recv_tm_us = entry.last_attempt_tm_us;
+        }
+
+        if (!entry.verified) {
+            // Count the failure so a candidate that can never verify stops
+            // blocking its height.  A missing parent is a common transient
+            // cause, which is why this is a retry cap and not an immediate
+            // retire.
+            ++entry.verify_fail_count;
+            if (entry.verify_fail_count >= kMaxVerifyFailCount) {
+                entry.dead = true;
+                SHARDORA_DEBUG("retire synced block after %u failed verifies: %u_%u_%lu "
+                    "height: %lu, hash: %s",
+                    entry.verify_fail_count,
+                    pb_vblock->qc().network_id(),
+                    pb_vblock->qc().pool_index(),
+                    pb_vblock->qc().view(),
+                    pb_vblock->block_info().height(),
+                    common::Encode::HexEncode(vblock_hash).c_str());
+            }
+        } else {
+            entry.verify_fail_count = 0;
+            entry.dead = false;
+        }
+
         if (pb_vblock->qc().network_id() != network::kRootCongressNetworkId && is_new_entry) {
             ++not_root_synced_res_map_count_;
         }
@@ -936,7 +1299,12 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             auto res = sync_res->add_res();
             res->set_network_id(view_block_ptr->qc().network_id());
             res->set_pool_idx(view_block_ptr->qc().pool_index());
-            res->set_height(view_block_ptr->qc().view());
+            // `height` used to be filled with qc().view() on this path, which
+            // made height and view indistinguishable to the requester. Keep
+            // them separate and report the block's real identity as well.
+            res->set_height(view_block_ptr->block_info().height());
+            res->set_view(view_block_ptr->qc().view());
+            res->set_view_block_hash(view_block_ptr->qc().view_block_hash());
             res->set_value(SerializeDeterministic(*view_block_ptr));
             res->set_key(key);
             res->set_tag(kViewHash);
@@ -954,7 +1322,44 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size() && add_size < kSyncPacketMaxSize; ++i) {
         auto& req_height = sync_msg.sync_value_req().heights(i);
         std::shared_ptr<view_block::protobuf::ViewBlockItem> view_block_ptr = nullptr;
-        if (req_height.tag() == kBlockHeight) {
+        if (req_height.has_view_block_hash()) {
+            // The requester named the exact block it wants.  Answer with that
+            // block or with nothing: falling back to "whatever is at this
+            // height" is precisely how a fork sibling used to get returned and
+            // then discarded by the requester as a duplicate.
+            auto info = hotstuff_mgr_->chain(req_height.pool_idx())->GetViewBlockWithHash(
+                req_height.view_block_hash(), false);
+            if (info) {
+                view_block_ptr = info->view_block;
+            }
+
+            if (!view_block_ptr) {
+                SHARDORA_DEBUG("sync key value %u_%u_%lu, no block for hash %s, net: %u, pool: %u, hash: %lu",
+                    network_id,
+                    req_height.pool_idx(),
+                    req_height.height(),
+                    common::Encode::HexEncode(req_height.view_block_hash()).c_str(),
+                    network_id,
+                    req_height.pool_idx(),
+                    msg_ptr->header.hash64());
+                continue;
+            }
+        } else if (req_height.has_view()) {
+            // Fork disambiguation: height + view identifies one branch.
+            view_block_ptr = hotstuff_mgr_->chain(req_height.pool_idx())->GetViewBlockWithHeightAndView(
+                network_id, req_height.height(), req_height.view());
+            if (!view_block_ptr) {
+                SHARDORA_DEBUG("sync key value %u_%u_%lu, no block for view %lu, net: %u, pool: %u, hash: %lu",
+                    network_id,
+                    req_height.pool_idx(),
+                    req_height.height(),
+                    req_height.view(),
+                    network_id,
+                    req_height.pool_idx(),
+                    msg_ptr->header.hash64());
+                continue;
+            }
+        } else if (req_height.tag() == kBlockHeight) {
             view_block_ptr = hotstuff_mgr_->chain(req_height.pool_idx())->GetViewBlockWithHeight(
                 network_id, req_height.height());
             if (!view_block_ptr) {
@@ -1010,6 +1415,10 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         res->set_network_id(network_id);
         res->set_pool_idx(req_height.pool_idx());
         res->set_height(req_height.height());
+        // Report the block's own identity so the requester can dedup on it
+        // rather than on the height it happened to ask for.
+        res->set_view(view_block_ptr->qc().view());
+        res->set_view_block_hash(view_block_ptr->qc().view_block_hash());
         res->set_value(SerializeDeterministic(*view_block_ptr));
         res->set_tag(req_height.tag());
         add_size += 16 + res->value().size();
@@ -1058,6 +1467,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     res->set_network_id(network_id);
                     res->set_pool_idx(common::kGlobalPoolIndex);
                     res->set_height(latest_sync_item.globl_pool_height());
+                    res->set_view(view_block_ptr->qc().view());
+                    res->set_view_block_hash(view_block_ptr->qc().view_block_hash());
                     res->set_value(SerializeDeterministic(*view_block_ptr));
                     res->set_tag(kBlockHeight);
                     add_size += 16 + res->value().size();
@@ -1104,6 +1515,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                         res->set_network_id(network_id);
                         res->set_pool_idx(i);
                         res->set_height(height);
+                        res->set_view(view_block_ptr->qc().view());
+                        res->set_view_block_hash(view_block_ptr->qc().view_block_hash());
                         res->set_value(value);
                         res->set_tag(kBlockHeight);
                         add_size += 16 + res->value().size();
@@ -1158,53 +1571,100 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     auto& res_arr = sync_msg.sync_value_res().res();
     SHARDORA_DEBUG("now handle kv response hash64: %lu", msg_ptr->header.hash64());
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
-        std::string key = iter->key();
+        // Request-side key, used only to clear the in-flight entry in
+        // synced_map_ once the answer lands.  A height request carries no key
+        // on the wire, so it has to be rebuilt here — and it must be rebuilt in
+        // the same shape PopItems used, suffix included, or the in-flight entry
+        // never gets cleared.  Two shapes exist: an identity probe (view/hash
+        // suffix from SyncItem) and a bare height probe (no suffix).
+        std::string req_key = iter->key();
         if (iter->tag() == kBlockHeight || iter->tag() == kBlockView) {
-            key = std::to_string(iter->network_id()) + "_" +
+            req_key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height()) + "_" +
                 std::to_string(iter->tag());
+            if (iter->has_view()) {
+                req_key += "_v" + std::to_string(iter->view());
+            }
+
+            if (iter->has_view_block_hash()) {
+                req_key += "_h" + common::Encode::HexEncode(iter->view_block_hash());
+            }
+        } else if (iter->tag() == kViewHash) {
+            // AddSyncViewHash builds this key as [u16 pool_idx][raw hash], and
+            // the responder echoes it back verbatim via res->set_key(key), so
+            // iter->key() already is the SyncItem key.  Leave it alone.
         }
 
         do {
             SHARDORA_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d",
-                msg_ptr->header.hash64(), 
-                (iter->tag() != kViewHash ? key.c_str() : common::Encode::HexEncode(key).c_str()), 
+                msg_ptr->header.hash64(),
+                (iter->tag() != kViewHash ? req_key.c_str() : common::Encode::HexEncode(req_key).c_str()),
                 iter->tag());
             auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
             if (!pb_vblock->ParseFromString(iter->value())) {
-                SHARDORA_ERROR("pb vblock parse failed: %s", key.c_str());
+                SHARDORA_ERROR("pb vblock parse failed: %s", req_key.c_str());
                 // //assert(false);
                 break;
             }
-    
+
             if (!pb_vblock->has_qc() || pb_vblock->qc().sign_x().empty()) {
                 SHARDORA_ERROR("pb vblock has no qc");
                 //assert(false);
                 break;
             }
-         
+
             if (pb_vblock->block_info().chain_id() != hotstuff::kGlobalChainId) {
                 SHARDORA_ERROR("pb vblock parse failed chain id invalid: %lu, %lu",
                     pb_vblock->block_info().chain_id(), hotstuff::kGlobalChainId);
                 break;
             }
 
-            // Skip re-verification if this height is already in synced_res_map_.
-            // This prevents the verify queue from flooding when latest_height stalls
-            // (e.g. vblock_queue backlog) and sync keeps re-requesting the same blocks.
+            // Everything below keys on the block's real identity, not on the
+            // requested height.  That is the whole point of this change: the
+            // same height can be answered with two different views, and both
+            // must survive to verification so consensus can arbitrate.
+            const std::string block_key = SyncedBlockKey(
+                pb_vblock->qc().network_id(),
+                pb_vblock->qc().pool_index(),
+                pb_vblock->qc().view_block_hash());
+
+            // Skip re-verification only when this exact block is already in
+            // synced_res_map_ or has already been answered.  A sibling view at
+            // the same height is a different block and must go through.
             {
                 auto net_iter = synced_res_map_.find(pb_vblock->qc().network_id());
                 if (net_iter != synced_res_map_.end()) {
                     auto pool_iter = net_iter->second.find(pb_vblock->qc().pool_index());
-                    if (pool_iter != net_iter->second.end() &&
-                            pool_iter->second.find(pb_vblock->block_info().height()) != pool_iter->second.end()) {
-                        SHARDORA_DEBUG("skip re-verify already synced block: %u_%u_%lu height: %lu",
-                            pb_vblock->qc().network_id(), pb_vblock->qc().pool_index(),
-                            pb_vblock->qc().view(), pb_vblock->block_info().height());
-                        break;
+                    if (pool_iter != net_iter->second.end()) {
+                        auto height_iter = pool_iter->second.find(pb_vblock->block_info().height());
+                        if (height_iter != pool_iter->second.end() &&
+                                height_iter->second.find(pb_vblock->qc().view_block_hash()) !=
+                                height_iter->second.end()) {
+                            SHARDORA_DEBUG("skip re-verify already synced block: %u_%u_%lu height: %lu",
+                                pb_vblock->qc().network_id(), pb_vblock->qc().pool_index(),
+                                pb_vblock->qc().view(), pb_vblock->block_info().height());
+                            break;
+                        }
                     }
                 }
+
+                if (responsed_keys_.exists(block_key)) {
+                    SHARDORA_DEBUG("skip re-verify already responsed block: %s",
+                        common::Encode::HexEncode(block_key).c_str());
+                    break;
+                }
+            }
+
+            // Clear the in-flight entry unless this was an identity probe that
+            // got a different branch back.  An identity probe names one exact
+            // block, so a sibling at the same height does not answer it and the
+            // entry must stay for a retry against another peer.  A bare height
+            // probe is satisfied by any answer: that is the point of asking
+            // without an identity.
+            bool identity_probe = req_key.find("_h") != std::string::npos;
+            if (!identity_probe || req_key == block_key) {
+                synced_map_.erase(req_key);
             }
 
             // Attach piggybacked TC/QC data so HandleSyncedViewBlock can commit the
@@ -1217,23 +1677,23 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
             EnqueueVerifyBlock(
                 pb_vblock,
-                key,
+                block_key,
                 iter->tag(),
                 iter->key().empty(),
                 msg_ptr->header.hash64());
         } while (0);
 
         SHARDORA_DEBUG("block response coming: %s, sync map size: %u, hash64: %lu",
-            key.c_str(), synced_map_.size(), msg_ptr->header.hash64());
+            req_key.c_str(), synced_map_.size(), msg_ptr->header.hash64());
     }
 
     {
         uint32_t drained = 0;
         static const uint32_t kMaxInlineDrain = 128;
-        for (auto net_iter = synced_res_map_.begin(); 
+        for (auto net_iter = synced_res_map_.begin();
                 net_iter != synced_res_map_.end() && drained < kMaxInlineDrain; ++net_iter) {
             auto network_id = net_iter->first;
-            for (auto pool_iter = net_iter->second.begin(); 
+            for (auto pool_iter = net_iter->second.begin();
                     pool_iter != net_iter->second.end() && drained < kMaxInlineDrain; ++pool_iter) {
                 auto pool_idx = pool_iter->first;
                 uint64_t latest_height;
@@ -1246,31 +1706,20 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     latest_height = tx_pool_mgr_->cross_latest_height(network_id);
                 }
 
-                auto height_iter = pool_iter->second.find(latest_height + 1);
-                while (height_iter != pool_iter->second.end() && drained < kMaxInlineDrain) {
-                    if (height_iter->second.first) {
-                        // Already verified, push to consensus
-                        auto& pb_vblock = height_iter->second.second;
-                        EnqueueVerifiedBlock(pb_vblock);
-                        ++drained;
-                        ++latest_height;
-                        height_iter = pool_iter->second.find(latest_height + 1);
-                        continue;
-                    }
-                    // Not yet verified, retry on verification workers instead
-                    // of blocking the kv timer thread on BLS checks.
-                    auto& pb_vblock = height_iter->second.second;
-                    std::string key = std::to_string(network_id) + "_" +
-                        std::to_string(pool_idx) + "_" +
-                        std::to_string(pb_vblock->block_info().height()) + "_" +
-                        std::to_string(kBlockHeight);
-                    EnqueueVerifyBlock(pb_vblock, key, kBlockHeight, false, 0);
-                    break; // Can't push this pool until this height verifies.
-                }
+                // The block the local node already committed at latest_height is
+                // the authoritative choice for any fork at that height, so drop
+                // everything below it and let the run advance from there.
+                drained += DrainConsecutiveHeights(
+                    network_id,
+                    pool_idx,
+                    latest_height,
+                    &pool_iter->second,
+                    kMaxInlineDrain - drained);
             }
         }
 
         if (drained > 0) {
+            SHARDORA_DEBUG("inline drain pushed %u blocks to consensus", drained);
         }
     }
 }
@@ -1305,6 +1754,7 @@ void KeyValueSync::QueueFollowupBlockSync(
         return;
     }
 
+    auto now_tm_us = common::TimeUtils::TimestampUs();
     for (uint32_t i = 1; i <= kFollowupSyncHeightCount; ++i) {
         auto next_height = height + i;
         std::string key = std::to_string(network_id) + "_" +
@@ -1312,21 +1762,20 @@ void KeyValueSync::QueueFollowupBlockSync(
             std::to_string(next_height) + "_" +
             std::to_string(kBlockHeight);
 
-        if (responsed_keys_.exists(key)) {
-            continue;
-        }
-
         if (synced_map_.exists(key)) {
             continue;
         }
 
-        auto net_iter = synced_res_map_.find(network_id);
-        if (net_iter != synced_res_map_.end()) {
-            auto pool_iter = net_iter->second.find(pool_idx);
-            if (pool_iter != net_iter->second.end() &&
-                    pool_iter->second.find(next_height) != pool_iter->second.end()) {
-                continue;
-            }
+        // Ask only when the height has no candidate that could still be
+        // committed.  A candidate that is present but dead, or one that expired
+        // without ever verifying, does not count: treating it as an answer is
+        // exactly how a height used to get stuck with nothing usable and no
+        // outstanding request.  A live candidate means the height was answered,
+        // and the branch continuing from the block just handled is requested
+        // through AddSyncViewHash, which names it exactly.
+        if (HeightHasLiveCandidate(
+                synced_res_map_[network_id][pool_idx], next_height, now_tm_us)) {
+            continue;
         }
 
         auto item = std::make_shared<SyncItem>(
@@ -1445,41 +1894,62 @@ void KeyValueSync::SyncAllLatestBlocks() {
             // cleaned up when latest_height was present, leaving stale entries
             // when blocks were committed via consensus (not sync), causing
             // not_root_synced_res_map_count_ to grow unboundedly.
-            {
-                auto erase_end = pool_iter->second.upper_bound(latest_height);
-                if (erase_end != pool_iter->second.begin()) {
-                    auto now_size = pool_iter->second.size();
-                    pool_iter->second.erase(pool_iter->second.begin(), erase_end);
-                    if (network_id != network::kRootCongressNetworkId) {
-                        not_root_synced_res_map_count_ -= now_size - pool_iter->second.size();
+            EraseSyncedHeightsUpTo(network_id, i, latest_height, &pool_iter->second);
+
+            ++latest_height;
+
+            // Retry verification for anything still outstanding, then push the
+            // run of consecutive heights to consensus.  DrainConsecutiveHeights
+            // picks the branch per height (locally committed, else highest view).
+            for (auto& height_entry : pool_iter->second) {
+                if (height_entry.first < latest_height) {
+                    continue;
+                }
+
+                for (auto& hash_entry : height_entry.second) {
+                    auto& entry = hash_entry.second;
+                    if (entry.verified || !entry.pb_vblock || entry.dead) {
+                        continue;
                     }
+
+                    // A candidate that already exhausted its retries stays
+                    // retired; re-enqueueing it would crowd out the sibling
+                    // that SelectHeightEntry wants to try next.
+                    if (entry.verify_fail_count >= kMaxVerifyFailCount) {
+                        continue;
+                    }
+
+                    EnqueueVerifyBlock(
+                        entry.pb_vblock,
+                        SyncedBlockKey(network_id, i, hash_entry.first),
+                        kBlockHeight,
+                        false,
+                        0);
                 }
             }
 
-            auto height_iter = pool_iter->second.find(++latest_height);
-            while (height_iter != pool_iter->second.end()) {
-                if (!height_iter->second.first) {
-                    auto& pb_vblock = height_iter->second.second;
-                    std::string key = std::to_string(network_id) + "_" +
-                        std::to_string(i) + "_" +
-                        std::to_string(pb_vblock->block_info().height()) + "_" +
-                        std::to_string(kBlockHeight);
-                    EnqueueVerifyBlock(pb_vblock, key, kBlockHeight, false, 0);
-                }
-                height_iter = pool_iter->second.find(++latest_height);
-            }
+            DrainConsecutiveHeights(
+                network_id,
+                i,
+                latest_height - 1,
+                &pool_iter->second,
+                kFollowupSyncHeightCount);
 
-            // Fix: Skip past ALL heights already in synced_res_map_, not just
-            // consecutive ones from latest_height. The map may have gaps (e.g.,
-            // heights 68,69 present but 70 missing). We need to request from
-            // the first truly missing height, not from the first gap.
-            // Also skip heights that were already committed to avoid re-requesting
-            // blocks that are in transit (pushed to vblock_queues_ but not yet
-            // committed, so latest_height hasn't advanced yet).
-            if (!pool_iter->second.empty()) {
-                auto max_synced = pool_iter->second.rbegin()->first;
-                if (max_synced >= latest_height) {
-                    latest_height = max_synced + 1;
+            // Advance to the first height that still needs a block, skipping the
+            // heights that already hold something usable.  Skipping to the
+            // maximum height instead would walk past every intermediate height
+            // whose candidates all died, and those heights would never be
+            // requested again — a permanent gap that latest_height can never
+            // cross.  Heights already committed are skipped too, so blocks in
+            // transit (pushed but not yet committed) are not re-requested.
+            {
+                auto now_tm_us = common::TimeUtils::TimestampUs();
+                auto height_iter = pool_iter->second.lower_bound(latest_height);
+                while (height_iter != pool_iter->second.end() &&
+                        HeightHasLiveCandidate(
+                            pool_iter->second, height_iter->first, now_tm_us)) {
+                    latest_height = height_iter->first + 1;
+                    height_iter = pool_iter->second.lower_bound(latest_height);
                 }
             }
 
@@ -1524,35 +1994,49 @@ void KeyValueSync::SyncAllLatestBlocks() {
             SHARDORA_DEBUG("  cross pool %u net %u: latest_height=%lu, synced entries=%lu",
                 pool_key, network_id, latest_height, pool_iter->second.size());
 
-            {
-                auto erase_end = pool_iter->second.upper_bound(latest_height);
-                if (erase_end != pool_iter->second.begin()) {
-                    auto now_size = pool_iter->second.size();
-                    pool_iter->second.erase(pool_iter->second.begin(), erase_end);
-                    if (network_id != network::kRootCongressNetworkId) {
-                        not_root_synced_res_map_count_ -= now_size - pool_iter->second.size();
+            EraseSyncedHeightsUpTo(network_id, pool_key, latest_height, &pool_iter->second);
+
+            ++latest_height;
+
+            for (auto& height_entry : pool_iter->second) {
+                if (height_entry.first < latest_height) {
+                    continue;
+                }
+
+                for (auto& hash_entry : height_entry.second) {
+                    auto& entry = hash_entry.second;
+                    if (entry.verified || !entry.pb_vblock || entry.dead) {
+                        continue;
                     }
+
+                    if (entry.verify_fail_count >= kMaxVerifyFailCount) {
+                        continue;
+                    }
+
+                    EnqueueVerifyBlock(
+                        entry.pb_vblock,
+                        SyncedBlockKey(network_id, pool_key, hash_entry.first),
+                        kBlockHeight,
+                        false,
+                        0);
                 }
             }
 
-            auto height_iter = pool_iter->second.find(++latest_height);
-            while (height_iter != pool_iter->second.end()) {
-                if (!height_iter->second.first) {
-                    auto& pb_vblock = height_iter->second.second;
-                    std::string key = std::to_string(network_id) + "_" +
-                        std::to_string(pool_key) + "_" +
-                        std::to_string(pb_vblock->block_info().height()) + "_" +
-                        std::to_string(kBlockHeight);
-                    EnqueueVerifyBlock(pb_vblock, key, kBlockHeight, false, 0);
-                }
+            DrainConsecutiveHeights(
+                network_id,
+                pool_key,
+                latest_height - 1,
+                &pool_iter->second,
+                kFollowupSyncHeightCount);
 
-                height_iter = pool_iter->second.find(++latest_height);
-            }
-
-            if (!pool_iter->second.empty()) {
-                auto max_synced = pool_iter->second.rbegin()->first;
-                if (max_synced >= latest_height) {
-                    latest_height = max_synced + 1;
+            {
+                auto now_tm_us = common::TimeUtils::TimestampUs();
+                auto height_iter = pool_iter->second.lower_bound(latest_height);
+                while (height_iter != pool_iter->second.end() &&
+                        HeightHasLiveCandidate(
+                            pool_iter->second, height_iter->first, now_tm_us)) {
+                    latest_height = height_iter->first + 1;
+                    height_iter = pool_iter->second.lower_bound(latest_height);
                 }
             }
 

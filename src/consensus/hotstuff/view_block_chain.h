@@ -54,6 +54,14 @@ public:
     std::shared_ptr<ViewBlockInfo> GetViewBlockWithHash(const HashStr& hash, bool remove);
     std::shared_ptr<ViewBlock> GetViewBlockWithView(uint32_t network_id, uint64_t height);
     std::shared_ptr<ViewBlock> GetViewBlockWithHeight(uint32_t network_id, uint64_t height);
+    // Height alone does not identify a block: two forks can share one height.
+    // This returns the block at `height` produced by `view`, or nullptr if this
+    // chain never saw that branch.  Sync uses it so a request naming a view
+    // cannot be answered with the competing fork at the same height.
+    std::shared_ptr<ViewBlock> GetViewBlockWithHeightAndView(
+        uint32_t network_id,
+        uint64_t height,
+        uint64_t view);
     // Drain cached_block_queue_ into cached_block_map_/LRU maps.
     // Must be called from a single thread (the sync timer thread) before
     // calling GetViewBlockWithHeight/GetViewBlockWithView, because the

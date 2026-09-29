@@ -1975,6 +1975,21 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   const ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::CrossShardCloneInfo >&
       clone_deploy_array() const;
 
+  // optional bytes pora_proof = 28;
+  bool has_pora_proof() const;
+  void clear_pora_proof();
+  static const int kPoraProofFieldNumber = 28;
+  const ::std::string& pora_proof() const;
+  void set_pora_proof(const ::std::string& value);
+  #if LANG_CXX11
+  void set_pora_proof(::std::string&& value);
+  #endif
+  void set_pora_proof(const char* value);
+  void set_pora_proof(const void* value, size_t size);
+  ::std::string* mutable_pora_proof();
+  ::std::string* release_pora_proof();
+  void set_allocated_pora_proof(::std::string* pora_proof);
+
   // optional .shardora.pools.protobuf.ElectStatistic elect_statistic = 11;
   bool has_elect_statistic() const;
   void clear_elect_statistic();
@@ -2101,19 +2116,19 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 all_gas() const;
   void set_all_gas(::google::protobuf::uint64 value);
 
-  // optional uint32 version = 1;
-  bool has_version() const;
-  void clear_version();
-  static const int kVersionFieldNumber = 1;
-  ::google::protobuf::uint32 version() const;
-  void set_version(::google::protobuf::uint32 value);
-
   // optional uint64 chain_id = 26;
   bool has_chain_id() const;
   void clear_chain_id();
   static const int kChainIdFieldNumber = 26;
   ::google::protobuf::uint64 chain_id() const;
   void set_chain_id(::google::protobuf::uint64 value);
+
+  // optional uint32 version = 1;
+  bool has_version() const;
+  void clear_version();
+  static const int kVersionFieldNumber = 1;
+  ::google::protobuf::uint32 version() const;
+  void set_version(::google::protobuf::uint32 value);
 
   // @@protoc_insertion_point(class_scope:shardora.block.protobuf.Block)
  private:
@@ -2147,6 +2162,8 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   void clear_has_pool_st_info();
   void set_has_chain_id();
   void clear_has_chain_id();
+  void set_has_pora_proof();
+  void clear_has_pora_proof();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2160,6 +2177,7 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::JoinElectInfo > joins_;
   ::google::protobuf::RepeatedPtrField< ::std::string> unique_hashs_;
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::CrossShardCloneInfo > clone_deploy_array_;
+  ::google::protobuf::internal::ArenaStringPtr pora_proof_;
   ::shardora::pools::protobuf::ElectStatistic* elect_statistic_;
   ::shardora::elect::protobuf::ElectBlock* elect_block_;
   ::shardora::elect::protobuf::ElectBlock* prev_elect_block_;
@@ -2173,8 +2191,8 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 timestamp_;
   ::google::protobuf::uint64 pool_statistic_height_;
   ::google::protobuf::uint64 all_gas_;
-  ::google::protobuf::uint32 version_;
   ::google::protobuf::uint64 chain_id_;
+  ::google::protobuf::uint32 version_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -7935,13 +7953,13 @@ inline void CrossShardCloneInfo::set_allocated_runtime_bytecode(::std::string* r
 
 // optional uint32 version = 1;
 inline bool Block::has_version() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 inline void Block::set_has_version() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 inline void Block::clear_has_version() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void Block::clear_version() {
   version_ = 0u;
@@ -7959,13 +7977,13 @@ inline void Block::set_version(::google::protobuf::uint32 value) {
 
 // optional uint64 height = 2;
 inline bool Block::has_height() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void Block::set_has_height() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void Block::clear_has_height() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void Block::clear_height() {
   height_ = GOOGLE_ULONGLONG(0);
@@ -7983,13 +8001,13 @@ inline void Block::set_height(::google::protobuf::uint64 value) {
 
 // optional uint64 consistency_random = 3;
 inline bool Block::has_consistency_random() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void Block::set_has_consistency_random() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void Block::clear_has_consistency_random() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void Block::clear_consistency_random() {
   consistency_random_ = GOOGLE_ULONGLONG(0);
@@ -8007,13 +8025,13 @@ inline void Block::set_consistency_random(::google::protobuf::uint64 value) {
 
 // optional uint64 timeblock_height = 4;
 inline bool Block::has_timeblock_height() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void Block::set_has_timeblock_height() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void Block::clear_has_timeblock_height() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void Block::clear_timeblock_height() {
   timeblock_height_ = GOOGLE_ULONGLONG(0);
@@ -8061,13 +8079,13 @@ Block::tx_list() const {
 
 // optional uint64 timestamp = 6;
 inline bool Block::has_timestamp() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void Block::set_has_timestamp() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void Block::clear_has_timestamp() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void Block::clear_timestamp() {
   timestamp_ = GOOGLE_ULONGLONG(0);
@@ -8241,13 +8259,13 @@ Block::address_array() const {
 
 // optional .shardora.pools.protobuf.ElectStatistic elect_statistic = 11;
 inline bool Block::has_elect_statistic() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void Block::set_has_elect_statistic() {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void Block::clear_has_elect_statistic() {
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline const ::shardora::pools::protobuf::ElectStatistic& Block::_internal_elect_statistic() const {
   return *elect_statistic_;
@@ -8295,13 +8313,13 @@ inline void Block::set_allocated_elect_statistic(::shardora::pools::protobuf::El
 
 // optional .shardora.elect.protobuf.ElectBlock elect_block = 12;
 inline bool Block::has_elect_block() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void Block::set_has_elect_block() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void Block::clear_has_elect_block() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline const ::shardora::elect::protobuf::ElectBlock& Block::_internal_elect_block() const {
   return *elect_block_;
@@ -8349,13 +8367,13 @@ inline void Block::set_allocated_elect_block(::shardora::elect::protobuf::ElectB
 
 // optional .shardora.elect.protobuf.ElectBlock prev_elect_block = 13;
 inline bool Block::has_prev_elect_block() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void Block::set_has_prev_elect_block() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void Block::clear_has_prev_elect_block() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline const ::shardora::elect::protobuf::ElectBlock& Block::_internal_prev_elect_block() const {
   return *prev_elect_block_;
@@ -8403,13 +8421,13 @@ inline void Block::set_allocated_prev_elect_block(::shardora::elect::protobuf::E
 
 // optional .shardora.block.protobuf.ConsensusToTxs local_to = 14;
 inline bool Block::has_local_to() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void Block::set_has_local_to() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void Block::clear_has_local_to() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void Block::clear_local_to() {
   if (local_to_ != NULL) local_to_->Clear();
@@ -8461,13 +8479,13 @@ inline void Block::set_allocated_local_to(::shardora::block::protobuf::Consensus
 
 // optional .shardora.timeblock.protobuf.TimeBlock timer_block = 16;
 inline bool Block::has_timer_block() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void Block::set_has_timer_block() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void Block::clear_has_timer_block() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline const ::shardora::timeblock::protobuf::TimeBlock& Block::_internal_timer_block() const {
   return *timer_block_;
@@ -8515,13 +8533,13 @@ inline void Block::set_allocated_timer_block(::shardora::timeblock::protobuf::Ti
 
 // optional .shardora.pools.protobuf.AllToTxMessage normal_to = 18;
 inline bool Block::has_normal_to() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void Block::set_has_normal_to() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void Block::clear_has_normal_to() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline const ::shardora::pools::protobuf::AllToTxMessage& Block::_internal_normal_to() const {
   return *normal_to_;
@@ -8596,13 +8614,13 @@ Block::cross_shard_to_array() const {
 
 // optional uint64 pool_statistic_height = 21;
 inline bool Block::has_pool_statistic_height() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void Block::set_has_pool_statistic_height() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void Block::clear_has_pool_statistic_height() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void Block::clear_pool_statistic_height() {
   pool_statistic_height_ = GOOGLE_ULONGLONG(0);
@@ -8620,13 +8638,13 @@ inline void Block::set_pool_statistic_height(::google::protobuf::uint64 value) {
 
 // optional uint64 all_gas = 22;
 inline bool Block::has_all_gas() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void Block::set_has_all_gas() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void Block::clear_has_all_gas() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void Block::clear_all_gas() {
   all_gas_ = GOOGLE_ULONGLONG(0);
@@ -8671,13 +8689,13 @@ Block::joins() const {
 
 // optional .shardora.pools.protobuf.PoolStatisticTxInfo pool_st_info = 24;
 inline bool Block::has_pool_st_info() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void Block::set_has_pool_st_info() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void Block::clear_has_pool_st_info() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline const ::shardora::pools::protobuf::PoolStatisticTxInfo& Block::_internal_pool_st_info() const {
   return *pool_st_info_;
@@ -8844,6 +8862,72 @@ inline const ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::
 Block::clone_deploy_array() const {
   // @@protoc_insertion_point(field_list:shardora.block.protobuf.Block.clone_deploy_array)
   return clone_deploy_array_;
+}
+
+// optional bytes pora_proof = 28;
+inline bool Block::has_pora_proof() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void Block::set_has_pora_proof() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void Block::clear_has_pora_proof() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void Block::clear_pora_proof() {
+  pora_proof_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_pora_proof();
+}
+inline const ::std::string& Block::pora_proof() const {
+  // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.pora_proof)
+  return pora_proof_.GetNoArena();
+}
+inline void Block::set_pora_proof(const ::std::string& value) {
+  set_has_pora_proof();
+  pora_proof_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.block.protobuf.Block.pora_proof)
+}
+#if LANG_CXX11
+inline void Block::set_pora_proof(::std::string&& value) {
+  set_has_pora_proof();
+  pora_proof_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.Block.pora_proof)
+}
+#endif
+inline void Block::set_pora_proof(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_pora_proof();
+  pora_proof_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.Block.pora_proof)
+}
+inline void Block::set_pora_proof(const void* value, size_t size) {
+  set_has_pora_proof();
+  pora_proof_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.Block.pora_proof)
+}
+inline ::std::string* Block::mutable_pora_proof() {
+  set_has_pora_proof();
+  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.Block.pora_proof)
+  return pora_proof_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Block::release_pora_proof() {
+  // @@protoc_insertion_point(field_release:shardora.block.protobuf.Block.pora_proof)
+  if (!has_pora_proof()) {
+    return NULL;
+  }
+  clear_has_pora_proof();
+  return pora_proof_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Block::set_allocated_pora_proof(::std::string* pora_proof) {
+  if (pora_proof != NULL) {
+    set_has_pora_proof();
+  } else {
+    clear_has_pora_proof();
+  }
+  pora_proof_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pora_proof);
+  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.Block.pora_proof)
 }
 
 // -------------------------------------------------------------------

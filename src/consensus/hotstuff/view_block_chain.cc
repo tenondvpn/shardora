@@ -241,10 +241,11 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
     }
 
     auto latest_view_block = high_view_block_;
-    if (latest_view_block && latest_view_block->block_info().height() == height) {
+    if (latest_view_block && latest_view_block->block_info().height() == height &&
+            latest_view_block->qc().network_id() == network_id) {
         return latest_view_block;
     }
-    
+
     view_block_ptr = std::make_shared<ViewBlockInfo>();
     view_block_ptr->view_block = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr->view_block;
@@ -264,6 +265,71 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
                 view_block.block_info().height()), 
             view_block_ptr);
         return view_block_ptr->view_block;
+    }
+
+    return nullptr;
+}
+
+// Fork-aware lookup.  GetViewBlockWithHeight answers "what is at height H?",
+// which is ambiguous when two views produced a block at H and the DB
+// height->hash index only kept whichever was written last.  This variant
+// matches on the (height, view) pair so the caller gets the branch it asked
+// for, or nullptr if this chain never held that branch.
+std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeightAndView(
+        uint32_t network_id,
+        uint64_t height,
+        uint64_t view) {
+    if (height == 0 || view == 0) {
+        return nullptr;
+    }
+
+    // Committed view index: only valid blocks are recorded here, so a hit is
+    // the branch that actually made it into the chain.
+    std::shared_ptr<ViewBlockInfo> view_block_ptr;
+    if (latest_commited_view_lru_map_.Get(
+            BlockViewKey(network_id, pool_index_, view),
+            view_block_ptr)) {
+        if (view_block_ptr->view_block &&
+                view_block_ptr->view_block->block_info().height() == height) {
+            return view_block_ptr->view_block;
+        }
+    }
+
+    // Cached, not-yet-committed candidates for this view: a fork sibling that
+    // never commits still lives here until the cache evicts it.
+    auto view_iter = cached_view_with_blocks_.find(view);
+    if (view_iter != cached_view_with_blocks_.end()) {
+        for (auto& info : view_iter->second) {
+            if (!info || !info->view_block) {
+                continue;
+            }
+
+            if (info->view_block->block_info().height() == height &&
+                    info->view_block->qc().network_id() == network_id &&
+                    !info->view_block->qc().sign_x().empty()) {
+                return info->view_block;
+            }
+        }
+    }
+
+    auto latest_view_block = high_view_block_;
+    if (latest_view_block && latest_view_block->block_info().height() == height &&
+            latest_view_block->qc().network_id() == network_id &&
+            latest_view_block->qc().view() == view) {
+        return latest_view_block;
+    }
+
+    // DB fallback: the height index resolves to one hash, so accept it only if
+    // it is the branch that was asked for.
+    auto view_block = std::make_shared<ViewBlock>();
+    if (prefix_db_->GetBlockWithHeight(network_id, pool_index_, height, view_block.get()) &&
+            view_block->qc().view() == view) {
+        SHARDORA_DEBUG("success get view block by height+view %u_%u_%lu_%lu",
+            view_block->qc().network_id(),
+            view_block->qc().pool_index(),
+            height,
+            view);
+        return view_block;
     }
 
     return nullptr;

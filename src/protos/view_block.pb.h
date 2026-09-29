@@ -458,6 +458,36 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::std::string* release_debug();
   void set_allocated_debug(::std::string* debug);
 
+  // optional bytes sync_tc_item = 6;
+  bool has_sync_tc_item() const;
+  void clear_sync_tc_item();
+  static const int kSyncTcItemFieldNumber = 6;
+  const ::std::string& sync_tc_item() const;
+  void set_sync_tc_item(const ::std::string& value);
+  #if LANG_CXX11
+  void set_sync_tc_item(::std::string&& value);
+  #endif
+  void set_sync_tc_item(const char* value);
+  void set_sync_tc_item(const void* value, size_t size);
+  ::std::string* mutable_sync_tc_item();
+  ::std::string* release_sync_tc_item();
+  void set_allocated_sync_tc_item(::std::string* sync_tc_item);
+
+  // optional bytes sync_tc_ref_block = 7;
+  bool has_sync_tc_ref_block() const;
+  void clear_sync_tc_ref_block();
+  static const int kSyncTcRefBlockFieldNumber = 7;
+  const ::std::string& sync_tc_ref_block() const;
+  void set_sync_tc_ref_block(const ::std::string& value);
+  #if LANG_CXX11
+  void set_sync_tc_ref_block(::std::string&& value);
+  #endif
+  void set_sync_tc_ref_block(const char* value);
+  void set_sync_tc_ref_block(const void* value, size_t size);
+  ::std::string* mutable_sync_tc_ref_block();
+  ::std::string* release_sync_tc_ref_block();
+  void set_allocated_sync_tc_ref_block(::std::string* sync_tc_ref_block);
+
   // optional .shardora.block.protobuf.Block block_info = 2;
   bool has_block_info() const;
   void clear_block_info();
@@ -506,12 +536,18 @@ class ViewBlockItem : public ::google::protobuf::Message /* @@protoc_insertion_p
   void clear_has_leader_consen_stat();
   void set_has_debug();
   void clear_has_debug();
+  void set_has_sync_tc_item();
+  void clear_has_sync_tc_item();
+  void set_has_sync_tc_ref_block();
+  void clear_has_sync_tc_ref_block();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr parent_hash_;
   ::google::protobuf::internal::ArenaStringPtr debug_;
+  ::google::protobuf::internal::ArenaStringPtr sync_tc_item_;
+  ::google::protobuf::internal::ArenaStringPtr sync_tc_ref_block_;
   ::shardora::block::protobuf::Block* block_info_;
   ::shardora::view_block::protobuf::QcItem* qc_;
   ::shardora::view_block::protobuf::MemberConsensusStat* leader_consen_stat_;
@@ -2293,13 +2329,13 @@ inline void ViewBlockItem::set_allocated_parent_hash(::std::string* parent_hash)
 
 // optional .shardora.block.protobuf.Block block_info = 2;
 inline bool ViewBlockItem::has_block_info() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ViewBlockItem::set_has_block_info() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ViewBlockItem::clear_has_block_info() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline const ::shardora::block::protobuf::Block& ViewBlockItem::_internal_block_info() const {
   return *block_info_;
@@ -2347,13 +2383,13 @@ inline void ViewBlockItem::set_allocated_block_info(::shardora::block::protobuf:
 
 // optional .shardora.view_block.protobuf.QcItem qc = 3;
 inline bool ViewBlockItem::has_qc() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ViewBlockItem::set_has_qc() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ViewBlockItem::clear_has_qc() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ViewBlockItem::clear_qc() {
   if (qc_ != NULL) qc_->Clear();
@@ -2405,13 +2441,13 @@ inline void ViewBlockItem::set_allocated_qc(::shardora::view_block::protobuf::Qc
 
 // optional .shardora.view_block.protobuf.MemberConsensusStat leader_consen_stat = 4;
 inline bool ViewBlockItem::has_leader_consen_stat() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void ViewBlockItem::set_has_leader_consen_stat() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void ViewBlockItem::clear_has_leader_consen_stat() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void ViewBlockItem::clear_leader_consen_stat() {
   if (leader_consen_stat_ != NULL) leader_consen_stat_->Clear();
@@ -2525,6 +2561,138 @@ inline void ViewBlockItem::set_allocated_debug(::std::string* debug) {
   }
   debug_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), debug);
   // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.debug)
+}
+
+// optional bytes sync_tc_item = 6;
+inline bool ViewBlockItem::has_sync_tc_item() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ViewBlockItem::set_has_sync_tc_item() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ViewBlockItem::clear_has_sync_tc_item() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ViewBlockItem::clear_sync_tc_item() {
+  sync_tc_item_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_sync_tc_item();
+}
+inline const ::std::string& ViewBlockItem::sync_tc_item() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.sync_tc_item)
+  return sync_tc_item_.GetNoArena();
+}
+inline void ViewBlockItem::set_sync_tc_item(const ::std::string& value) {
+  set_has_sync_tc_item();
+  sync_tc_item_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.sync_tc_item)
+}
+#if LANG_CXX11
+inline void ViewBlockItem::set_sync_tc_item(::std::string&& value) {
+  set_has_sync_tc_item();
+  sync_tc_item_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.ViewBlockItem.sync_tc_item)
+}
+#endif
+inline void ViewBlockItem::set_sync_tc_item(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_sync_tc_item();
+  sync_tc_item_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockItem.sync_tc_item)
+}
+inline void ViewBlockItem::set_sync_tc_item(const void* value, size_t size) {
+  set_has_sync_tc_item();
+  sync_tc_item_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockItem.sync_tc_item)
+}
+inline ::std::string* ViewBlockItem::mutable_sync_tc_item() {
+  set_has_sync_tc_item();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockItem.sync_tc_item)
+  return sync_tc_item_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ViewBlockItem::release_sync_tc_item() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockItem.sync_tc_item)
+  if (!has_sync_tc_item()) {
+    return NULL;
+  }
+  clear_has_sync_tc_item();
+  return sync_tc_item_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ViewBlockItem::set_allocated_sync_tc_item(::std::string* sync_tc_item) {
+  if (sync_tc_item != NULL) {
+    set_has_sync_tc_item();
+  } else {
+    clear_has_sync_tc_item();
+  }
+  sync_tc_item_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sync_tc_item);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.sync_tc_item)
+}
+
+// optional bytes sync_tc_ref_block = 7;
+inline bool ViewBlockItem::has_sync_tc_ref_block() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ViewBlockItem::set_has_sync_tc_ref_block() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ViewBlockItem::clear_has_sync_tc_ref_block() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ViewBlockItem::clear_sync_tc_ref_block() {
+  sync_tc_ref_block_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_sync_tc_ref_block();
+}
+inline const ::std::string& ViewBlockItem::sync_tc_ref_block() const {
+  // @@protoc_insertion_point(field_get:shardora.view_block.protobuf.ViewBlockItem.sync_tc_ref_block)
+  return sync_tc_ref_block_.GetNoArena();
+}
+inline void ViewBlockItem::set_sync_tc_ref_block(const ::std::string& value) {
+  set_has_sync_tc_ref_block();
+  sync_tc_ref_block_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.view_block.protobuf.ViewBlockItem.sync_tc_ref_block)
+}
+#if LANG_CXX11
+inline void ViewBlockItem::set_sync_tc_ref_block(::std::string&& value) {
+  set_has_sync_tc_ref_block();
+  sync_tc_ref_block_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.view_block.protobuf.ViewBlockItem.sync_tc_ref_block)
+}
+#endif
+inline void ViewBlockItem::set_sync_tc_ref_block(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_sync_tc_ref_block();
+  sync_tc_ref_block_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.view_block.protobuf.ViewBlockItem.sync_tc_ref_block)
+}
+inline void ViewBlockItem::set_sync_tc_ref_block(const void* value, size_t size) {
+  set_has_sync_tc_ref_block();
+  sync_tc_ref_block_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.view_block.protobuf.ViewBlockItem.sync_tc_ref_block)
+}
+inline ::std::string* ViewBlockItem::mutable_sync_tc_ref_block() {
+  set_has_sync_tc_ref_block();
+  // @@protoc_insertion_point(field_mutable:shardora.view_block.protobuf.ViewBlockItem.sync_tc_ref_block)
+  return sync_tc_ref_block_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ViewBlockItem::release_sync_tc_ref_block() {
+  // @@protoc_insertion_point(field_release:shardora.view_block.protobuf.ViewBlockItem.sync_tc_ref_block)
+  if (!has_sync_tc_ref_block()) {
+    return NULL;
+  }
+  clear_has_sync_tc_ref_block();
+  return sync_tc_ref_block_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ViewBlockItem::set_allocated_sync_tc_ref_block(::std::string* sync_tc_ref_block) {
+  if (sync_tc_ref_block != NULL) {
+    set_has_sync_tc_ref_block();
+  } else {
+    clear_has_sync_tc_ref_block();
+  }
+  sync_tc_ref_block_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sync_tc_ref_block);
+  // @@protoc_insertion_point(field_set_allocated:shardora.view_block.protobuf.ViewBlockItem.sync_tc_ref_block)
 }
 
 // -------------------------------------------------------------------

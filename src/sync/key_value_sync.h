@@ -56,20 +56,49 @@ enum SyncItemTag : uint32_t {
 class SyncItem {
 public:
     SyncItem(uint32_t net_id, const std::string& in_key, uint32_t pri)
-            : network_id(net_id), key(in_key), 
+            : network_id(net_id), key(in_key),
             priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64) {
         tag = kViewHash;
         sync_tm_us = 0;
         common::GlobalInfo::Instance()->AddSharedObj(9);
     }
 
-    SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri, uint32_t sync_tag)
-            : network_id(net_id), pool_idx(in_pool_idx), 
-            height(in_height), priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64) {
+    SyncItem(
+            uint32_t net_id,
+            uint32_t in_pool_idx,
+            uint64_t in_height,
+            uint32_t pri,
+            uint32_t sync_tag)
+            : SyncItem(net_id, in_pool_idx, in_height, pri, sync_tag,
+                common::kInvalidUint64, std::string()) {}
+
+    // A height is not a unique identity: the same height can be produced by
+    // several views when the chain forks, so two requests for "height H" may
+    // legitimately want two different blocks.  When the caller knows which
+    // branch it needs, in_view / in_block_hash narrow the key and the request
+    // to that exact block; otherwise the item is a probe for "whatever height H
+    // resolves to" and must not be treated as proof that H is already synced.
+    SyncItem(
+            uint32_t net_id,
+            uint32_t in_pool_idx,
+            uint64_t in_height,
+            uint32_t pri,
+            uint32_t sync_tag,
+            uint64_t in_view,
+            const std::string& in_block_hash)
+            : network_id(net_id), pool_idx(in_pool_idx),
+            height(in_height), view(in_view), block_hash(in_block_hash),
+            priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64) {
         key = std::to_string(network_id) + "_" +
             std::to_string(pool_idx) + "_" +
-            std::to_string(height) + "_" + 
+            std::to_string(height) + "_" +
             std::to_string(sync_tag);
+        if (view != common::kInvalidUint64) {
+            key += "_v" + std::to_string(view);
+        }
+        if (!block_hash.empty()) {
+            key += "_h" + common::Encode::HexEncode(block_hash);
+        }
         tag = sync_tag;
         sync_tm_us = 0;
         common::GlobalInfo::Instance()->AddSharedObj(9);
@@ -79,16 +108,35 @@ public:
         common::GlobalInfo::Instance()->DecSharedObj(9);
     }
 
+    // True when this item names a specific branch rather than merely a height.
+    bool HasIdentity() const {
+        return view != common::kInvalidUint64 || !block_hash.empty();
+    }
+
     uint32_t network_id{ 0 };
     std::string key;
     uint32_t priority{ 0 };
     uint32_t sync_times{ 0 };
     uint32_t pool_idx{ common::kInvalidUint32 };
     uint64_t height{ common::kInvalidUint64 };
+    uint64_t view{ common::kInvalidUint64 };
+    std::string block_hash;
     uint64_t sync_tm_us;
     uint64_t responsed_timeout_us;
     uint32_t tag;
 };
+
+// Canonical dedup key for a block that has been fully identified.  height is
+// deliberately excluded: the same block can be reached via height-sync,
+// view-hash-sync or broadcast, and all three must collapse onto one entry.
+inline std::string SyncedBlockKey(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        const std::string& view_block_hash) {
+    return std::to_string(network_id) + "_" +
+        std::to_string(pool_idx) + "_" +
+        common::Encode::HexEncode(view_block_hash);
+}
 
 typedef std::shared_ptr<SyncItem> SyncItemPtr;
 typedef std::shared_ptr<view_block::protobuf::ViewBlockItem> ViewBlockPtr;
@@ -102,6 +150,16 @@ public:
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority);
+    // Height sync for a known branch: in_view / in_block_hash identify the
+    // exact block wanted at that height.  Either may be left unset to fall back
+    // to a plain height probe.
+    void AddSyncHeight(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        uint32_t priority,
+        uint64_t in_view,
+        const std::string& in_block_hash);
     void AddSyncView(
         uint32_t network_id,
         uint32_t pool_idx,
@@ -218,12 +276,92 @@ private:
     static const uint32_t kMaxVerifiedDrainCount = 4096u;
     static const uint32_t kLatestSyncPeerFanout = 2u;
 
+    // One candidate block received for a given height.  Several may coexist for
+    // the same height when the chain forks; only the one that actually gets
+    // committed stays in the pool map once the height advances.
+    struct SyncedHeightEntry {
+        bool verified{ false };
+        bool pushed_to_consensus{ false };
+        // A candidate whose verification failed can never be used, but leaving
+        // it in the map is worse than removing it: a height is only considered
+        // "answered" while it holds a selectable candidate, so an unusable one
+        // would block the height forever.  `dead` marks it for eviction and
+        // makes it invisible to SelectHeightEntry.
+        bool dead{ false };
+        // Verification failures are not all permanent (a parent may simply not
+        // have arrived yet), so a candidate is only retired after repeated
+        // failures.  Without the cap a height could pin its head candidate
+        // forever, because SelectHeightEntry always tries the same one first.
+        uint32_t verify_fail_count{ 0 };
+        uint64_t recv_tm_us{ 0 };
+        uint64_t last_attempt_tm_us{ 0 };
+        ViewBlockPtr pb_vblock;
+    };
+
+    // How many times one candidate may fail verification before it is retired
+    // and the next candidate at that height gets its turn.
+    static const uint32_t kMaxVerifyFailCount = 2u;
+    // A candidate that has not been requested for this long is considered
+    // abandoned and stops counting as "an answer for this height".
+    static const uint64_t kHeightCandidateTtlUs = 30000000lu;
+
+    // Per-(network, pool) pool of received blocks:
+    //   height -> { block_hash -> entry }
+    // The old shape was height -> single block, so a sibling view arriving for
+    // the same height silently overwrote the first one and the height looked
+    // "done" forever after.
+    using SyncedHeightMap = std::map<uint64_t, std::map<std::string, SyncedHeightEntry>>;
+    using SyncedPoolMap = std::map<uint32_t, SyncedHeightMap>;
+    using SyncedNetworkMap = std::map<uint32_t, SyncedPoolMap>;
+
+    // True while the height still holds a candidate that could be committed:
+    // not dead and seen recently enough.  A height full of dead or expired
+    // candidates has to become requestable again, both for an identity probe
+    // and for a bare height probe.
+    static bool HeightHasLiveCandidate(
+            const SyncedHeightMap& height_map,
+            uint64_t height,
+            uint64_t now_tm_us);
+    // Removes the candidates that lost the branch choice at a settled height.
+    static void DropLosingCandidates(
+            SyncedHeightMap* height_map,
+            uint64_t height,
+            const std::string& keep_hash,
+            uint32_t* dropped_count);
+
+    // Pick the entry at `height` that consensus should receive next.  Prefers
+    // the branch already committed locally, otherwise the highest-view
+    // candidate, so a fork converges instead of ping-ponging.  Candidates that
+    // are dead (verification failed) or already handed to consensus are skipped
+    // so an unusable head candidate cannot pin the height forever.
+    static ViewBlockPtr SelectHeightEntry(
+            const SyncedHeightMap& height_map,
+            uint64_t height,
+            uint32_t network_id,
+            uint32_t pool_idx,
+            const std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr,
+            uint32_t max_retry);
+    // Advance latest_height while consecutive heights have a candidate that has
+    // been verified, enqueueing ready blocks to consensus.
+    uint32_t DrainConsecutiveHeights(
+            uint32_t network_id,
+            uint32_t pool_idx,
+            uint64_t latest_height,
+            SyncedHeightMap* height_map,
+            uint32_t max_drain);
+    // Drop everything at or below `latest_height` and keep the counters honest.
+    void EraseSyncedHeightsUpTo(
+            uint32_t network_id,
+            uint32_t pool_idx,
+            uint64_t latest_height,
+            SyncedHeightMap* height_map);
+
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> tx_pool_mgr_ = nullptr;
     common::ThreadSafeQueue<SyncItemPtr> item_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<ViewBlockPtr> broadcast_global_blocks_queues_[common::kMaxThreadCount];
     common::UniqueMap<std::string, SyncItemPtr, kCacheSyncKeyValueCount> synced_map_;
-    std::map<uint32_t, std::map<uint32_t, std::map<uint64_t, std::pair<bool, std::shared_ptr<view_block::protobuf::ViewBlockItem>>>>> synced_res_map_;
+    SyncedNetworkMap synced_res_map_;
     uint32_t not_root_synced_res_map_count_ = 0;
     common::Tick kv_tick_;
     std::queue<transport::MessagePtr> kv_msg_queue_;
