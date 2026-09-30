@@ -518,8 +518,10 @@ void KeyValueSync::AddSyncViewHash(
         network_id, key, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
-    SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, item size: %u",
+    SHARDORA_DEBUG("block height add new sync item key: %s, %u_%u, priority: %u, item size: %u",
         common::Encode::HexEncode(item->key).c_str(), 
+        network_id,
+        pool_idx,
         item->priority, 
         item_queues_[thread_idx].size());
 }
@@ -1785,6 +1787,10 @@ void KeyValueSync::QueueFollowupBlockSync(
             kSyncHighest,
             kBlockHeight);
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu, "
+            "next_height: %lu, kSyncHighest: %lu",
+            item->key.c_str(), item->priority, network_id, pool_idx, 
+            kBlockHeight, next_height, kSyncHighest);
         item_queues_[thread_idx].push(item);
     }
 }

@@ -474,14 +474,11 @@ void BlockManager::AddNewBlock(
     //assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
     auto btime = common::TimeUtils::TimestampMs();
-    SHARDORA_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu_%lu,"
+    SHARDORA_DEBUG("new block coming sharding id: %u_%u_%lu_%lu,"
         "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, %s, ck_client_: %d",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         block_item->height(),
-        view_block_item->qc().view(),
-        view_block_item->qc().network_id(),
-        view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
         block_item->tx_list_size(),
         common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),

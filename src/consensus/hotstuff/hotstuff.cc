@@ -1944,7 +1944,7 @@ void Hotstuff::HandleSyncedViewBlock(
         auto cross_view_block_chain = cross_shard_view_block_chain_[vblock->qc().network_id()];
         cross_view_block_chain->Store(vblock, true, nullptr, nullptr, false);
         cross_view_block_chain->UpdateHighViewBlock(vblock->qc());
-    ADD_DEBUG_PROCESS_TIMESTAMP();
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         TryCommit(cross_view_block_chain, msg_ptr, vblock->qc());
         if (vblock->block_info().tx_list_size() > 0) {
             SyncLaterBlocks(
