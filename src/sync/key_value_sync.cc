@@ -1394,7 +1394,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 continue;
             }
 
-            std::vector<std::shared_ptr<ViewBlock>> view_blocks;
+            std::vector<ViewBlockPtr> view_blocks;
             view_chain->GetViewBlocksFrom(
                 network_id, req_height.height(), kMaxViewPerResponse, &view_blocks);
             // One request key answers several blocks, so it must be echoed on
