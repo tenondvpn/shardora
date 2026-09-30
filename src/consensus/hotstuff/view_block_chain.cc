@@ -447,6 +447,43 @@ void ViewBlockChain::DrainCachedBlockQueue() {
     GetViewBlockWithHash("", true);
 }
 
+uint32_t ViewBlockChain::GetViewBlocksFrom(
+        uint32_t network_id,
+        uint64_t start_view,
+        uint32_t max_count,
+        std::vector<std::shared_ptr<ViewBlock>>* out) {
+    if (out == nullptr || max_count == 0 || start_view == 0) {
+        return 0;
+    }
+
+    // Collect candidate views without touching the LRU caches: GetViewBlockWithView
+    // mutates latest_commited_view_lru_map_, so it must not be called while
+    // iterating a container it could reorder.
+    std::vector<uint64_t> views;
+    views.reserve(max_count);
+    auto iter = cached_view_with_blocks_.lower_bound(start_view);
+    while (iter != cached_view_with_blocks_.end() && views.size() < max_count) {
+        views.push_back(iter->first);
+        ++iter;
+    }
+
+    uint32_t added = 0;
+    for (uint64_t view : views) {
+        auto view_block = GetViewBlockWithView(network_id, view);
+        if (view_block == nullptr) {
+            // A view with no usable block.  Later views continue the same branch
+            // by parent hash, so their own validity does not depend on this one
+            // being present; skip it rather than stopping the walk.
+            continue;
+        }
+
+        out->push_back(view_block);
+        ++added;
+    }
+
+    return added;
+}
+
 std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashStr& hash, bool remove) {
     // // CheckThreadIdValid();
     std::shared_ptr<ViewBlockInfo> view_block_info_ptr;

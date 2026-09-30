@@ -70,6 +70,17 @@ public:
     void DrainCachedBlockQueue();
     // Lightweight height lookup: cached_view_with_blocks_ + DB, no queue drain.
     std::shared_ptr<ViewBlock> GetWithHeight(uint32_t network_id, uint64_t height);
+    // Collect up to `max_count` blocks for `network_id` whose view is >=
+    // `start_view`, walking views in ascending order and skipping views that hold
+    // no usable block (a view can be empty after a timeout/TC).  Used by sync to
+    // answer a view request with the requested view plus as many later views as
+    // fit in one packet, instead of one round trip per view.
+    // Appends to `out` and returns how many were appended.
+    uint32_t GetViewBlocksFrom(
+        uint32_t network_id,
+        uint64_t start_view,
+        uint32_t max_count,
+        std::vector<std::shared_ptr<ViewBlock>>* out);
     // std::shared_ptr<ViewBlock> Get(uint64_t view);
     // If has block
     bool Has(const HashStr& hash);

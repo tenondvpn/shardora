@@ -2558,32 +2558,63 @@ void Hotstuff::TryRecoverFromStuck(
 
     if (now_tm_ms >= prev_sync_latest_view_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
         prev_sync_latest_view_tm_ms_ = now_tm_ms;
-        auto hight_view_block = view_block_chain_->HighViewBlock();
-        if (hight_view_block) {
-            // Only skip sync if this node is an active consensus member AND
-            // consensus is progressing normally. If the node is not a committee
-            // member (GetLocalMemberIdx() == kInvalidUint32), it cannot vote
-            // and must rely on sync to get new blocks.
-            auto committed_block = view_block_chain_->LatestCommittedBlock();
-            bool consensus_active = false;
-            auto local_member_idx = GetLocalMemberIdx();
-            if (local_member_idx != common::kInvalidUint32 &&
-                    committed_block && committed_block->has_block_info() &&
-                    hight_view_block->has_block_info()) {
-                auto gap = hight_view_block->block_info().height() - 
-                           committed_block->block_info().height();
-                // gap <= 3 means consensus pipeline is healthy (propose/prevote/commit)
-                if (gap <= 3) {
-                    consensus_active = true;
+
+        // Ask a peer for the next view on one chain.  A node that only receives
+        // blocks through sync never advances its own view, so this is the only
+        // thing that pulls it forward.  On the local shard the request is
+        // suppressed while consensus is demonstrably healthy, to avoid competing
+        // with the normal propose/prevote/commit traffic.  The root and cross
+        // shard chains do not run consensus on this node at all and are only
+        // ever fed by sync, so they are always requested.
+        auto sync_next_view = [this](std::shared_ptr<ViewBlockChain>& chain, bool is_local) {
+            if (chain == nullptr) {
+                return;
+            }
+
+            auto high_view_block = chain->HighViewBlock();
+            if (high_view_block == nullptr) {
+                return;
+            }
+
+            if (is_local) {
+                // Only skip sync if this node is an active consensus member AND
+                // consensus is progressing normally. If the node is not a committee
+                // member (GetLocalMemberIdx() == kInvalidUint32), it cannot vote
+                // and must rely on sync to get new blocks.
+                auto committed_block = chain->LatestCommittedBlock();
+                bool consensus_active = false;
+                auto local_member_idx = GetLocalMemberIdx();
+                if (local_member_idx != common::kInvalidUint32 &&
+                        committed_block && committed_block->has_block_info() &&
+                        high_view_block->has_block_info()) {
+                    auto gap = high_view_block->block_info().height() -
+                               committed_block->block_info().height();
+                    // gap <= 3 means consensus pipeline is healthy (propose/prevote/commit)
+                    if (gap <= 3) {
+                        consensus_active = true;
+                    }
+                }
+
+                if (consensus_active) {
+                    return;
                 }
             }
-            if (!consensus_active) {
-                kv_sync_->AddSyncView(
-                    hight_view_block->qc().network_id(), 
-                    hight_view_block->qc().pool_index(), 
-                    hight_view_block->qc().view() + 1,
-                    sync::kSyncHighest);
-            }
+
+            // Use the chain's own network/pool identity rather than the block's
+            // qc: a root or cross block carries the *producing* shard's pool
+            // index, which is not necessarily the instance that holds the chain
+            // here, and the responder routes the request by this pair.
+            kv_sync_->AddSyncView(
+                high_view_block->qc().network_id(),
+                chain->pool_index(),
+                high_view_block->qc().view() + 1,
+                sync::kSyncHighest);
+        };
+
+        sync_next_view(view_block_chain_, true);
+        sync_next_view(root_view_block_chain_, false);
+        for (auto& cross_view_block_chain : cross_shard_view_block_chain_) {
+            sync_next_view(cross_view_block_chain.second, false);
         }
     // } else {
         // if (!has_user_tx_tag_ && !has_system_tx) {

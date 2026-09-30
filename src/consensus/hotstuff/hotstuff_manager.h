@@ -128,6 +128,61 @@ public:
         return hf->view_block_chain();
     }
 
+    // Find the chain that holds `network_id`'s blocks.  `pool_idx` is the caller's
+    // hint about who owns it, but it is not always the right instance:
+    //   - kGlobalPoolIndex is the cross-shard marker, not an owning pool.  A
+    //     cross chain lives on the instance whose pool index is
+    //     network_id % kImmutablePoolSize, so the owner is derived from the
+    //     network id instead.
+    //   - the root congress chain lives on every instance, keyed by its own
+    //     pool index, so any instance can serve it.
+    // Falls back to walking the pool array when the hint does not resolve, so an
+    // unowned network still finds the instance that actually has it.
+    inline std::shared_ptr<ViewBlockChain> ChainForNetwork(
+            uint32_t network_id, uint32_t pool_idx) const {
+        if (network::IsSameShardOrSameWaitingPool(
+                network_id, network::kRootCongressNetworkId)) {
+            // Root chain: pooled by the instance's own index.  Prefer the hinted
+            // one, but any instance carries a copy, so fall back if needed.
+            if (pool_idx < common::kInvalidPoolIndex) {
+                auto hf = hotstuff(pool_idx);
+                if (hf) {
+                    auto chain = hf->ChainForNetwork(network_id);
+                    if (chain) {
+                        return chain;
+                    }
+                }
+            }
+
+            for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+                auto hf = hotstuff(i);
+                if (hf) {
+                    auto chain = hf->ChainForNetwork(network_id);
+                    if (chain) {
+                        return chain;
+                    }
+                }
+            }
+
+            return nullptr;
+        }
+
+        uint32_t owner_pool = pool_idx;
+        if (pool_idx == common::kGlobalPoolIndex) {
+            // Cross-shard chain: the holder is determined by the shard id.
+            owner_pool = network_id % common::kImmutablePoolSize;
+        }
+
+        if (owner_pool < common::kInvalidPoolIndex) {
+            auto hf = hotstuff(owner_pool);
+            if (hf) {
+                return hf->ChainForNetwork(network_id);
+            }
+        }
+
+        return nullptr;
+    }
+
     inline std::shared_ptr<IBlockAcceptor> acceptor(uint32_t pool_idx) const {
         auto hf = hotstuff(pool_idx);
         if (!hf) {

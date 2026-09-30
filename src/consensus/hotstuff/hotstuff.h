@@ -191,6 +191,32 @@ public:
         return view_block_chain_;
     }
 
+    // Resolve which chain holds the blocks for `network_id`.
+    //   - root congress shard   -> root_view_block_chain_
+    //   - this node's own shard -> view_block_chain_
+    //   - any other shard       -> the cross chain for that shard, which only
+    //                              exists on the Hotstuff instance whose pool
+    //                              index is network_id % kImmutablePoolSize
+    // Returns nullptr when this instance holds no chain for the network, so a
+    // caller can fall back to the instance that actually owns it.
+    inline std::shared_ptr<ViewBlockChain> ChainForNetwork(uint32_t network_id) const {
+        if (network::IsSameShardOrSameWaitingPool(
+                network_id, network::kRootCongressNetworkId)) {
+            return root_view_block_chain_;
+        }
+
+        if (network::IsSameToLocalShard(network_id)) {
+            return view_block_chain_;
+        }
+
+        auto iter = cross_shard_view_block_chain_.find(network_id);
+        if (iter == cross_shard_view_block_chain_.end()) {
+            return nullptr;
+        }
+
+        return iter->second;
+    }
+
     inline std::shared_ptr<Pacemaker> pacemaker() const {
         return pacemaker_;
     }

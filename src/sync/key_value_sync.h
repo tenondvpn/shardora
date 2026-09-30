@@ -269,6 +269,10 @@ private:
     static const uint32_t kMaxSyncLatestNotRootCount = 1024u;
     static const uint32_t kFollowupSyncHeightCount = 32u;
     static const uint32_t kLatestSyncBlocksPerPool = 32u;
+    // Upper bound on how many consecutive views one kBlockView response may
+    // carry.  The packet-size check is the real limit; this only stops a large
+    // view gap from building an unbounded vector before the size check runs.
+    static const uint32_t kMaxViewPerResponse = 64u;
     // [SYNC_OPT] Increased from 1024 to 4096: consumer thread relays more
     // messages per wakeup to keep up with higher sync throughput.
     static const uint32_t kConsumerBatchSize = 4096u;
