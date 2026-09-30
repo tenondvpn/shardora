@@ -1788,9 +1788,10 @@ void KeyValueSync::QueueFollowupBlockSync(
             kBlockHeight);
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu, "
-            "next_height: %lu, kSyncHighest: %lu",
-            item->key.c_str(), item->priority, network_id, pool_idx, 
-            kBlockHeight, next_height, kSyncHighest);
+            "next_height: %lu, kSyncHighest: %u",
+            item->key.c_str(), item->priority, network_id, pool_idx,
+            static_cast<uint32_t>(kBlockHeight), next_height,
+            static_cast<uint32_t>(kSyncHighest));
         item_queues_[thread_idx].push(item);
     }
 }
