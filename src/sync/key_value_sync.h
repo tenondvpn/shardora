@@ -1,10 +1,13 @@
 #pragma once
 
 #include <chrono>
+#include <map>
 #include <mutex>
 #include <memory>
 #include <queue>
+#include <set>
 #include <string>
+#include <utility>
 #include <thread>
 #include <atomic>
 #include <unordered_map>
@@ -13,6 +16,7 @@
 
 #include "block/block_utils.h"
 #include "common/utils.h"
+#include "network/network_utils.h"
 #include "common/thread_safe_queue.h"
 #include "common/tick.h"
 #include "common/unique_map.h"
@@ -192,6 +196,23 @@ public:
         if (sharding_id > max_sharding_id_) {
             max_sharding_id_ = sharding_id;
         }
+
+        // A new elect block is exactly the dependency a suspended chain was
+        // waiting on, so release every pool of this shard immediately instead
+        // of leaving them parked until the timeout.
+        {
+            std::lock_guard<std::mutex> lock(verify_mutex_);
+            for (auto it = suspended_chains_.begin(); it != suspended_chains_.end();) {
+                if (it->first == sharding_id) {
+                    ResumeChainLocked(*it);
+                    suspended_tm_ms_.erase(*it);
+                    it = suspended_chains_.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+        verify_con_.notify_all();
     }
 
 private:
@@ -202,6 +223,14 @@ private:
         bool is_broadcast{ false };
         uint64_t msg_hash{ 0 };
         uint64_t enqueue_tm_ms{ 0 };
+        // Scheduling keys, cached at enqueue time so the queue comparator never
+        // touches the protobuf.  Blocks are ordered by (shard, pool, height):
+        // root congress first, then the other shards, then the local shard
+        // last, and inside one (shard, pool) the lowest height always wins.
+        uint32_t network_id{ 0 };
+        uint32_t pool_idx{ 0 };
+        uint64_t height{ 0 };
+        uint32_t rank{ 0 };
     };
 
     struct VerifyBlockResult {
@@ -213,7 +242,61 @@ private:
         int verify_res{ -1 };
         uint64_t enqueue_tm_ms{ 0 };
         uint64_t verify_cost_ms{ 0 };
+        // Same scheduling keys as VerifyBlockItem so both queues share one
+        // comparator.
+        uint32_t network_id{ 0 };
+        uint32_t pool_idx{ 0 };
+        uint64_t height{ 0 };
+        uint32_t rank{ 0 };
     };
+
+    // Sort rank for the verify queue: root congress first, the local shard
+    // last, everything else in between.
+    static uint32_t VerifyRank(uint32_t network_id) {
+        if (network_id == network::kRootCongressNetworkId) {
+            return 0u;
+        }
+
+        if (network::IsSameToLocalShard(network_id)) {
+            return 2u;
+        }
+
+        return 1u;
+    }
+
+    // std::priority_queue pops the "largest" element, so the comparator returns
+    // true when `lhs` is LESS urgent than `rhs`: lower rank first, then lower
+    // height inside the same (shard, pool), with enqueue time breaking ties so
+    // equal-height siblings keep arrival order.  Both item types expose the same
+    // scheduling members, so one template serves both queues.
+    template <typename T>
+    struct VerifyBlockLess {
+        bool operator()(const T& lhs, const T& rhs) const {
+            if (lhs.rank != rhs.rank) {
+                return lhs.rank > rhs.rank;
+            }
+
+            if (lhs.network_id != rhs.network_id) {
+                return lhs.network_id > rhs.network_id;
+            }
+
+            if (lhs.pool_idx != rhs.pool_idx) {
+                return lhs.pool_idx > rhs.pool_idx;
+            }
+
+            if (lhs.height != rhs.height) {
+                return lhs.height > rhs.height;
+            }
+
+            return lhs.enqueue_tm_ms > rhs.enqueue_tm_ms;
+        }
+    };
+
+    // Identifies one (shard, pool) chain.
+    using SyncChainKey = std::pair<uint32_t, uint32_t>;
+    static SyncChainKey ChainKeyOf(const VerifyBlockItem& item) {
+        return std::make_pair(item.network_id, item.pool_idx);
+    }
 
     void CheckSyncTimeout();
     uint64_t SendSyncRequest(
@@ -242,6 +325,15 @@ private:
         uint32_t pool_idx,
         uint64_t height);
     void VerifyConsumerLoop();
+    // Park `item`'s chain so later heights wait for the missing dependency.
+    // Caller must hold verify_mutex_.
+    void SuspendChainLocked(const SyncChainKey& chain, uint64_t now_tm_ms);
+    // Move every parked item back into the ready queue.  Caller must hold
+    // verify_mutex_.
+    void ResumeChainLocked(const SyncChainKey& chain);
+    // Resume chains that have waited longer than kVerifySuspendMaxWaitMs.
+    // Caller must hold verify_mutex_.
+    void ResumeExpiredChainsLocked(uint64_t now_tm_ms);
     void EnqueueVerifyBlock(
         const ViewBlockPtr& pb_vblock,
         const std::string& key,
@@ -278,6 +370,10 @@ private:
     static const uint32_t kConsumerBatchSize = 4096u;
     static const uint32_t kVerifyThreadCount = 4u;
     static const uint32_t kMaxVerifiedDrainCount = 4096u;
+    // A suspended (shard, pool) chain is retried after this long even if the
+    // elect block it was waiting on never shows up, so one missing dependency
+    // cannot freeze the chain forever.
+    static const uint64_t kVerifySuspendMaxWaitMs = 300lu;
     static const uint32_t kLatestSyncPeerFanout = 2u;
 
     // One candidate block received for a given height.  Several may coexist for
@@ -383,9 +479,26 @@ private:
     std::mutex kv_msg_mutex_;
     std::condition_variable wait_con_;
     std::shared_ptr<std::thread> kv_consumer_thread_ = nullptr;
-    std::queue<VerifyBlockItem> verify_block_queue_;
-    std::queue<VerifyBlockResult> verified_block_queue_;
+    // Verify work, ordered so a (shard, pool) chain is always verified from its
+    // lowest pending height upwards instead of in arrival order.  `verify_con_`
+    // and `verify_mutex_` guard both queues and the suspend state below.
+    std::priority_queue<
+        VerifyBlockItem, std::vector<VerifyBlockItem>, VerifyBlockLess<VerifyBlockItem>>
+            verify_block_queue_;
+    std::priority_queue<
+        VerifyBlockResult, std::vector<VerifyBlockResult>, VerifyBlockLess<VerifyBlockResult>>
+            verified_block_queue_;
     std::unordered_set<std::string> verifying_keys_;
+    // A (shard, pool) chain whose verify returned "elect item not found" is
+    // parked: every later height of that chain must wait for the missing block
+    // rather than be verified ahead of it.  Items of a parked chain are held in
+    // `suspended_items_` instead of the ready queue so they cannot occupy the
+    // head of a priority queue until the chain is resumed.
+    std::set<SyncChainKey> suspended_chains_;
+    std::multimap<SyncChainKey, VerifyBlockItem> suspended_items_;
+    // When the chain was first parked, used to force a resume after
+    // kVerifySuspendMaxWaitMs in case the missing elect block never arrives.
+    std::map<SyncChainKey, uint64_t> suspended_tm_ms_;
     std::mutex verify_mutex_;
     std::condition_variable verify_con_;
     std::vector<std::shared_ptr<std::thread>> verify_threads_;

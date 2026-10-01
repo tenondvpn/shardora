@@ -591,7 +591,11 @@ void KeyValueSync::ConsensusTimerMessage() {
     uint32_t verified_pending = 0;
     {
         std::lock_guard<std::mutex> lock(verify_mutex_);
-        verify_pending = static_cast<uint32_t>(verify_block_queue_.size());
+        // Parked items still count as pending: they are real work waiting on a
+        // dependency, and the timer must keep polling fast enough to notice
+        // when a chain resumes.
+        verify_pending = static_cast<uint32_t>(
+            verify_block_queue_.size() + suspended_items_.size());
         verified_pending = static_cast<uint32_t>(verified_block_queue_.size());
     }
     const uint32_t ready_res_size = static_cast<uint32_t>(kv_ready_res_queue_.size());
@@ -992,17 +996,35 @@ void KeyValueSync::EnqueueVerifyBlock(
     item.is_broadcast = is_broadcast;
     item.msg_hash = msg_hash;
     item.enqueue_tm_ms = common::TimeUtils::TimestampMs();
+    item.network_id = pb_vblock->qc().network_id();
+    item.pool_idx = pb_vblock->qc().pool_index();
+    item.height = pb_vblock->block_info().height();
+    item.rank = VerifyRank(item.network_id);
     uint32_t verify_queue_size = 0;
+    bool need_notify = false;
     {
         std::lock_guard<std::mutex> lock(verify_mutex_);
         if (!item.key.empty() && verifying_keys_.find(item.key) != verifying_keys_.end()) {
             return;
         }
-        if (!item.key.empty()) {
-            verifying_keys_.insert(item.key);
+
+        // A chain that is waiting on a missing dependency holds its incoming
+        // blocks aside; verifying them now would only repeat the same failure.
+        auto chain = ChainKeyOf(item);
+        if (suspended_chains_.find(chain) != suspended_chains_.end()) {
+            suspended_items_.insert(std::make_pair(chain, item));
+        } else {
+            if (!item.key.empty()) {
+                verifying_keys_.insert(item.key);
+            }
+            verify_block_queue_.push(item);
+            verify_queue_size = static_cast<uint32_t>(verify_block_queue_.size());
+            need_notify = true;
         }
-        verify_block_queue_.push(item);
-        verify_queue_size = static_cast<uint32_t>(verify_block_queue_.size());
+    }
+
+    if (!need_notify) {
+        return;
     }
 
     SHARDORA_DEBUG("enqueue verify block: %u_%u_%lu, height: %lu, key: %s, "
@@ -1018,6 +1040,48 @@ void KeyValueSync::EnqueueVerifyBlock(
     verify_con_.notify_one();
 }
 
+void KeyValueSync::SuspendChainLocked(const SyncChainKey& chain, uint64_t now_tm_ms) {
+    if (suspended_chains_.insert(chain).second) {
+        suspended_tm_ms_[chain] = now_tm_ms;
+        SHARDORA_DEBUG("verify chain suspended: %u_%u, suspended chains: %u",
+            chain.first,
+            chain.second,
+            static_cast<uint32_t>(suspended_chains_.size()));
+    }
+}
+
+void KeyValueSync::ResumeChainLocked(const SyncChainKey& chain) {
+    auto range = suspended_items_.equal_range(chain);
+    uint32_t resumed = 0;
+    for (auto it = range.first; it != range.second; ++it) {
+        verify_block_queue_.push(it->second);
+        ++resumed;
+    }
+    suspended_items_.erase(range.first, range.second);
+    suspended_tm_ms_.erase(chain);
+    if (resumed > 0) {
+        SHARDORA_DEBUG("verify chain resumed: %u_%u, resumed items: %u, verify queue: %u",
+            chain.first,
+            chain.second,
+            resumed,
+            static_cast<uint32_t>(verify_block_queue_.size()));
+    }
+}
+
+void KeyValueSync::ResumeExpiredChainsLocked(uint64_t now_tm_ms) {
+    for (auto it = suspended_tm_ms_.begin(); it != suspended_tm_ms_.end();) {
+        if (it->second + kVerifySuspendMaxWaitMs > now_tm_ms) {
+            ++it;
+            continue;
+        }
+
+        const auto chain = it->first;
+        ResumeChainLocked(chain);
+        suspended_chains_.erase(chain);
+        it = suspended_tm_ms_.erase(it);
+    }
+}
+
 void KeyValueSync::VerifyConsumerLoop() {
     common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
@@ -1030,12 +1094,32 @@ void KeyValueSync::VerifyConsumerLoop() {
             if (destroy_) {
                 break;
             }
+            ResumeExpiredChainsLocked(common::TimeUtils::TimestampMs());
             if (verify_block_queue_.empty()) {
                 continue;
             }
 
-            item = verify_block_queue_.front();
+            item = verify_block_queue_.top();
             verify_block_queue_.pop();
+        }
+
+        int verify_res = -1;
+        auto verify_begin_ms = common::TimeUtils::TimestampMs();
+        verifying_count_.fetch_add(1);
+        if (view_block_synced_callback_ && item.pb_vblock) {
+            verify_res = view_block_synced_callback_(*item.pb_vblock);
+        }
+        verifying_count_.fetch_sub(1);
+        if (verify_res == 1) {
+            // The parent/elect block of this chain has not arrived yet, so every
+            // higher height of the same (shard, pool) is unverifiable until it
+            // does.  Park the chain instead of pushing the item back to the
+            // head, which would keep failing and starve the other chains.
+            std::unique_lock<std::mutex> lock(verify_mutex_);
+            const auto chain = ChainKeyOf(item);
+            SuspendChainLocked(chain, common::TimeUtils::TimestampMs());
+            suspended_items_.insert(std::make_pair(chain, item));
+            continue;
         }
 
         VerifyBlockResult result;
@@ -1045,14 +1129,12 @@ void KeyValueSync::VerifyConsumerLoop() {
         result.is_broadcast = item.is_broadcast;
         result.msg_hash = item.msg_hash;
         result.enqueue_tm_ms = item.enqueue_tm_ms;
-        result.verify_res = -1;
+        result.verify_res = verify_res;
+        result.network_id = item.network_id;
+        result.pool_idx = item.pool_idx;
+        result.height = item.height;
+        result.rank = item.rank;
 
-        auto verify_begin_ms = common::TimeUtils::TimestampMs();
-        verifying_count_.fetch_add(1);
-        if (view_block_synced_callback_ && item.pb_vblock) {
-            result.verify_res = view_block_synced_callback_(*item.pb_vblock);
-        }
-        verifying_count_.fetch_sub(1);
         result.verify_cost_ms = common::TimeUtils::TimestampMs() - verify_begin_ms;
 
         uint32_t verified_queue_size = 0;
@@ -1089,7 +1171,7 @@ void KeyValueSync::DrainVerifiedBlocks() {
             if (verified_block_queue_.empty()) {
                 break;
             }
-            result = verified_block_queue_.front();
+            result = verified_block_queue_.top();
             verified_block_queue_.pop();
         }
 
@@ -1102,7 +1184,8 @@ void KeyValueSync::DrainVerifiedBlocks() {
         uint32_t verified_queue_size = 0;
         {
             std::lock_guard<std::mutex> lock(verify_mutex_);
-            verify_queue_size = static_cast<uint32_t>(verify_block_queue_.size());
+            verify_queue_size = static_cast<uint32_t>(
+                verify_block_queue_.size() + suspended_items_.size());
             verified_queue_size = static_cast<uint32_t>(verified_block_queue_.size());
         }
         SHARDORA_DEBUG("DrainVerifiedBlocks drained: %u, verify queue: %u, "
