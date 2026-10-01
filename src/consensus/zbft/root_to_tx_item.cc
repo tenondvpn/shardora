@@ -31,7 +31,7 @@ RootToTxItem::~RootToTxItem() {}
 int RootToTxItem::HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     uint64_t to_balance = 0;

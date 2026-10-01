@@ -20,7 +20,7 @@ namespace block {
 
 namespace shardoravm {
 
-class ShardoraChainHost;
+class ShardorahainHost;
 class Execution {
 public:
     static Execution* Instance();
@@ -35,7 +35,7 @@ public:
         uint64_t max_gas,
         uint32_t depth,
         uint32_t call_mode,
-        ShardoraChainHost& host,
+        ShardorahainHost& host,
         evmc::Result* res);
     bool IsAddressExists(const std::string& addr);
     bool AddressWarm(const evmc::address& addr);

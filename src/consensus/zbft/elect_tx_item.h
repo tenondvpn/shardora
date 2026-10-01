@@ -60,13 +60,13 @@ public:
     virtual int HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardoraChainHost &shardora_host,
+        shardoravm::ShardorahainHost &shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx &block_tx);
 
 private:
     int processElect(
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         view_block::protobuf::ViewBlockItem& view_block,
         shardora::block::protobuf::BlockTx &block_tx);
 
@@ -101,7 +101,7 @@ private:
         std::vector<NodeDetailPtr> &elect_nodes,
         uint64_t *max_fts_val);
     int CreateNewElect(
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         block::protobuf::Block &block,
         const std::vector<NodeDetailPtr> &elect_nodes,
         uint64_t gas_for_root,

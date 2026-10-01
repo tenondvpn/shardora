@@ -62,7 +62,7 @@ public:
         bool no_tx_allowed,
         bool directly_user_leader_txs,
         BalanceAndNonceMap& balance_map,
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr,
         std::unordered_map<std::string, uint64_t>* out_leader_nonce_map = nullptr) = 0;
     // Accept a block and txs in it from sync msg.
@@ -106,7 +106,7 @@ public:
         bool no_tx_allowed,
         bool directly_user_leader_txs,
         BalanceAndNonceMap& balance_map,
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr,
         std::unordered_map<std::string, uint64_t>* out_leader_nonce_map = nullptr) override;
     // Accept a synced block.
@@ -124,14 +124,14 @@ public:
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         BalanceAndNonceMap& now_balance_map,
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         std::unordered_map<std::string, uint64_t>* out_leader_nonce_map = nullptr);
     bool IsBlockValid(const view_block::protobuf::ViewBlockItem&);
     Status DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>&,
         view_block::protobuf::ViewBlockItem*,
         BalanceAndNonceMap& balance_map,
-        shardoravm::ShardoraChainHost& shardora_host);
+        shardoravm::ShardorahainHost& shardora_host);
     Status GetAndAddTxsLocally(
         transport::MessagePtr msg_ptr,
         const std::string& parent_hash,
@@ -139,11 +139,11 @@ public:
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>&,
         BalanceAndNonceMap& balance_map,
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         std::unordered_map<std::string, uint64_t>* out_leader_nonce_map = nullptr);
     void UpdateDesShardingId(
         pools::protobuf::ToTxMessageItem* to_addr_info, 
-        shardoravm::ShardoraChainHost& shardora_host);
+        shardoravm::ShardorahainHost& shardora_host);
     
     // Validate statistic transaction node consistency (90% threshold)
     bool ValidateStatisticNodeConsistency(

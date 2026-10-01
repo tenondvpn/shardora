@@ -43,7 +43,7 @@ struct MinTxItem3 : public TxItem {
     MinTxItem3(transport::MessagePtr msg, protos::AddressInfoPtr ai)
         : TxItem(msg, -1, ai) {}
     int HandleTx(uint32_t, view_block::protobuf::ViewBlockItem&,
-                 shardoravm::ShardoraChainHost&, hotstuff::BalanceAndNonceMap&,
+                 shardoravm::ShardorahainHost&, hotstuff::BalanceAndNonceMap&,
                  block::protobuf::BlockTx&) override { return 0; }
     int TxToBlockTx(const pools::protobuf::TxMessage&,
                     block::protobuf::BlockTx*) override { return 0; }

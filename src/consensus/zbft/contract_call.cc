@@ -13,7 +13,7 @@ namespace consensus {
 int ContractCall::HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardoraChainHost& pre_shardora_host,
+        shardoravm::ShardorahainHost& pre_shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume from 's prefund
@@ -42,7 +42,7 @@ int ContractCall::HandleTx(
                     + CalcCalldataGas(block_tx.contract_input());
     int64_t contract_balance_add = 0;
     auto gas_limit = block_tx.gas_limit();
-    shardoravm::ShardoraChainHost shardora_host;
+    shardoravm::ShardorahainHost shardora_host;
     shardora_host.view_block_chain_ = pre_shardora_host.view_block_chain_;
     shardora_host.tx_context_ = pre_shardora_host.tx_context_;
     shardora_host.pre_shardora_host_ = &pre_shardora_host;
@@ -559,7 +559,7 @@ int ContractCall::HandleTx(
 }
 
 int ContractCall::SaveContractCreateInfo(
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         block::protobuf::BlockTx& block_tx,
         hotstuff::BalanceAndNonceMap& dep_contract_balance_map,
         int64_t& contract_balance_add) {
@@ -652,7 +652,7 @@ int ContractCall::SaveContractCreateInfo(
 int ContractCall::ContractExcute(
         protos::AddressInfoPtr& contract_info,
         uint64_t contract_balance,
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         block::protobuf::BlockTx& tx,
         uint64_t gas_limit,
         evmc::Result* out_res) {

@@ -100,7 +100,7 @@ int CheckTransactionValid(
         }
     }
 
-    shardoravm::ShardoraChainHost shardora_host;
+    shardoravm::ShardorahainHost shardora_host;
     shardora_host.parent_hash_ = parent_hash;
     shardora_host.view_block_chain_ = view_block_chain;
     std::string val;

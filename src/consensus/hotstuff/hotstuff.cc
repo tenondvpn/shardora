@@ -1143,9 +1143,9 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
     pro_msg_wrap->view_block_ptr->mutable_block_info()->clear_tx_list();
     auto balance_map_ptr = std::make_shared<BalanceAndNonceMap>();
     auto& balance_map = *balance_map_ptr;
-    auto shardora_host_ptr = std::make_shared<shardoravm::ShardoraChainHost>();
+    auto shardora_host_ptr = std::make_shared<shardoravm::ShardorahainHost>();
     auto btime = common::TimeUtils::TimestampMs();
-    shardoravm::ShardoraChainHost& shardora_host = *shardora_host_ptr;
+    shardoravm::ShardorahainHost& shardora_host = *shardora_host_ptr;
     if (acceptor()->Accept(
             pro_msg_wrap, 
             true, 
@@ -1240,9 +1240,9 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     pro_msg_wrap->acc_balance_and_nonce_map_ptr = std::make_shared<BalanceAndNonceMap>();
     auto& balance_and_nonce_map = *pro_msg_wrap->acc_balance_and_nonce_map_ptr;
-    pro_msg_wrap->shardora_host_ptr = std::make_shared<shardoravm::ShardoraChainHost>();
+    pro_msg_wrap->shardora_host_ptr = std::make_shared<shardoravm::ShardorahainHost>();
     auto btime = common::TimeUtils::TimestampMs();
-    shardoravm::ShardoraChainHost& shardora_host = *pro_msg_wrap->shardora_host_ptr;
+    shardoravm::ShardorahainHost& shardora_host = *pro_msg_wrap->shardora_host_ptr;
     pro_msg_wrap->leader_nonce_map = std::make_shared<std::unordered_map<std::string, uint64_t>>();
     Status s = acceptor()->Accept(
         pro_msg_wrap, 
@@ -1563,7 +1563,7 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
     if (latest_leader_propose_message_)
     SHARDORA_INFO("success set view block hash: %s, qc_hash: %s, "
         "sign x: %s, replica: %d, elect_height: %lu, %u_%u_%lu, "
-        "vote_msg.leader_idx: %d, leader_idx: %d, use time: %lu, hash64: %lu",
+        "vote_msg.leader_idx: %d, use time: %lu, hash64: %lu",
         common::Encode::HexEncode(qc_item.view_block_hash()).c_str(),
         common::Encode::HexEncode(qc_hash).c_str(),
         vote_msg.sign_x().c_str(),
@@ -1573,17 +1573,12 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
         qc_item.pool_index(),
         qc_item.view(),
         vote_msg.leader_idx(),
-        latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().leader_idx(),
         (common::TimeUtils::TimestampMs() - view_block_info_ptr->b_tm_ms),
         latest_leader_propose_message_->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (latest_leader_propose_message_ && 
             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().leader_idx() != vote_msg.leader_idx()) {
         // //assert(false);
-        SHARDORA_WARN("invalid leader_idx: %u_%u_%lu", qc_item.network_id(), 
-            qc_item.pool_index(), qc_item.view(),
-            latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().leader_idx(),
-            vote_msg.leader_idx());
         return Status::kError;
     }
 
@@ -1609,6 +1604,8 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
         qc_item.view(),
         (int32_t)ret);
     auto bls_end_ms = common::TimeUtils::TimestampMs();
+    if (ret == Status::kSuccess) {
+    }
     // //assert(ret != Status::kInvalidOpposedCount); It may occur temporarily due to inconsistent status
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {

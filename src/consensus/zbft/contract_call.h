@@ -34,7 +34,7 @@ public:
     virtual int HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& block,
-        shardoravm::ShardoraChainHost& shardorahost,
+        shardoravm::ShardorahainHost& shardorahost,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
 
@@ -42,12 +42,12 @@ private:
     int ContractExcute(
         protos::AddressInfoPtr& contract_info,
         uint64_t contract_balance,
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         block::protobuf::BlockTx& tx,
         uint64_t gas_limit,
         evmc::Result* out_res);
     int SaveContractCreateInfo(
-        shardoravm::ShardoraChainHost& shardora_host,
+        shardoravm::ShardorahainHost& shardora_host,
         block::protobuf::BlockTx& tx,
         hotstuff::BalanceAndNonceMap& dep_contract_balance_map,
         int64_t& contract_balance_add);

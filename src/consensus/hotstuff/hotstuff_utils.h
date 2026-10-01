@@ -40,7 +40,7 @@ public:
     transport::MessagePtr msg_ptr;
     std::shared_ptr<ViewBlock> view_block_ptr;
     BalanceAndNonceMapPtr acc_balance_and_nonce_map_ptr;
-    std::shared_ptr<shardoravm::ShardoraChainHost> shardora_host_ptr;
+    std::shared_ptr<shardoravm::ShardorahainHost> shardora_host_ptr;
     std::shared_ptr<LeaderNonceMap> leader_nonce_map; // built during addTxsToPool, used in vote step
     Breakpoint breakpoint; // 断点位置
     int tried_times;
@@ -96,7 +96,7 @@ public:
     ViewBlockStatus status;
     std::shared_ptr<QC> qc;
     BalanceAndNonceMapPtr acc_balance_map_ptr;
-    std::shared_ptr<shardoravm::ShardoraChainHost> shardora_host_ptr;
+    std::shared_ptr<shardoravm::ShardorahainHost> shardora_host_ptr;
     std::atomic<bool> valid;
     uint64_t b_tm_ms;
 

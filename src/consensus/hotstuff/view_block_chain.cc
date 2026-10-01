@@ -86,7 +86,7 @@ Status ViewBlockChain::Store(
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
         BalanceAndNonceMapPtr balane_map_ptr,
-        std::shared_ptr<shardoravm::ShardoraChainHost> shardora_host_ptr,
+        std::shared_ptr<shardoravm::ShardorahainHost> shardora_host_ptr,
         bool init) {
     // CheckThreadIdValid();
     if (chain_type_ == kLocalChain && !network::IsSameToLocalShard(view_block->qc().network_id())) {
@@ -117,7 +117,7 @@ Status ViewBlockChain::Store(
     }
 
     if (shardora_host_ptr == nullptr) {
-        shardora_host_ptr = std::make_shared<shardoravm::ShardoraChainHost>();
+        shardora_host_ptr = std::make_shared<shardoravm::ShardorahainHost>();
     }
 
     if (chain_type_ == kLocalChain && balane_map_ptr == nullptr) {
@@ -734,7 +734,7 @@ Status ViewBlockChain::GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>& vi
 
 void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
     // not this sharding
-    auto shardora_host_ptr = std::make_shared<shardoravm::ShardoraChainHost>();
+    auto shardora_host_ptr = std::make_shared<shardoravm::ShardorahainHost>();
     new_block_cache_callback_(view_block, shardora_host_ptr->db_batch_);
     auto block_info_ptr = GetViewBlockInfo(view_block, nullptr, shardora_host_ptr);
     AddNewBlock(view_block, shardora_host_ptr->db_batch_);
@@ -1689,47 +1689,47 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
             common::Encode::HexEncode(high_view_block_->parent_hash()).c_str(),
             high_view_block_->block_info().tx_list_size());
         high_view_block_view_.store(high_view_block_->qc().view());
-        // // Persist high_view_block_ to DB so it can be recovered after restart.
-        // // Save both the hash pointer AND the block itself, because the block
-        // // may not have been committed yet (SaveBlock only happens on commit).
-        // // Without saving the block, RecoverHighViewBlock's GetBlock(hash)
-        // // fails and the node restarts with a stale view.
-        // db::DbWriteBatch db_batch;
-        // prefix_db_->SaveHighViewBlock(
-        //     high_view_block_->qc().network_id(),
-        //     pool_index_,
-        //     high_view_block_->qc().view_block_hash(),
-        //     db_batch);
-        // // For the LOCAL chain only: eagerly flush this block's EVM storage and
-        // // AddressInfo to DB so that QueryContract / cross-shard kNormalTo TXs
-        // // can read fresh state without waiting for the two-phase commit.
-        // // A QC'd block is on the canonical chain (HotStuff safety) so the write
-        // // is safe; the normal commit path writes the same values again
-        // // (idempotent).
-        // //
-        // // Do NOT flush for cross-shard (kCrossShardingChain) or root-chain
-        // // (kCrossRootChian) instances — they share the same physical DB but
-        // // carry state that belongs to THEIR OWN shard.  Writing their
-        // // address_array / key_value_array here would corrupt the local shard's
-        // // account state with foreign data.
-        // if (chain_type_ == kLocalChain) {
-        //     for (int i = 0; i < high_view_block_->block_info().key_value_array_size(); ++i) {
-        //         const auto& kv = high_view_block_->block_info().key_value_array(i);
-        //         prefix_db_->SaveTemporaryKv(kv.addr() + kv.key(), kv.SerializeAsString(), db_batch);
-        //     }
-        //     for (int i = 0; i < high_view_block_->block_info().address_array_size(); ++i) {
-        //         const auto& addr_info = high_view_block_->block_info().address_array(i);
-        //         prefix_db_->AddAddressInfo(addr_info.addr(), addr_info, db_batch);
-        //     }
-        // }
-        // auto st = db_->Put(db_batch);
-        // if (!st.ok()) {
-        //     SHARDORA_ERROR("failed to persist high view block %u_%u_%lu, hash: %s",
-        //         high_view_block_->qc().network_id(),
-        //         pool_index_,
-        //         high_view_block_->qc().view(),
-        //         common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str());
-        // }
+        // Persist high_view_block_ to DB so it can be recovered after restart.
+        // Save both the hash pointer AND the block itself, because the block
+        // may not have been committed yet (SaveBlock only happens on commit).
+        // Without saving the block, RecoverHighViewBlock's GetBlock(hash)
+        // fails and the node restarts with a stale view.
+        db::DbWriteBatch db_batch;
+        prefix_db_->SaveHighViewBlock(
+            high_view_block_->qc().network_id(),
+            pool_index_,
+            high_view_block_->qc().view_block_hash(),
+            db_batch);
+        // For the LOCAL chain only: eagerly flush this block's EVM storage and
+        // AddressInfo to DB so that QueryContract / cross-shard kNormalTo TXs
+        // can read fresh state without waiting for the two-phase commit.
+        // A QC'd block is on the canonical chain (HotStuff safety) so the write
+        // is safe; the normal commit path writes the same values again
+        // (idempotent).
+        //
+        // Do NOT flush for cross-shard (kCrossShardingChain) or root-chain
+        // (kCrossRootChian) instances — they share the same physical DB but
+        // carry state that belongs to THEIR OWN shard.  Writing their
+        // address_array / key_value_array here would corrupt the local shard's
+        // account state with foreign data.
+        if (chain_type_ == kLocalChain) {
+            for (int i = 0; i < high_view_block_->block_info().key_value_array_size(); ++i) {
+                const auto& kv = high_view_block_->block_info().key_value_array(i);
+                prefix_db_->SaveTemporaryKv(kv.addr() + kv.key(), kv.SerializeAsString(), db_batch);
+            }
+            for (int i = 0; i < high_view_block_->block_info().address_array_size(); ++i) {
+                const auto& addr_info = high_view_block_->block_info().address_array(i);
+                prefix_db_->AddAddressInfo(addr_info.addr(), addr_info, db_batch);
+            }
+        }
+        auto st = db_->Put(db_batch);
+        if (!st.ok()) {
+            SHARDORA_ERROR("failed to persist high view block %u_%u_%lu, hash: %s",
+                high_view_block_->qc().network_id(),
+                pool_index_,
+                high_view_block_->qc().view(),
+                common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str());
+        }
     }
 }
 

@@ -58,14 +58,14 @@ struct MockedAccount {
     }
 };
 
-class ShardoraChainHost : public evmc::Host {
+class ShardorahainHost : public evmc::Host {
 public:
-    ShardoraChainHost() {
+    ShardorahainHost() {
         common::GlobalInfo::Instance()->AddSharedObj(6);
 
     }
 
-    ~ShardoraChainHost() {
+    ~ShardorahainHost() {
         common::GlobalInfo::Instance()->DecSharedObj(6);
     }
 
@@ -151,13 +151,37 @@ public:
     evmc::bytes32 GetCachedStorage(
         const evmc::address& addr,
         const evmc::bytes32& key) const noexcept;
+    void InitCallFrame(ShardorahainHost* parent, const std::string& execution_address) {
+        pre_shardora_host_ = parent;
+        tx_context_ = parent->tx_context_;
+        parent_hash_ = parent->parent_hash_;
+        my_address_ = execution_address;
+        gas_price_ = parent->gas_price_;
+        origin_address_ = parent->origin_address_;
+        view_ = parent->view_;
+        contract_mgr_ = parent->contract_mgr_;
+        view_block_chain_ = parent->view_block_chain_;
+    }
+
     void MergeToPrev() {
+        if (pre_shardora_host_ == nullptr) {
+            return;
+        }
+
         for (auto iter = recorded_logs_.begin(); iter != recorded_logs_.end(); ++iter) {
             pre_shardora_host_->recorded_logs_.push_back(*iter);
         }
 
+        if (recorded_selfdestructs_ != nullptr) {
+            pre_shardora_host_->recorded_selfdestructs_ = recorded_selfdestructs_;
+        }
+
         for (auto iter = to_account_value_.begin(); iter != to_account_value_.end(); ++iter) {
-            pre_shardora_host_->to_account_value_[iter->first] = iter->second;
+            auto& parent_transfers = pre_shardora_host_->to_account_value_[iter->first];
+            for (auto transfer_iter = iter->second.begin();
+                    transfer_iter != iter->second.end(); ++transfer_iter) {
+                parent_transfers[transfer_iter->first] += transfer_iter->second;
+            }
         }
 
         for (auto iter = accounts_.begin(); iter != accounts_.end(); ++iter) {
@@ -180,6 +204,10 @@ public:
             }
         }
 
+        for (auto iter = create2_accounts_.begin(); iter != create2_accounts_.end(); ++iter) {
+            pre_shardora_host_->create2_accounts_[iter->first] = iter->second;
+        }
+
         for (auto iter = account_balance_.begin(); iter != account_balance_.end(); ++iter) {
             pre_shardora_host_->account_balance_[iter->first] = iter->second;
         }
@@ -193,6 +221,12 @@ public:
         }
         pre_shardora_host_->cross_gas_charged_ += cross_gas_charged_;
 
+        pre_shardora_host_->gas_more_ += gas_more_;
+        if (!create_bytes_code_.empty()) {
+            pre_shardora_host_->create_bytes_code_ = create_bytes_code_;
+        }
+        pre_shardora_host_->contract_to_call_dirty_ =
+            pre_shardora_host_->contract_to_call_dirty_ || contract_to_call_dirty_;
         pre_shardora_host_->tx_context_ = tx_context_;
     }
 
@@ -248,7 +282,7 @@ public:
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     db::DbWriteBatch db_batch_;
-    ShardoraChainHost* pre_shardora_host_ = nullptr;
+    ShardorahainHost* pre_shardora_host_ = nullptr;
 
     // Cross-shard pending actions collected during EVM execution.
     // cross_gas_charged_ is added to gas_used after EVM completes.
