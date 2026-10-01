@@ -682,30 +682,8 @@ int Hotstuff::HandleProposeMsgImpl(const transport::MessagePtr& msg_ptr) {
             msg_ptr->header.hash64(), 
             ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
         // //assert(false);
-        return Status::kLeaderInvalid;
+        // return Status::kLeaderInvalid;
     }
-
-    // if (msg_ptr->header.hotstuff().pro_msg().view_item().qc().tm_height() != tm_block_mgr_->LatestTimestampHeight()) {
-    //     SHARDORA_DEBUG("timestamp height not match handle propose called hash: %lu, propose_debug: %s", 
-    //         msg_ptr->header.hash64(), 
-    //         ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
-    //     return;
-    // }
-    
-    // uint64_t view_prev_vote_tm = 0;
-    // if (last_stable_leader_member_index_ != msg_ptr->header.hotstuff().pro_msg().view_item().qc().leader_idx()) {
-    //     if (laste_vote_prev_view_tm_.Get(
-    //             msg_ptr->header.hotstuff().pro_msg().tc().view(), view_prev_vote_tm)) {
-    //         auto now_tm = common::TimeUtils::TimestampMs();
-    //         if (view_prev_vote_tm + 25000lu >= now_tm) {
-    //             SHARDORA_DEBUG("view: %lu, view_prev_vote_tm: %lu, now_tm: %lu, not timeout, ignore propose msg hash: %lu, propose_debug: %s", 
-    //                 msg_ptr->header.hotstuff().pro_msg().tc().view(), 
-    //                 view_prev_vote_tm, now_tm, msg_ptr->header.hash64(),
-    //                 ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
-    //             return Status::kLeaderInvalid;
-    //         }
-    //     }
-    // }
 
     if (!msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
         SHARDORA_DEBUG("handle propose called hash: %lu, %u_%u_%lu, "
