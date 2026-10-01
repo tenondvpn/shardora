@@ -676,15 +676,7 @@ int Hotstuff::HandleProposeMsgImpl(const transport::MessagePtr& msg_ptr) {
         return Status::kLeaderInvalid;
     }
 
-    auto st = HandleTC(pro_msg_wrap);
-    if (st != Status::kSuccess) {
-        SHARDORA_DEBUG("invalid tc handle propose called hash: %lu, propose_debug: %s", 
-            msg_ptr->header.hash64(), 
-            ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
-        // //assert(false);
-        // return Status::kLeaderInvalid;
-    }
-
+    auto tc_st = HandleTC(pro_msg_wrap);
     if (!msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
         SHARDORA_DEBUG("handle propose called hash: %lu, %u_%u_%lu, "
             "view block hash: %s, sign x: %s, propose_debug: %s", 
@@ -835,6 +827,14 @@ int Hotstuff::HandleProposeMsgImpl(const transport::MessagePtr& msg_ptr) {
     if (st != Status::kSuccess) {
         // HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
         ADD_DEBUG_PROCESS_TIMESTAMP();
+        return Status::kLeaderInvalid;
+    }
+
+    if (tc_st != Status::kSuccess) {
+        SHARDORA_DEBUG("invalid tc handle propose called hash: %lu, propose_debug: %s", 
+            msg_ptr->header.hash64(), 
+            ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
+        // //assert(false);
         return Status::kLeaderInvalid;
     }
 
