@@ -823,7 +823,7 @@ int Hotstuff::HandleProposeMsgImpl(const transport::MessagePtr& msg_ptr) {
         pro_msg_wrap->msg_ptr->header.hash64(), last_vote_view_, view_item.qc().view(),
         ProtobufToJson(cons_debug).c_str());
 #endif
-    st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
+    auto st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
     if (st != Status::kSuccess) {
         // HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
         ADD_DEBUG_PROCESS_TIMESTAMP();
