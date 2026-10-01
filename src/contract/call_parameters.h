@@ -9,7 +9,7 @@
 namespace shardora {
 
 namespace shardoravm {
-    class ShardorahainHost;
+    class ShardoraChainHost;
 }
 
 namespace contract {
@@ -38,7 +38,7 @@ struct CallParameters {
     evmc_bytes32 create2_salt;
     const uint8_t* code;
     size_t code_size;
-    shardoravm::ShardorahainHost* shardora_host;
+    shardoravm::ShardoraChainHost* shardora_host;
 };
 
 }  // namespace contact

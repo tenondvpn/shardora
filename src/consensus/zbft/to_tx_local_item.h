@@ -25,7 +25,7 @@ public:
     virtual int HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& pre_shardora_host,
+        shardoravm::ShardoraChainHost& pre_shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
     virtual int TxToBlockTx(
@@ -36,7 +36,7 @@ private:
     bool CreateLocalToTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         const pools::protobuf::ToTxMessageItem& to_tx,
         block::protobuf::ConsensusToTxs& block_to_txs,
@@ -48,7 +48,7 @@ private:
     bool HandleCrossShardBase(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         const pools::protobuf::ToTxMessageItem& to_tx,
         block::protobuf::BlockTx& block_tx);

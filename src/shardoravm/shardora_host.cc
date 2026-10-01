@@ -30,7 +30,7 @@ std::string SafeEvmcOutput(const evmc_result& res) {
 
 }  // namespace
 
-bool ShardorahainHost::account_exists(const evmc::address& addr) const noexcept {
+bool ShardoraChainHost::account_exists(const evmc::address& addr) const noexcept {
     SHARDORA_DEBUG("called 0");
     std::string addr_str((char*)addr.bytes, sizeof(addr.bytes));
     if (!view_block_chain_) {
@@ -51,7 +51,7 @@ bool ShardorahainHost::account_exists(const evmc::address& addr) const noexcept 
     return false;
 }
 
-evmc::bytes32 ShardorahainHost::GetCachedStorage(
+evmc::bytes32 ShardoraChainHost::GetCachedStorage(
         const evmc::address& addr,
         const evmc::bytes32& key) const noexcept {
     auto it = accounts_.find(addr);
@@ -66,7 +66,7 @@ evmc::bytes32 ShardorahainHost::GetCachedStorage(
     return tmp_val;
 }
 
-evmc::bytes32 ShardorahainHost::get_storage(
+evmc::bytes32 ShardoraChainHost::get_storage(
         const evmc::address& addr,
         const evmc::bytes32& key) const noexcept {
     std::string addr_hex = common::Encode::HexEncode(std::string((char*)addr.bytes, sizeof(addr.bytes)));
@@ -97,7 +97,7 @@ evmc::bytes32 ShardorahainHost::get_storage(
             std::string((char*)parent_val.bytes, sizeof(parent_val.bytes)));
         if (parent_val) {
             // Cache for subsequent reads
-            const_cast<ShardorahainHost*>(this)->accounts_[addr].storage[key] = {parent_val};
+            const_cast<ShardoraChainHost*>(this)->accounts_[addr].storage[key] = {parent_val};
             SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=parent_host "
                 "contract=%s key=%s value=%s my_addr=%s origin=%s",
                 addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
@@ -117,7 +117,7 @@ evmc::bytes32 ShardorahainHost::get_storage(
         std::string val_hex = common::Encode::HexEncode(
             std::string((char*)res_val.bytes, sizeof(res_val.bytes)));
         if (res_val) {
-            const_cast<ShardorahainHost*>(this)->accounts_[addr].storage[key] = {res_val};
+            const_cast<ShardoraChainHost*>(this)->accounts_[addr].storage[key] = {res_val};
             SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=view_chain "
                 "contract=%s key=%s value=%s my_addr=%s origin=%s parent_hash=%s",
                 addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
@@ -137,7 +137,7 @@ evmc::bytes32 ShardorahainHost::get_storage(
     std::string val_hex = common::Encode::HexEncode(
         std::string((char*)tmp_val.bytes, sizeof(tmp_val.bytes)));
     if (tmp_val) {
-        const_cast<ShardorahainHost*>(this)->accounts_[addr].storage[key] = {tmp_val};
+        const_cast<ShardoraChainHost*>(this)->accounts_[addr].storage[key] = {tmp_val};
         SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=db "
             "contract=%s key=%s value=%s my_addr=%s origin=%s",
             addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
@@ -151,7 +151,7 @@ evmc::bytes32 ShardorahainHost::get_storage(
     return tmp_val;
 }
 
-evmc_storage_status ShardorahainHost::set_storage(
+evmc_storage_status ShardoraChainHost::set_storage(
         const evmc::address& addr,
         const evmc::bytes32& key,
         const evmc::bytes32& value) noexcept {
@@ -222,7 +222,7 @@ evmc_storage_status ShardorahainHost::set_storage(
     return EVMC_STORAGE_ADDED;
 }
 
-evmc::uint256be ShardorahainHost::get_balance(const evmc::address& addr) const noexcept {
+evmc::uint256be ShardoraChainHost::get_balance(const evmc::address& addr) const noexcept {
     auto iter = account_balance_.find(addr);
     if (iter != account_balance_.end()) {
         return iter->second;
@@ -244,7 +244,7 @@ evmc::uint256be ShardorahainHost::get_balance(const evmc::address& addr) const n
     return res_val;
 }
 
-size_t ShardorahainHost::get_code_size(const evmc::address& addr) const noexcept {
+size_t ShardoraChainHost::get_code_size(const evmc::address& addr) const noexcept {
     std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
     auto pre_addr = common::Encode::HexDecode("00000000000000000000000000000000000000");
     if (memcmp(id.c_str(), pre_addr.c_str(), pre_addr.size()) == 0) {
@@ -275,7 +275,7 @@ size_t ShardorahainHost::get_code_size(const evmc::address& addr) const noexcept
     return acc_info->bytes_code().size();
 }
 
-evmc::bytes32 ShardorahainHost::get_code_hash(const evmc::address& addr) const noexcept {
+evmc::bytes32 ShardoraChainHost::get_code_hash(const evmc::address& addr) const noexcept {
     SHARDORA_DEBUG("called 5");
     std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
 
@@ -315,7 +315,7 @@ evmc::bytes32 ShardorahainHost::get_code_hash(const evmc::address& addr) const n
     return tmp_val;
 }
 
-size_t ShardorahainHost::copy_code(
+size_t ShardoraChainHost::copy_code(
         const evmc::address& addr,
         size_t code_offset,
         uint8_t* buffer_data,
@@ -365,7 +365,7 @@ size_t ShardorahainHost::copy_code(
     return n;
 }
 
-bool ShardorahainHost::selfdestruct(
+bool ShardoraChainHost::selfdestruct(
         const evmc::address& addr,
         const evmc::address& beneficiary) noexcept {
     contract_to_call_dirty_ = true;
@@ -381,7 +381,7 @@ bool ShardorahainHost::selfdestruct(
     return true;
 }
 
-evmc::Result ShardorahainHost::call(const evmc_message& msg) noexcept {
+evmc::Result ShardoraChainHost::call(const evmc_message& msg) noexcept {
     SHARDORA_DEBUG("called 8");
     contract::CallParameters params;
     params.shardora_host = this;
@@ -571,7 +571,7 @@ evmc::Result ShardorahainHost::call(const evmc_message& msg) noexcept {
     return evmc_res;
 }
 
-evmc_tx_context ShardorahainHost::get_tx_context() const noexcept {
+evmc_tx_context ShardoraChainHost::get_tx_context() const noexcept {
     // //assert(false);
     SHARDORA_DEBUG("emit called block number: %lu, block timestamp: %lu, gas: %lu",
         tx_context_.block_number,
@@ -580,7 +580,7 @@ evmc_tx_context ShardorahainHost::get_tx_context() const noexcept {
     return tx_context_;
 }
 
-evmc::bytes32 ShardorahainHost::get_block_hash(int64_t block_number) const noexcept {
+evmc::bytes32 ShardoraChainHost::get_block_hash(int64_t block_number) const noexcept {
     SHARDORA_DEBUG("called 10, block_number: %ld", block_number);
     return {};
     
@@ -632,7 +632,7 @@ evmc::bytes32 ShardorahainHost::get_block_hash(int64_t block_number) const noexc
     return result;
 }
 
-void ShardorahainHost::emit_log(const evmc::address& addr,
+void ShardoraChainHost::emit_log(const evmc::address& addr,
                 const uint8_t* data,
                 size_t data_size,
                 const evmc::bytes32 topics[],
@@ -877,17 +877,17 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
     recorded_logs_.push_back({ addr, std::string((char*)data, data_size), {topics, topics + topics_count} });
 }
 
-void ShardorahainHost::PushFrame() {
+void ShardoraChainHost::PushFrame() {
     frame_snapshots_.push_back({ pending_cross_actions_.size(), cross_gas_charged_ });
 }
 
-void ShardorahainHost::PopFrameCommit() {
+void ShardoraChainHost::PopFrameCommit() {
     if (!frame_snapshots_.empty()) {
         frame_snapshots_.pop_back();
     }
 }
 
-void ShardorahainHost::PopFrameRevert() {
+void ShardoraChainHost::PopFrameRevert() {
     if (frame_snapshots_.empty()) return;
     auto snap = frame_snapshots_.back();
     frame_snapshots_.pop_back();
@@ -899,7 +899,7 @@ void ShardorahainHost::PopFrameRevert() {
     }
 }
 
-void ShardorahainHost::AddTmpAccountBalance(const std::string& address, uint64_t balance) {
+void ShardoraChainHost::AddTmpAccountBalance(const std::string& address, uint64_t balance) {
     SHARDORA_DEBUG("called 12");
     evmc::address addr;
     memcpy(
@@ -912,7 +912,7 @@ void ShardorahainHost::AddTmpAccountBalance(const std::string& address, uint64_t
     contract_to_call_dirty_ = true;
 }
 
-int ShardorahainHost::SaveKeyValue(
+int ShardoraChainHost::SaveKeyValue(
         const std::string& id,
         const std::string& key,
         const std::string& val) {
@@ -927,7 +927,7 @@ int ShardorahainHost::SaveKeyValue(
     return SaveKeyValue(addr, key, val);
 }
 
-int ShardorahainHost::SaveKeyValue(
+int ShardoraChainHost::SaveKeyValue(
         const evmc::address& addr,
         const std::string& key,
         const std::string& val) {
@@ -963,7 +963,7 @@ int ShardorahainHost::SaveKeyValue(
     return kShardoravmSuccess;
 }
 
-int ShardorahainHost::GetCachedKeyValue(
+int ShardoraChainHost::GetCachedKeyValue(
         const std::string& id, 
         const std::string& key_str, 
         std::string* val) {
@@ -1002,7 +1002,7 @@ int ShardorahainHost::GetCachedKeyValue(
     return kShardoravmError;
 }
 
-int ShardorahainHost::GetKeyValue(const std::string& id, const std::string& key_str, std::string* val) {
+int ShardoraChainHost::GetKeyValue(const std::string& id, const std::string& key_str, std::string* val) {
     auto addr = evmc::address{};
     memcpy(addr.bytes, id.c_str(), id.size());
     auto it = accounts_.find(addr);
@@ -1056,7 +1056,7 @@ int ShardorahainHost::GetKeyValue(const std::string& id, const std::string& key_
     return kShardoravmSuccess;
 }
 
-evmc_access_status ShardorahainHost::access_account(const evmc::address& addr) noexcept {
+evmc_access_status ShardoraChainHost::access_account(const evmc::address& addr) noexcept {
     SHARDORA_DEBUG("called 15");
     return EVMC_ACCESS_COLD;
     if (Execution::Instance()->AddressWarm(addr)) {
@@ -1066,7 +1066,7 @@ evmc_access_status ShardorahainHost::access_account(const evmc::address& addr) n
     return EVMC_ACCESS_COLD;
 }
 
-evmc_access_status ShardorahainHost::access_storage(
+evmc_access_status ShardoraChainHost::access_storage(
         const evmc::address& addr,
         const evmc::bytes32& key) noexcept {
     SHARDORA_DEBUG("called 16");

@@ -58,14 +58,14 @@ struct MockedAccount {
     }
 };
 
-class ShardorahainHost : public evmc::Host {
+class ShardoraChainHost : public evmc::Host {
 public:
-    ShardorahainHost() {
+    ShardoraChainHost() {
         common::GlobalInfo::Instance()->AddSharedObj(6);
 
     }
 
-    ~ShardorahainHost() {
+    ~ShardoraChainHost() {
         common::GlobalInfo::Instance()->DecSharedObj(6);
     }
 
@@ -248,7 +248,7 @@ public:
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     db::DbWriteBatch db_batch_;
-    ShardorahainHost* pre_shardora_host_ = nullptr;
+    ShardoraChainHost* pre_shardora_host_ = nullptr;
 
     // Cross-shard pending actions collected during EVM execution.
     // cross_gas_charged_ is added to gas_used after EVM completes.

@@ -14,7 +14,7 @@ namespace consensus {
 int ToTxLocalItem::HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& pre_shardora_host,
+        shardoravm::ShardoraChainHost& pre_shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     pools::protobuf::ToTxMessageItem to_tx_item;
@@ -26,7 +26,7 @@ int ToTxLocalItem::HandleTx(
         return consensus::kConsensusSuccess;
     }
 
-    shardoravm::ShardorahainHost shardora_host;
+    shardoravm::ShardoraChainHost shardora_host;
     shardora_host.view_block_chain_ = pre_shardora_host.view_block_chain_;
     shardora_host.tx_context_ = pre_shardora_host.tx_context_;
     shardora_host.pre_shardora_host_ = &pre_shardora_host;
@@ -92,7 +92,7 @@ int ToTxLocalItem::HandleTx(
 bool ToTxLocalItem::CreateLocalToTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         const pools::protobuf::ToTxMessageItem& to_tx_item,
         block::protobuf::ConsensusToTxs& block_to_txs,
@@ -178,7 +178,7 @@ bool ToTxLocalItem::CreateLocalToTx(
 bool ToTxLocalItem::HandleCrossShardBase(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         const pools::protobuf::ToTxMessageItem& to_tx,
         block::protobuf::BlockTx& block_tx) {

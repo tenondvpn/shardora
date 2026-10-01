@@ -47,7 +47,7 @@ public:
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
         BalanceAndNonceMapPtr balane_map_ptr,
-        std::shared_ptr<shardoravm::ShardorahainHost> shardora_host_ptr,
+        std::shared_ptr<shardoravm::ShardoraChainHost> shardora_host_ptr,
         bool init);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlockInfo> Get(const HashStr& hash) const;
@@ -304,7 +304,7 @@ private:
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(
             std::shared_ptr<ViewBlock> view_block, 
             BalanceAndNonceMapPtr acc_balance_map_ptr,
-            std::shared_ptr<shardoravm::ShardorahainHost> shardora_host_ptr) {
+            std::shared_ptr<shardoravm::ShardoraChainHost> shardora_host_ptr) {
         auto view_block_info_ptr = std::make_shared<ViewBlockInfo>();
         SHARDORA_DEBUG("2 success add view block remove add %u_%u_%lu", 
             view_block->qc().network_id(), 

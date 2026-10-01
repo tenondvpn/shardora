@@ -43,7 +43,7 @@ Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
         BalanceAndNonceMap& balance_map,
-        shardoravm::ShardorahainHost& shardora_host) {
+        shardoravm::ShardoraChainHost& shardora_host) {
     SetBlockGasUsed(view_block, 0);
     if (txs_ptr->txs.size() == 1) {
         auto& tx = *(txs_ptr->txs.begin());
@@ -66,7 +66,7 @@ Status RootBlockExecutor::RootDefaultTx(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
         BalanceAndNonceMap& balance_map,
-        shardoravm::ShardorahainHost& shardora_host) {
+        shardoravm::ShardoraChainHost& shardora_host) {
     auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx = *tx_list->Add();
@@ -101,7 +101,7 @@ Status RootBlockExecutor::RootCreateAccountAddressBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
         BalanceAndNonceMap& acc_balance_map,
-        shardoravm::ShardorahainHost& shardora_host) {
+        shardoravm::ShardoraChainHost& shardora_host) {
     auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx_map = txs_ptr->txs;
@@ -139,7 +139,7 @@ Status RootBlockExecutor::RootCreateElectConsensusShardBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
         BalanceAndNonceMap& acc_balance_map,
-        shardoravm::ShardorahainHost& shardora_host) {
+        shardoravm::ShardoraChainHost& shardora_host) {
     auto& tx_map = txs_ptr->txs;
     if (tx_map.size() != 1) {
         SetBlockGasUsed(view_block, 0);

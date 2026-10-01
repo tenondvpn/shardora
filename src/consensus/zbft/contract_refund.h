@@ -32,7 +32,7 @@ public:
     virtual int HandleTx(
             uint32_t tx_index,
             view_block::protobuf::ViewBlockItem& view_block,
-            shardoravm::ShardorahainHost& pre_shardora_host,
+            shardoravm::ShardoraChainHost& pre_shardora_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         auto btime = common::TimeUtils::TimestampMs();

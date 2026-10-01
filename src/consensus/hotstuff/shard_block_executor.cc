@@ -10,7 +10,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
         BalanceAndNonceMap& acc_balance_map,
-        shardoravm::ShardorahainHost& shardora_host) {
+        shardoravm::ShardoraChainHost& shardora_host) {
     // Execute transaction
     auto& block = *view_block->mutable_block_info();
     auto tx_list = block.mutable_tx_list();

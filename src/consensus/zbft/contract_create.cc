@@ -15,7 +15,7 @@ namespace consensus {
 int ContractUserCreateCall::HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& pre_shardora_host,
+        shardoravm::ShardoraChainHost& pre_shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // contract create call
@@ -73,7 +73,7 @@ int ContractUserCreateCall::HandleTx(
     } while(0);
 
     int64_t tmp_from_balance = from_balance;
-    shardoravm::ShardorahainHost shardora_host;
+    shardoravm::ShardoraChainHost shardora_host;
     shardora_host.view_block_chain_ = pre_shardora_host.view_block_chain_;
     shardora_host.tx_context_ = pre_shardora_host.tx_context_;
     shardora_host.pre_shardora_host_ = &pre_shardora_host;
@@ -506,7 +506,7 @@ int ContractUserCreateCall::HandleTx(
 }
 
 int ContractUserCreateCall::SaveContractCreateInfo(
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         block::protobuf::BlockTx& block_tx,
         int64_t& contract_balance_add,
         int64_t& caller_balance_add) {
@@ -588,7 +588,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
 }
 
 int ContractUserCreateCall::CreateContractCallExcute(
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         block::protobuf::BlockTx& tx,
         evmc::Result* out_res) {
     uint32_t call_mode = shardoravm::kJustCreate;

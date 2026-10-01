@@ -31,7 +31,7 @@ protected:
     virtual int HandleTx(
             uint32_t tx_index,
             view_block::protobuf::ViewBlockItem& view_block,
-            shardoravm::ShardorahainHost& shardora_host,
+            shardoravm::ShardoraChainHost& shardora_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         uint32_t status_code = 0;
@@ -50,7 +50,7 @@ protected:
     }
 
     virtual void InitHost(
-            shardoravm::ShardorahainHost& shardora_host, 
+            shardoravm::ShardoraChainHost& shardora_host, 
             const block::protobuf::BlockTx& tx, 
             uint64_t gas_limit, 
             uint64_t gas_price, 
@@ -127,7 +127,7 @@ protected:
     }
 
     int GetTempAccountBalance(
-            shardoravm::ShardorahainHost& shardora_host,
+            shardoravm::ShardoraChainHost& shardora_host,
             const std::string& id,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             uint64_t* balance,

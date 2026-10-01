@@ -493,7 +493,7 @@ void ClickHouseClient::FlushToCkWithData() try {
 }
 
 bool ClickHouseClient::QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res) {
-    shardoravm::ShardorahainHost shardora_host;
+    shardoravm::ShardoraChainHost shardora_host;
     shardora_host.tx_context_.tx_origin = evmc::address{};
     shardora_host.tx_context_.block_coinbase = evmc::address{};
     shardora_host.tx_context_.block_number = 0;

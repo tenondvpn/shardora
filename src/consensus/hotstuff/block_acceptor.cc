@@ -378,7 +378,7 @@ Status BlockAcceptor::Accept(
         bool no_tx_allowed,
         bool directly_user_leader_txs,
         BalanceAndNonceMap& balance_and_nonce_map,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr,
         std::unordered_map<std::string, uint64_t>* out_leader_nonce_map) {
     auto accept_begin_ms = common::TimeUtils::TimestampMs();
@@ -649,7 +649,7 @@ Status BlockAcceptor::Accept(
 
 void BlockAcceptor::UpdateDesShardingId(
         pools::protobuf::ToTxMessageItem* to_addr_info, 
-        shardoravm::ShardorahainHost& shardora_host) {
+        shardoravm::ShardoraChainHost& shardora_host) {
     if (to_addr_info->has_des_sharding_id()) {
         return;
     }
@@ -932,7 +932,7 @@ Status BlockAcceptor::addTxsToPool(
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         BalanceAndNonceMap& now_balance_map,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         std::unordered_map<std::string, uint64_t>* out_leader_nonce_map) {
 
     // 0. Basic check
@@ -1485,7 +1485,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         BalanceAndNonceMap& balance_map,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         std::unordered_map<std::string, uint64_t>* out_leader_nonce_map) {
     auto add_txs_status = addTxsToPool(
         msg_ptr,
@@ -1552,7 +1552,7 @@ Status BlockAcceptor::DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
         BalanceAndNonceMap& balance_map,
-        shardoravm::ShardorahainHost& shardora_host) {
+        shardoravm::ShardoraChainHost& shardora_host) {
     Status s = BlockExecutorFactory().Create(security_ptr_)->DoTransactionAndCreateTxBlock(
             txs_ptr, view_block, balance_map, shardora_host);
     if (s != Status::kSuccess) {

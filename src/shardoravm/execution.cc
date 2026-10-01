@@ -69,7 +69,7 @@ void Execution::Init(std::shared_ptr<db::Db>& db) {
     // storage_map_ = new common::LimitHashMap<std::string, std::string, 1024>[common::kMaxThreadCount];
 }
 
-// No longer called — account_exists now uses ShardorahainHost::view_block_chain_ directly.
+// No longer called — account_exists now uses ShardoraChainHost::view_block_chain_ directly.
 bool Execution::IsAddressExists(const std::string& addr) {
     SHARDORA_DEBUG("IsAddressExists called but deprecated, addr: %s",
         common::Encode::HexEncode(addr).c_str());
@@ -140,7 +140,7 @@ int Execution::execute(
         uint64_t gas_limit,
         uint32_t depth,
         uint32_t call_mode,
-        ShardorahainHost& host,
+        ShardoraChainHost& host,
         evmc::Result* out_res) {
     auto btime = common::TimeUtils::TimestampMs();
     const size_t code_size = bytes_code.size();

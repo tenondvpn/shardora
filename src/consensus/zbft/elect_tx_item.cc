@@ -52,12 +52,12 @@ int ElectTxItem::TxToBlockTx(
 int ElectTxItem::HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& pre_shardora_host,
+        shardoravm::ShardoraChainHost& pre_shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     view_block_chain_ = pre_shardora_host.view_block_chain_;
     g2_ = std::make_shared<common::CsprngU64>(vss_mgr_->EpochRandom());
-    shardoravm::ShardorahainHost shardora_host;
+    shardoravm::ShardoraChainHost shardora_host;
     shardora_host.view_block_chain_ = pre_shardora_host.view_block_chain_;
     shardora_host.tx_context_ = pre_shardora_host.tx_context_;
     shardora_host.pre_shardora_host_ = &pre_shardora_host;
@@ -116,7 +116,7 @@ int ElectTxItem::HandleTx(
 }
 
 int ElectTxItem::processElect(
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         view_block::protobuf::ViewBlockItem& view_block,
         shardora::block::protobuf::BlockTx &block_tx) {
     auto& block = *view_block.mutable_block_info();
@@ -967,7 +967,7 @@ uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
 }
 
 int ElectTxItem::CreateNewElect(
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         block::protobuf::Block &block,
         const std::vector<NodeDetailPtr> &elect_nodes,
         uint64_t gas_for_root,

@@ -7,7 +7,7 @@ namespace consensus {
 int FromTxItem::HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& pre_shardora_host,
+        shardoravm::ShardoraChainHost& pre_shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     uint64_t gas_used = 0;
@@ -25,7 +25,7 @@ int FromTxItem::HandleTx(
         return kConsensusSuccess;
     }
 
-    shardoravm::ShardorahainHost shardora_host;
+    shardoravm::ShardoraChainHost shardora_host;
     shardora_host.view_block_chain_ = pre_shardora_host.view_block_chain_;
     shardora_host.tx_context_ = pre_shardora_host.tx_context_;
     shardora_host.pre_shardora_host_ = &pre_shardora_host;

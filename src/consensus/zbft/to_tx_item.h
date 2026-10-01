@@ -37,7 +37,7 @@ public:
     virtual int HandleTx(
             uint32_t tx_index,
             view_block::protobuf::ViewBlockItem& view_block,
-            shardoravm::ShardorahainHost& shardora_host,
+            shardoravm::ShardoraChainHost& shardora_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         if (view_block.block_info().has_normal_to()) {

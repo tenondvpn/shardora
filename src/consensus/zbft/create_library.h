@@ -23,7 +23,7 @@ public:
     int HandleTx(
             uint32_t tx_index,
             view_block::protobuf::ViewBlockItem& view_block,
-            shardoravm::ShardorahainHost& pre_shardora_host,
+            shardoravm::ShardoraChainHost& pre_shardora_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         uint64_t gas_used = 0;
@@ -33,7 +33,7 @@ public:
         uint64_t to_balance = 0;
         auto& from = address_info->addr();
         int balance_status = GetTempAccountBalance(pre_shardora_host, from, acc_balance_map, &from_balance, &from_nonce);
-        shardoravm::ShardorahainHost shardora_host;
+        shardoravm::ShardoraChainHost shardora_host;
         shardora_host.view_block_chain_ = pre_shardora_host.view_block_chain_;
         shardora_host.pre_shardora_host_ = &pre_shardora_host;
         do  {
@@ -210,7 +210,7 @@ public:
     }
 
     int CreateContractCallExcute(
-            shardoravm::ShardorahainHost& shardora_host,
+            shardoravm::ShardoraChainHost& shardora_host,
             block::protobuf::BlockTx& tx,
             evmc::Result* out_res) {
         uint32_t call_mode = shardoravm::kJustCreate;

@@ -9,7 +9,7 @@ namespace consensus {
 int JoinElectTxItem::HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     auto& block = view_block.block_info();
@@ -267,7 +267,7 @@ int JoinElectTxItem::HandleTx(
 int JoinElectTxItem::HandleStakeOperation(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx,
         bls::protobuf::JoinElectInfo& join_info,
@@ -388,7 +388,7 @@ int JoinElectTxItem::HandleStakeOperation(
 int JoinElectTxItem::HandleRedeemOperation(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardoraChainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx,
         bls::protobuf::JoinElectInfo& join_info,
