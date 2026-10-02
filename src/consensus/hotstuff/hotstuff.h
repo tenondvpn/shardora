@@ -122,7 +122,13 @@ public:
                 pool_idx_, latest_elect_height_, last_stable_leader_member_index_.load());
         }
 
-        if (latest_qc_item_ptr_ == nullptr) {
+        // Pin the qc before dereferencing it.  latest_qc_item_ptr_ is written by
+        // the hotstuff network thread and the sync timer thread without a lock,
+        // so a null check followed by a separate *latest_qc_item_ptr_ can race
+        // with a reassignment that frees the old pointee.  The local copy keeps
+        // the QcItem alive for as long as GetLeader holds the reference.
+        auto qc_ptr = latest_qc_item_ptr_;
+        if (qc_ptr == nullptr) {
             SHARDORA_WARN("pool: %u, OnNewElectBlock skipping GetLeader: latest_qc_item_ptr_ is null, "
                 "elect_height: %lu", pool_idx_, elect_height);
             return;
@@ -131,8 +137,8 @@ public:
         View out_view = 0;
         auto leader_block_tm = GetLeaderBlockTimestamp();
         GetLeader(
-            last_stable_leader_member_index_, 
-            *latest_qc_item_ptr_, 
+            last_stable_leader_member_index_,
+            *qc_ptr,
             &out_view,
             leader_block_tm,
             true);

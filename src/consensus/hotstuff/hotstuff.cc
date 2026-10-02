@@ -1733,7 +1733,14 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     View out_view = 0;
     auto local_idx = GetLocalMemberIdx();
     auto leader_block_tm = GetLeaderBlockTimestamp();
-    auto leader = GetLeader(local_idx, *latest_qc_item_ptr_, &out_view, leader_block_tm, false);
+    // Pin the qc: latest_qc_item_ptr_ is reassigned without a lock by the sync
+    // timer thread, and GetLeader holds this reference across its whole body.
+    auto qc_ptr = latest_qc_item_ptr_;
+    if (qc_ptr == nullptr) {
+        return;
+    }
+
+    auto leader = GetLeader(local_idx, *qc_ptr, &out_view, leader_block_tm, false);
     if (!leader) {
         SHARDORA_DEBUG("pool index: %d, no leader", pool_idx_);
         return;
@@ -2602,13 +2609,17 @@ void Hotstuff::TryRecoverFromStuck(
     auto local_idx = GetLocalMemberIdx();
     View out_view = 0;
     auto leader_block_tm = GetLeaderBlockTimestamp();
-    if (!latest_qc_item_ptr_) {
+    // Pin the qc: latest_qc_item_ptr_ is reassigned without a lock by the
+    // hotstuff network thread and the sync timer thread.  A bare null check
+    // followed by *latest_qc_item_ptr_ can race with that reassignment.
+    auto qc_ptr = latest_qc_item_ptr_;
+    if (qc_ptr == nullptr) {
         // if (pool_idx_ == common::kImmutablePoolSize) {
             // SHARDORA_DEBUG("pool %u: latest_qc_item_ptr_ is null, cannot get leader", pool_idx_);
         // }
         return;
     }
-    auto leader = GetLeader(local_idx, *latest_qc_item_ptr_, &out_view, leader_block_tm, true);
+    auto leader = GetLeader(local_idx, *qc_ptr, &out_view, leader_block_tm, true);
     if (!leader) {
         // SHARDORA_DEBUG("pool index: %d, no leader", pool_idx_);
         return;
