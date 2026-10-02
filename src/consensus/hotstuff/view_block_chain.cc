@@ -1029,6 +1029,14 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             common::TimeUtils::TimestampMs() - b_tm);
         stored_to_db_view_ = tmp_block->qc().view();
         latest_commited_block = *iter;
+
+        // This block is now the settled branch at its height, so any sibling it
+        // has at its parent's height is an illegal fork and must go.
+        EraseIllegalForkSiblings(tmp_block);
+        // A committed block whose parent is neither committed nor in memory
+        // leaves a gap this chain cannot close on its own; track it so sync
+        // keeps asking for the parent every round until it lands.
+        TrackParentIfMissing(tmp_block);
     }
     
     if (latest_commited_block) {
@@ -1050,14 +1058,193 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 // #endif
 }
 
+// A committed block settles which branch is real at its parent's height.  Every
+// in-memory block at that height whose hash is not the committed block's parent
+// belongs to a losing fork: it can never be committed on this chain, and while
+// it stays in the maps it keeps answering "height H-1 is already here", so the
+// valid branch is never re-synced.  Erase it, then ask sync for the valid hash.
+void ViewBlockChain::EraseIllegalForkSiblings(
+        const std::shared_ptr<ViewBlock>& committed_block) {
+    if (committed_block == nullptr || committed_block->parent_hash().empty()) {
+        return;
+    }
+
+    const auto network_id = committed_block->qc().network_id();
+    const auto pool_idx = committed_block->qc().pool_index();
+    const auto committed_height = committed_block->block_info().height();
+    if (committed_height <= 1) {
+        return;
+    }
+
+    const auto parent_height = committed_height - 1;
+    const auto& keep_hash = committed_block->parent_hash();
+    uint32_t erased = 0;
+    for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
+        auto& info = iter->second;
+        if (info == nullptr || info->view_block == nullptr) {
+            ++iter;
+            continue;
+        }
+
+        auto& vblock = info->view_block;
+        if (vblock->qc().network_id() != network_id ||
+                vblock->qc().pool_index() != pool_idx ||
+                vblock->block_info().height() != parent_height ||
+                iter->first == keep_hash) {
+            ++iter;
+            continue;
+        }
+
+        SHARDORA_DEBUG("erase illegal fork sibling %u_%u_%lu, height: %lu, "
+            "hash: %s, keep parent hash: %s",
+            vblock->qc().network_id(),
+            vblock->qc().pool_index(),
+            vblock->qc().view(),
+            vblock->block_info().height(),
+            common::Encode::HexEncode(iter->first).c_str(),
+            common::Encode::HexEncode(keep_hash).c_str());
+
+        // Drop the view-keyed entries first: both cache structures key on view,
+        // and the block must be gone from all three maps before its shared_ptr
+        // is released.
+        auto view = vblock->qc().view();
+        auto cached_iter = cached_view_with_blocks_.find(view);
+        if (cached_iter != cached_view_with_blocks_.end()) {
+            auto& blocks = cached_iter->second;
+            for (auto bit = blocks.begin(); bit != blocks.end();) {
+                if (*bit == info) {
+                    bit = blocks.erase(bit);
+                } else {
+                    ++bit;
+                }
+            }
+
+            if (blocks.empty()) {
+                cached_view_with_blocks_.erase(cached_iter);
+            }
+        }
+
+        auto view_iter = view_with_blocks_.find(view);
+        if (view_iter != view_with_blocks_.end() && view_iter->second == info) {
+            view_with_blocks_.erase(view_iter);
+        }
+
+        if (kv_sync_) {
+            kv_sync_->DropSyncedCandidate(
+                network_id, pool_idx, parent_height, iter->first);
+        }
+
+        iter = view_blocks_info_.erase(iter);
+        ++erased;
+    }
+
+    if (erased > 0) {
+        SHARDORA_DEBUG("erased %u illegal fork siblings at %u_%u height: %lu, "
+            "keep parent hash: %s, committed: %s",
+            erased,
+            network_id,
+            pool_idx,
+            parent_height,
+            common::Encode::HexEncode(keep_hash).c_str(),
+            common::Encode::HexEncode(committed_block->qc().view_block_hash()).c_str());
+        if (kv_sync_) {
+            kv_sync_->AddSyncViewHash(network_id, pool_idx, keep_hash, 0);
+        }
+    }
+}
+
+void ViewBlockChain::TrackParentIfMissing(
+        const std::shared_ptr<ViewBlock>& committed_block) {
+    if (committed_block == nullptr || committed_block->parent_hash().empty()) {
+        return;
+    }
+
+    const auto network_id = committed_block->qc().network_id();
+    const auto pool_idx = committed_block->qc().pool_index();
+    const auto committed_height = committed_block->block_info().height();
+    if (committed_height <= 1) {
+        return;
+    }
+
+    const auto parent_height = committed_height - 1;
+    const auto& parent_hash = committed_block->parent_hash();
+    // Parent is already committed: the gap this entry would track is closed.
+    if (BlockHeightCommited(prefix_db_, network_id, pool_idx, parent_height)) {
+        auto tracked_iter = tracked_parents_.find(parent_hash);
+        if (tracked_iter != tracked_parents_.end()) {
+            SHARDORA_DEBUG("tracked parent %u_%u_%lu now commited, drop track, hash: %s",
+                network_id, pool_idx, parent_height,
+                common::Encode::HexEncode(parent_hash).c_str());
+            tracked_parents_.erase(tracked_iter);
+        }
+
+        return;
+    }
+
+    // Parent is in memory: the chain can still close the gap by itself.
+    if (view_blocks_info_.find(parent_hash) != view_blocks_info_.end()) {
+        return;
+    }
+
+    TrackedParent tracked;
+    tracked.network_id = network_id;
+    tracked.pool_index = pool_idx;
+    tracked.height = parent_height;
+    auto inserted = tracked_parents_.insert({ parent_hash, tracked }).second;
+    SHARDORA_DEBUG("%s tracked missing parent %u_%u_%lu, hash: %s, "
+        "committed block: %s",
+        inserted ? "add" : "already",
+        network_id, pool_idx, parent_height,
+        common::Encode::HexEncode(parent_hash).c_str(),
+        common::Encode::HexEncode(
+            committed_block->qc().view_block_hash()).c_str());
+}
+
+void ViewBlockChain::RetryTrackedParents() {
+    if (tracked_parents_.empty()) {
+        return;
+    }
+
+    for (auto iter = tracked_parents_.begin(); iter != tracked_parents_.end();) {
+        const auto& parent_hash = iter->first;
+        auto& tracked = iter->second;
+        // The gap closed: the parent's height is committed, or the block
+        // arrived in memory and the normal commit path will carry it forward.
+        if (BlockHeightCommited(
+                prefix_db_, tracked.network_id, tracked.pool_index, tracked.height) ||
+                view_blocks_info_.find(parent_hash) != view_blocks_info_.end()) {
+            SHARDORA_DEBUG("tracked parent %u_%u_%lu resolved, stop retry, hash: %s",
+                tracked.network_id, tracked.pool_index, tracked.height,
+                common::Encode::HexEncode(parent_hash).c_str());
+            iter = tracked_parents_.erase(iter);
+            continue;
+        }
+
+        if (kv_sync_) {
+            kv_sync_->AddSyncViewHash(
+                tracked.network_id, tracked.pool_index, parent_hash, 0);
+            SHARDORA_DEBUG("retry tracked parent %u_%u_%lu, hash: %s",
+                tracked.network_id, tracked.pool_index, tracked.height,
+                common::Encode::HexEncode(parent_hash).c_str());
+        }
+
+        ++iter;
+    }
+}
+
 void ViewBlockChain::HandleTimerMessage() {
     // CheckThreadIdValid();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (prev_check_timeout_blocks_ms_ + 3000u > now_tm_ms) { 
+    if (prev_check_timeout_blocks_ms_ + 3000u > now_tm_ms) {
         return;
     }
 
     prev_check_timeout_blocks_ms_ = now_tm_ms;
+
+    // Keep asking for parents that a committed block depends on but that never
+    // arrived.  Must run before the early return below: the gap can exist while
+    // view_with_blocks_ is nearly empty.
+    RetryTrackedParents();
 
     if (view_with_blocks_.size() <= 1) {
         return;

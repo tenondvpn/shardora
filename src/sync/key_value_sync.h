@@ -170,10 +170,19 @@ public:
         uint64_t height,
         uint32_t priority);
     void AddSyncViewHash(
-        uint32_t network_id, 
+        uint32_t network_id,
         uint32_t pool_idx,
-        const std::string& view_hash, 
+        const std::string& view_hash,
         uint32_t priority);
+    // Consensus rejected `view_block_hash` as an illegal fork of the chain it
+    // holds at that height.  Forget the candidate and any "already answered"
+    // marker for that height so the next round requests the height again, which
+    // is how the valid branch gets pulled in.
+    void DropSyncedCandidate(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        const std::string& view_block_hash);
     void Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
         const std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr,

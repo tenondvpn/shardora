@@ -527,6 +527,46 @@ void KeyValueSync::AddSyncViewHash(
         item_queues_[thread_idx].size());
 }
 
+void KeyValueSync::DropSyncedCandidate(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        const std::string& view_block_hash) {
+    if (height == common::kInvalidUint64 || view_block_hash.empty()) {
+        return;
+    }
+
+    auto& height_map = synced_res_map_[network_id][pool_idx];
+    auto height_iter = height_map.find(height);
+    if (height_iter != height_map.end()) {
+        auto entry_iter = height_iter->second.find(view_block_hash);
+        if (entry_iter != height_iter->second.end()) {
+            bool was_live = entry_iter->second.pb_vblock && !entry_iter->second.dead;
+            height_iter->second.erase(entry_iter);
+            if (was_live && network_id != network::kRootCongressNetworkId &&
+                    not_root_synced_res_map_count_ > 0) {
+                --not_root_synced_res_map_count_;
+            }
+
+            if (height_iter->second.empty()) {
+                height_map.erase(height_iter);
+            }
+        }
+    }
+
+    // Forget the answered marker for a bare height probe of this height; an
+    // identity probe carries its own key and is scoped to the rejected hash.
+    std::string height_key = std::to_string(network_id) + "_" +
+        std::to_string(pool_idx) + "_" +
+        std::to_string(height) + "_" +
+        std::to_string(kBlockHeight);
+    responsed_keys_.erase(height_key);
+    SHARDORA_DEBUG("drop synced candidate %u_%u_%lu hash: %s, answered key erased: %s",
+        network_id, pool_idx, height,
+        common::Encode::HexEncode(view_block_hash).c_str(),
+        height_key.c_str());
+}
+
 void KeyValueSync::ConsensusTimerMessage() {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
@@ -1293,13 +1333,33 @@ void KeyValueSync::ApplyVerifiedBlockResult(const VerifyBlockResult& result) {
         not_root_synced_res_map_count_,
         result.verify_cost_ms,
         result.msg_hash);
+    // Only remember the request as answered while the height still holds a
+    // usable block.  A height probe key (net_pool_height_tag) outlives the
+    // branch it named: if consensus later rejects the block this height was
+    // answered with, the key must not keep the height permanently unrequestable.
+    // Memory-only dedup is reset here so the next request for the same height is
+    // sent again.
+    {
+        const auto& height_map = synced_res_map_[pb_vblock->qc().network_id()]
+            [pb_vblock->qc().pool_index()];
+        if (HeightHasLiveCandidate(
+                height_map,
+                pb_vblock->block_info().height(),
+                common::TimeUtils::TimestampUs())) {
+            responsed_keys_.add(result.key);
+        } else {
+            SHARDORA_DEBUG("not cache responsed key (no live candidate): %s",
+                (result.tag == kBlockHeight ? result.key.c_str() :
+                    common::Encode::HexEncode(result.key).c_str()));
+        }
+    }
+    synced_map_.erase(result.key);
+
     EnqueueVerifiedBlock(pb_vblock);
     QueueFollowupBlockSync(
         pb_vblock->qc().network_id(),
         pb_vblock->qc().pool_index(),
         pb_vblock->block_info().height());
-    responsed_keys_.add(result.key);
-    synced_map_.erase(result.key);
 }
 
 void KeyValueSync::EnqueueVerifiedBlock(const ViewBlockPtr& pb_vblock) {

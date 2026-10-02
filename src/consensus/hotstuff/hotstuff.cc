@@ -1822,6 +1822,7 @@ void Hotstuff::HandleSyncedViewBlock(
         vblock->qc().pool_index(),
         vblock->qc().view(),
         vblock->block_info().height());
+
     transport::MessagePtr msg_ptr;
     if (network::IsSameToLocalShard(vblock->qc().network_id())) {
         if (!view_block_chain()->ReplaceWithSyncedBlock(vblock)) {

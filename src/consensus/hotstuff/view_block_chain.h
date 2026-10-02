@@ -125,6 +125,25 @@ public:
         uint64_t timeblock_addr_nonce);
     void HandleTimerMessage();
     std::shared_ptr<ViewBlockInfo> CheckCommit(const QC& qc);
+    // A block was just committed, which settles its branch.  Every in-memory
+    // block at the committed block's parent height whose hash is not the
+    // committed block's parent is a fork sibling that can never be committed on
+    // this chain, so it is erased instead of lingering as a zombie.  The
+    // committed parent hash is handed to key-value sync so the valid branch is
+    // (re-)requested.
+    void EraseIllegalForkSiblings(
+        const std::shared_ptr<ViewBlock>& committed_block);
+    // A block that just committed must have its parent already committed.
+    // When it does not and the parent is not in memory either, the chain cannot
+    // close the gap by itself: it records the parent hash in tracked_parents_ so
+    // the parent keeps being requested every round until it is committed.
+    void TrackParentIfMissing(
+        const std::shared_ptr<ViewBlock>& committed_block);
+    // Re-issue a sync request for every tracked parent that is still not
+    // committed and not in memory.  Called from HandleTimerMessage so a lost or
+    // rejected request is retried indefinitely, and the entry is dropped as soon
+    // as its height commits.
+    void RetryTrackedParents();
     
     uint64_t GetMaxHeight() {
         auto latest_committed_block = LatestCommittedBlock();
@@ -378,6 +397,15 @@ private:
     uint64_t prev_check_timeout_blocks_ms_ = 0;
     ChainType chain_type_ = kInvalidChain;
     std::map<uint64_t, std::shared_ptr<ViewBlockInfo>> view_with_blocks_;
+    // Parent blocks that a committed block depends on but that are neither
+    // committed nor held in memory.  Keyed by parent hash; each entry is
+    // re-requested every HandleTimerMessage round until its height commits.
+    struct TrackedParent {
+        uint32_t network_id = 0;
+        uint32_t pool_index = 0;
+        uint64_t height = 0;
+    };
+    std::unordered_map<HashStr, TrackedParent> tracked_parents_;
     common::LRUMap<BlockViewKey, std::shared_ptr<ViewBlockInfo>> latest_commited_view_lru_map_{ 16 };
     common::LRUMap<std::string, std::shared_ptr<ViewBlockInfo>> latest_commited_hash_lru_map_{ 16 };
     common::LRUMap<BlockViewKey, std::shared_ptr<ViewBlockInfo>> latest_commited_height_lru_map_{ 16 };
