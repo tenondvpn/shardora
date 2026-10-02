@@ -1116,9 +1116,13 @@ void KeyValueSync::ResumeExpiredChainsLocked(uint64_t now_tm_ms) {
         }
 
         const auto chain = it->first;
+        // ResumeChainLocked erases this very node from suspended_tm_ms_ by key
+        // (chain == it->first), which frees it and leaves it dangling.  Advance
+        // the iterator out first so the erase below is not a use-after-free --
+        // and so the node count cannot be decremented twice.
+        it = suspended_tm_ms_.erase(it);
         ResumeChainLocked(chain);
         suspended_chains_.erase(chain);
-        it = suspended_tm_ms_.erase(it);
     }
 }
 
