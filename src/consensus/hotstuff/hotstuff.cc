@@ -1665,6 +1665,7 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
     view_block_chain()->UpdateHighViewBlock(qc_item);
     BroadcastGlobalPoolBlock(view_block_info_ptr->view_block);
     pacemaker()->NewQcView(qc_item.view());
+    if (latest_leader_propose_message_) {
     SHARDORA_INFO("NewView propose newview called %u_%u_%lu, tc_view: %lu, "
         "propose_debug: %s, use time: %lu, latest_leader_propose_message_ = nullptr, "
         "hash64: %lu, tx size: %lu",
@@ -1675,6 +1676,7 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
         (common::TimeUtils::TimestampMs() - view_block_info_ptr->b_tm_ms),
         latest_leader_propose_message_->header.hash64(),
         latest_leader_propose_message_->header.hotstuff().pro_msg().tx_propose().txs_size());
+    }
     ADD_DEBUG_PROCESS_TIMESTAMP();
     latest_leader_propose_message_ = nullptr;
     last_leader_propose_view_ = 0llu;
