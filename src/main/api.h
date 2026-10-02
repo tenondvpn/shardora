@@ -681,6 +681,7 @@ public:
     struct LeaderInfo {
         std::string ip;
         uint16_t port;
+        int32_t index{ -1 };
     };
 
     bool fetchLeaders(
@@ -709,8 +710,18 @@ public:
                 LeaderInfo li;
                 li.ip = val["ip"].get<std::string>();
                 li.port = val["port"].get<uint16_t>();
+                if (val.contains("index")) {
+                    li.index = val["index"].get<int32_t>();
+                }
                 if (li.ip == "0.0.0.0" || li.port == 0) {
                     continue;  // Skip invalid entries
+                }
+                // index == -1 marks a pool the server has no leader for: it fills
+                // in its own address, which is not a routable destination for the
+                // leader's pool.  Drop the entry so callers fall back to the
+                // shard's configured endpoint instead of forwarding there.
+                if (li.index < 0) {
+                    continue;
                 }
                 leaders[pool_idx] = li;
             }
