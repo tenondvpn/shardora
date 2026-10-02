@@ -777,6 +777,14 @@ int NetworkInit::InitHttpServer() {
             private_key_received_ = true;
         }
        
+        // Txs submitted over raw TCP never touch the HTTP submit path, so they
+        // would otherwise be invisible to /transaction_receipt.  Register them
+        // as soon as the pool manager learns their hash.
+        pools_mgr_->SetTxRegisterCallback(
+            [this](const transport::MessagePtr& msg_ptr) {
+                http_handler_.RegisterTx(msg_ptr);
+            });
+
         std::this_thread::sleep_for(std::chrono::milliseconds{200});
         // Note: HTTP client check removed as we migrated from httplib to uWebSockets
         // The server will be ready after the sleep delay

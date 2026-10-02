@@ -88,6 +88,32 @@ public:
         return tx_msg_map_mutex_;
     }
 
+    // Register a tx that arrived over a non-HTTP path (raw TCP from the load
+    // generator) so /transaction_receipt and /batch_transaction_receipt can
+    // resolve it.  Idempotent: re-registering the same hash just refreshes the
+    // LRU position.  Never clobbers an existing status_notify_cb — the HTTP
+    // submit path sets its own before dispatch.
+    void RegisterTx(const transport::MessagePtr& msg_ptr) {
+        if (!msg_ptr || msg_ptr->msg_hash.empty()) {
+            return;
+        }
+
+        if (!msg_ptr->status_notify_cb) {
+            auto weak_msg = std::weak_ptr<transport::TransportMessage>(msg_ptr);
+            msg_ptr->status_notify_cb = [weak_msg](
+                    const std::string& /*hash*/,
+                    transport::MessageHandleStatus s) {
+                auto m = weak_msg.lock();
+                if (m) {
+                    m->handle_status.store(s);
+                }
+            };
+        }
+
+        std::lock_guard<std::mutex> lock(tx_msg_map_mutex_);
+        tx_msg_map_.Put(msg_ptr->msg_hash, msg_ptr);
+    }
+
     // Set private key update callback function
     void SetPrivateKeyUpdateCallback(std::function<int(const std::string&)> callback) {
         private_key_update_callback_ = callback;
@@ -109,7 +135,14 @@ private:
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
     std::shared_ptr<std::thread> http_svr_thread_ = nullptr;
-    common::LRUMap<std::string, transport::MessagePtr> tx_msg_map_{10240};
+    // Holds a MessagePtr per pending tx so receipt queries can read
+    // handle_status.  Only unresolved txs need to stay here — once a tx lands
+    // in a block, prefix_db's TxHashStatus answers for it and eviction is
+    // harmless.  Entries are refreshed both on insert and on every batch poll,
+    // so the actively-queried working set survives.  Sized from the observed
+    // backlog (~190k unconfirmed) rather than the 10240 default, which evicted
+    // entries long before they were queried.
+    common::LRUMap<std::string, transport::MessagePtr> tx_msg_map_{262144};
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;

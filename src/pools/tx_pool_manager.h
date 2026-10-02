@@ -97,6 +97,11 @@ public:
     void SetTxStatusCallback(TxStatusCallback cb) { tx_status_cb_ = std::move(cb); }
     const TxStatusCallback& GetTxStatusCallback() const { return tx_status_cb_; }
 
+    // Invoked once per user tx as soon as msg_hash is known, so the node that
+    // received it over raw TCP can be made resolvable by receipt queries.
+    using TxRegisterCallback = std::function<void(const transport::MessagePtr&)>;
+    void SetTxRegisterCallback(TxRegisterCallback cb) { tx_register_cb_ = std::move(cb); }
+
 #ifdef SHARDORA_UNITTEST
     // pools_test: mock HotstuffManager::is_other_leader without linking consensus.
     static void SetIsOtherLeaderHookForTest(std::function<common::BftMemberPtr(uint32_t pool_index)> fn);
@@ -322,6 +327,7 @@ private:
 
     static const uint32_t kPopMessageCountEachTime = 64000u;
     TxStatusCallback tx_status_cb_;
+    TxRegisterCallback tx_register_cb_;
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;

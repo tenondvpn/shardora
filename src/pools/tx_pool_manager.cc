@@ -212,6 +212,13 @@ int TxPoolManager::TmpFirewallCheckMessage(const transport::MessagePtr& msg_ptr)
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+    // Make the tx resolvable by receipt queries before any status is set.
+    // Runs before the callback chaining below so RegisterTx can install the
+    // default handle_status updater only when nothing else has claimed it.
+    if (tx_register_cb_) {
+        tx_register_cb_(msg_ptr);
+    }
+
     // Inject WS notify callback now that msg_hash is known.
     // Chain with any existing callback (e.g. the HTTP handle_status updater set by http_handler).
     if (tx_status_cb_) {
