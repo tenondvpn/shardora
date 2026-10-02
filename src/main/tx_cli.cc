@@ -6852,6 +6852,7 @@ contract Exchange {
 
                             // Query current nonces via each contract's leader node
                             std::unordered_map<std::string, int64_t> cur_nonces;
+                            std::unordered_set<std::string> q_missing;  // accounts absent from query response
                             {
                                 // Group pending keys by leader HTTP endpoint
                                 std::map<std::pair<std::string,uint16_t>, std::vector<std::string>> ep_keys;
@@ -6879,16 +6880,20 @@ contract Exchange {
                                         auto r = qsdk.batchQueryAccounts(batch);
                                         for (auto& k : batch) {
                                             int64_t n = 0;
+                                            bool got = false;
                                             if (r.contains("accounts") && r["accounts"].contains(k)) {
                                                 auto& acc = r["accounts"][k];
+                                                got = true;
                                                 if (acc.contains("nonce")) {
                                                     try {
                                                         auto ns = acc["nonce"].get<std::string>();
                                                         std::from_chars(ns.data(), ns.data() + ns.size(), n);
                                                     } catch (...) {}
                                                 }
+                                            } else {
+                                                q_missing.insert(k);
                                             }
-                                            cur_nonces[k] = n;
+                                            cur_nonces[k] = got ? n : -1;
                                         }
                                         usleep(10000);
                                     }
@@ -6897,6 +6902,7 @@ contract Exchange {
 
                             // Check confirmed; resend missing txs for those still pending
                             std::vector<uint32_t> next_pend;
+                            uint32_t stuck_printed = 0;  // diagnose: print first 3 unconfirmed
                             for (uint32_t p : pending) {
                                 auto& ve = ver_list[p];
                                 int64_t cur = cur_nonces[ve.key];
@@ -6906,6 +6912,30 @@ contract Exchange {
                                     continue;
                                 }
                                 next_pend.push_back(p);
+
+                                // Diagnose: first 3 stuck prepay accounts this round.
+                                // missing = account absent from query (never landed on chain).
+                                if (stuck_printed < 3) {
+                                    ++stuck_printed;
+                                    auto& du = users[ve.ui];
+                                    bool missing = q_missing.count(ve.key) > 0;
+                                    auto& ddest = contract_dest7[du.contract_addrs[ve.ci]];
+                                    std::lock_guard<std::mutex> lk(call_log_mtx7);
+                                    std::cout << "    [stuck shard" << s << " r" << (rd+1)
+                                              << " #" << stuck_printed << "]"
+                                              << " user=" << ve.ui
+                                              << " addr=" << du.addr_hex.substr(0, 16)
+                                              << " contract=" << du.contract_addrs[ve.ci].substr(0, 16)
+                                              << " cur=" << (missing ? -1 : cur)
+                                              << " base=" << ve.base_nonce
+                                              << " target=" << target
+                                              << " gap=" << (target - cur)
+                                              << (missing ? " [NOT_FOUND]" : "")
+                                              << " pool=" << (contract_pool7.count(du.contract_addrs[ve.ci])
+                                                              ? (int)contract_pool7[du.contract_addrs[ve.ci]] : -1)
+                                              << " dest=" << ddest.first << ":" << ddest.second
+                                              << std::endl;
+                                }
 
                                 // Resend missing rounds: from cur to target
                                 auto& u = users[ve.ui];
