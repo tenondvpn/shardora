@@ -198,6 +198,19 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     tx_ptr->elect_height = latest_elect_height_;
     added_txs_.push(tx_ptr);
     tx_pool_dirty_ = true;
+    // A kStatistic tx only exists in memory until its block commits, and the
+    // timeblock heights it was built from are memory state too, so a restart in
+    // that window loses the statistic for this height entirely.  Record it here,
+    // where admission has already succeeded, so startup can put it back.
+    if (tx_ptr->tx_info->step() == pools::protobuf::kStatistic) {
+        db::DbWriteBatch db_batch;
+        prefix_db_->SavePendingStatisticTx(
+            tx_ptr->tx_info->key(),
+            tx_ptr->msg_ptr->header.SerializeAsString(),
+            db_batch);
+        db_->Put(db_batch);
+    }
+
     if (pools_mgr_ != nullptr) {
         pools_mgr_->OnTxPoolAddTx(
             tx_ptr->tx_info->step(),

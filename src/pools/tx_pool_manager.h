@@ -77,6 +77,10 @@ public:
         const pools::TxItemPtr& valid_tx);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
     void PoolTimerMessage();
+    // Put kStatistic txs that were accepted but never committed back into the
+    // pool after a restart.  Records whose unique hash is already on chain are
+    // erased instead, so nothing committed is ever re-admitted.
+    void RecoverPendingStatisticTxs();
     void OnTxPoolAddTx(
         int32_t step,
         const std::string& to,
@@ -354,6 +358,7 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
     uint64_t prev_elect_height_ = common::kInvalidUint64;
     std::atomic<bool> destroy_ = false;
+    bool pending_statistic_recovered_ = false;
     common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
     ToConfirmLatencyTracker to_confirm_latency_tracker_;
     uint32_t min_valid_tx_count_ = 1;

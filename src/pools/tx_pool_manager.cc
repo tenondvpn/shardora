@@ -582,8 +582,75 @@ void TxPoolManager::PoolTimerMessage() {
         }
     }
 
+    // Runs on the same thread that drains pools_msg_queue_, so the records it
+    // re-adds are processed by the loop above on the next tick.
+    RecoverPendingStatisticTxs();
+
     to_confirm_latency_tracker_.ProcessEvents();
 }
+
+void TxPoolManager::RecoverPendingStatisticTxs() {
+    if (pending_statistic_recovered_) {
+        return;
+    }
+
+    pending_statistic_recovered_ = true;
+    std::map<std::string, std::string> res_map;
+    prefix_db_->GetAllPendingStatisticTxs(&res_map);
+    for (auto& iter : res_map) {
+        const std::string& unique_hash = iter.first.substr(
+            protos::kPendingStatisticTxPrefix.size());
+        // 已经共识落地：唯一 hash 在链上，记录直接清盘，不再入池。
+        if (prefix_db_->ExistsOverUniqueHash(unique_hash)) {
+            prefix_db_->RemovePendingStatisticTx(unique_hash);
+            SHARDORA_DEBUG("recover statistic tx already commited, remove from disk, hash: %s",
+                common::Encode::HexEncode(unique_hash).c_str());
+            continue;
+        }
+
+        auto msg_ptr = std::make_shared<transport::TransportMessage>();
+        if (!msg_ptr->header.ParseFromString(iter.second)) {
+            prefix_db_->RemovePendingStatisticTx(unique_hash);
+            SHARDORA_ERROR("recover statistic tx parse failed, remove from disk, hash: %s",
+                common::Encode::HexEncode(unique_hash).c_str());
+            continue;
+        }
+
+        auto* tx = msg_ptr->header.mutable_tx_proto();
+        auto tmp_acc_ptr = acc_mgr_.lock();
+        // Account manager not up yet: leave everything on disk and retry next tick.
+        if (tmp_acc_ptr == nullptr) {
+            pending_statistic_recovered_ = false;
+            return;
+        }
+
+        auto addr_info = tmp_acc_ptr->pools_address_info(
+            pools::protobuf::kStatistic,
+            common::kGlobalPoolIndex);
+        if (addr_info == nullptr) {
+            pending_statistic_recovered_ = false;
+            return;
+        }
+        // 和 CreateStatisticTx 一样的 nonce 守卫：统计地址 nonce 已经越过这一笔，
+        // 说明它早已上链（或已被更新的统计取代），磁盘记录作废。
+        if (addr_info->nonce() >= tx->nonce()) {
+            prefix_db_->RemovePendingStatisticTx(unique_hash);
+            SHARDORA_DEBUG("recover statistic tx nonce expired, remove from disk, "
+                "hash: %s, addr nonce: %lu, tx nonce: %lu",
+                common::Encode::HexEncode(unique_hash).c_str(),
+                addr_info->nonce(), tx->nonce());
+            continue;
+        }
+
+        msg_ptr->address_info = addr_info;
+        msg_ptr->msg_hash = pools::GetTxMessageHash(*tx);
+        transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
+        AddPoolMessage(msg_ptr);
+        SHARDORA_WARN("recover pending statistic tx into pool, hash: %s, nonce: %lu",
+            common::Encode::HexEncode(unique_hash).c_str(), tx->nonce());
+    }
+}
+
 
 void TxPoolManager::OnTxPoolAddTx(
         int32_t step,

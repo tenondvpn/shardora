@@ -891,6 +891,13 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 
         for (int32_t i = 0; i < tmp_block->block_info().unique_hashs_size(); ++i) {
             prefix_db_->SaveOverUniqueHash(tmp_block->block_info().unique_hashs(i), db_batch);
+            // The unique hash is now settled on chain, so the pending-statistic
+            // record for it must go.  Same batch as SaveOverUniqueHash: once the
+            // commit is durable, neither the marker nor the record can be seen
+            // without the other, so a restart can never re-admit a committed
+            // statistic.
+            prefix_db_->RemovePendingStatisticTx(
+                tmp_block->block_info().unique_hashs(i), db_batch);
         }
 
         // Clean up view_with_blocks_ for the parent view before erasing from view_blocks_info_

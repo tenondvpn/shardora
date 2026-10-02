@@ -91,6 +91,12 @@ static const std::string kElectHeightWithElectBlock = "bd\x02";
 static const std::string kOverUniqueHash = "be\x02";
 static const std::string kLeaderLatestProposeMessage = "bf\x02";
 static const std::string kPoraChunkPrefix = "bg\x02";
+// kStatistic txs that were accepted into a tx pool but have not reached
+// consensus yet.  Without this they live only in memory, so a restart between
+// admission and commit loses the statistic for good.  Key is the tx's
+// unique_hash (sharding_id + statistic_height), written when the pool takes the
+// tx and erased in the same db batch that commits the block carrying it.
+static const std::string kPendingStatisticTxPrefix = "at\x02";
 
 class PrefixDb {
 public:
@@ -320,6 +326,31 @@ public:
     void SaveOverUniqueHash(const std::string& unique_hash , db::DbWriteBatch& db_batch) {
         std::string key = kOverUniqueHash + unique_hash;
         db_batch.Put(key, "1");
+    }
+
+    // Persist a kStatistic tx that the pool accepted but consensus has not
+    // committed yet.  `<header>` is the serialized transport header, which is
+    // what AddPoolMessage needs to put the tx back through the normal dispatch
+    // path after a restart.
+    void SavePendingStatisticTx(
+            const std::string& unique_hash,
+            const std::string& serialized_header,
+            db::DbWriteBatch& db_batch) {
+        db_batch.Put(kPendingStatisticTxPrefix + unique_hash, serialized_header);
+    }
+
+    void RemovePendingStatisticTx(
+            const std::string& unique_hash,
+            db::DbWriteBatch& db_batch) {
+        db_batch.Delete(kPendingStatisticTxPrefix + unique_hash);
+    }
+
+    void RemovePendingStatisticTx(const std::string& unique_hash) {
+        db_->Delete(kPendingStatisticTxPrefix + unique_hash);
+    }
+
+    void GetAllPendingStatisticTxs(std::map<std::string, std::string>* res_map) {
+        db_->GetAllPrefix(kPendingStatisticTxPrefix, *res_map);
     }
 
     void SaveLatestTimeBlock(const timeblock::protobuf::TimeBlock& tmblock, db::DbWriteBatch& db_batch) {
