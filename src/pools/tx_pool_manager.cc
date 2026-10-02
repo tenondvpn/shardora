@@ -597,6 +597,7 @@ void TxPoolManager::RecoverPendingStatisticTxs() {
     pending_statistic_recovered_ = true;
     std::map<std::string, std::string> res_map;
     prefix_db_->GetAllPendingStatisticTxs(&res_map);
+    SHARDORA_WARN("recover pending statistic tx: read from db, got: %lu", (uint64_t)res_map.size());
     for (auto& iter : res_map) {
         const std::string& unique_hash = iter.first.substr(
             protos::kPendingStatisticTxPrefix.size());

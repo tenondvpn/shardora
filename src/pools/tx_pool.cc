@@ -208,7 +208,12 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
             tx_ptr->tx_info->key(),
             tx_ptr->msg_ptr->header.SerializeAsString(),
             db_batch);
-        db_->Put(db_batch);
+        auto write_st = db_->Put(db_batch);
+        SHARDORA_WARN("pending statistic tx write to db, pool: %d, hash: %s, nonce: %lu, ok: %d",
+            pool_index_,
+            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(),
+            tx_ptr->tx_info->nonce(),
+            write_st.ok() ? 1 : 0);
     }
 
     if (pools_mgr_ != nullptr) {
