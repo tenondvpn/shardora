@@ -516,6 +516,10 @@ public:
         merged["msg"] = "ok";
         merged["accounts"] = json::object();
         merged["not_found"] = json::array();
+        // Addresses whose batch never reached the node (connection refused, non-200
+        // or unparsable body).  These are NOT the same as not_found: the server
+        // never answered for them, so the caller must not treat them as absent.
+        merged["query_failed"] = json::array();
         merged["partial"] = false;
         uint32_t batch_ok = 0;
         uint32_t batch_fail = 0;
@@ -535,14 +539,22 @@ public:
             cli.set_read_timeout(30);
             httplib::Params params;
             params.emplace("addresses", addr_list);
+            auto mark_failed = [&]() {
+                for (size_t i = offset; i < end; ++i) {
+                    merged["query_failed"].push_back(addresses[i]);
+                }
+            };
+
             auto res = cli.Post("/batch_query_accounts", params);
             if (!res) {
                 ++batch_fail;
+                mark_failed();
                 batch_errors.push_back("connection failed (no response) offset=" + std::to_string(offset));
                 continue;
             }
             if (res->status != 200) {
                 ++batch_fail;
+                mark_failed();
                 batch_errors.push_back("HTTP " + std::to_string(res->status) + " offset=" + std::to_string(offset));
                 continue;
             }
@@ -551,6 +563,7 @@ public:
                 json batch_res = json::parse(res->body);
                 if (!batch_res.contains("status") || batch_res["status"] != 0) {
                     ++batch_fail;
+                    mark_failed();
                     batch_errors.push_back(batch_res.value("msg", "unknown error"));
                     continue;
                 }
@@ -565,13 +578,10 @@ public:
                     for (auto& addr : batch_res["not_found"]) {
                         merged["not_found"].push_back(addr);
                     }
-
-                    if (!batch_res["not_found"].empty()) {
-                        break;
-                    }
                 }
             } catch (std::exception& e) {
                 ++batch_fail;
+                mark_failed();
                 batch_errors.push_back(std::string("parse error: ") + e.what());
             }
         }

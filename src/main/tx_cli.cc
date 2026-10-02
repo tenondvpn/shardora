@@ -7082,6 +7082,7 @@ contract Exchange {
                         for (uint32_t i = 0; i < ver_list.size(); ++i) pending.push_back(i);
                         uint32_t confirmed_cnt = 0;
                         size_t prev_missing7 = 0;   // NOT_FOUND count from the previous round
+                        size_t prev_failed7 = 0;    // query-failed count from the previous round
                         auto ver_t0 = std::chrono::steady_clock::now();
                         const uint32_t kBN = 300;
 
@@ -7099,18 +7100,26 @@ contract Exchange {
                             // rather than lost txs, so wait one poll interval before
                             // interpreting anything.  Keyed off the previous round's
                             // miss count, which is computed below.
-                            if (rd > 0 && prev_missing7 == pending.size()) {
+                            if (rd > 0 && (prev_missing7 + prev_failed7) == pending.size()) {
                                 std::lock_guard<std::mutex> lk(call_log_mtx7);
-                                std::cout << "    [shard" << s << " r" << (rd+1)
-                                          << "] all " << pending.size()
-                                          << " accounts NOT_FOUND, waiting for landing"
-                                          << std::endl;
+                                if (prev_failed7 == pending.size()) {
+                                    std::cout << "    [shard" << s << " r" << (rd+1)
+                                              << "] all " << pending.size()
+                                              << " account queries FAILED (node unreachable), retrying"
+                                              << std::endl;
+                                } else {
+                                    std::cout << "    [shard" << s << " r" << (rd+1)
+                                              << "] all " << pending.size()
+                                              << " accounts NOT_FOUND, waiting for landing"
+                                              << std::endl;
+                                }
                                 for (int w = 0; w < 30 && !global_stop; ++w) usleep(100000);
                             }
 
                             // Query current nonces via each contract's leader node
                             std::unordered_map<std::string, int64_t> cur_nonces;
                             std::unordered_set<std::string> q_missing;  // accounts absent from query response
+                            std::unordered_set<std::string> q_failed;   // query never reached the node
                             {
                                 // Group pending keys by leader HTTP endpoint
                                 std::map<std::pair<std::string,uint16_t>, std::vector<std::string>> ep_keys;
@@ -7136,6 +7145,14 @@ contract Exchange {
                                         uint32_t end = std::min(off + kBN, (uint32_t)qkeys.size());
                                         std::vector<std::string> batch(qkeys.begin() + off, qkeys.begin() + end);
                                         auto r = qsdk.batchQueryAccounts(batch);
+                                        // Addresses whose batch never reached the node.
+                                        // These must NOT be reported as NOT_FOUND.
+                                        std::unordered_set<std::string> fail_set;
+                                        if (r.contains("query_failed")) {
+                                            for (auto& a : r["query_failed"]) {
+                                                try { fail_set.insert(a.get<std::string>()); } catch (...) {}
+                                            }
+                                        }
                                         for (auto& k : batch) {
                                             int64_t n = 0;
                                             bool got = false;
@@ -7148,6 +7165,8 @@ contract Exchange {
                                                         std::from_chars(ns.data(), ns.data() + ns.size(), n);
                                                     } catch (...) {}
                                                 }
+                                            } else if (fail_set.count(k) > 0) {
+                                                q_failed.insert(k);
                                             } else {
                                                 q_missing.insert(k);
                                             }
@@ -7173,11 +7192,14 @@ contract Exchange {
                                 next_pend.push_back(p);
 
                                 // Diagnose: first 3 stuck prepay accounts this round.
-                                // missing = account absent from query (never landed on chain).
+                                // missing = account absent from a successful query response
+                                // (never landed on chain); failed = the query itself never
+                                // reached the node, so we simply do not know the nonce.
                                 if (stuck_printed < 3) {
                                     ++stuck_printed;
                                     auto& du = users[ve.ui];
                                     bool missing = q_missing.count(ve.key) > 0;
+                                    bool qfail = q_failed.count(ve.key) > 0;
                                     auto& ddest = contract_dest7[du.contract_addrs[ve.ci]];
                                     std::lock_guard<std::mutex> lk(call_log_mtx7);
                                     std::cout << "    [stuck shard" << s << " r" << (rd+1)
@@ -7185,11 +7207,11 @@ contract Exchange {
                                               << " user=" << ve.ui
                                               << " addr=" << du.addr_hex.substr(0, 16)
                                               << " contract=" << du.contract_addrs[ve.ci].substr(0, 16)
-                                              << " cur=" << (missing ? -1 : cur)
+                                              << " cur=" << ((missing || qfail) ? -1 : cur)
                                               << " base=" << ve.base_nonce
                                               << " target=" << target
                                               << " gap=" << (target - cur)
-                                              << (missing ? " [NOT_FOUND]" : "")
+                                              << (qfail ? " [QUERY_FAIL]" : (missing ? " [NOT_FOUND]" : ""))
                                               << " pool=" << (contract_pool7.count(du.contract_addrs[ve.ci])
                                                               ? (int)contract_pool7[du.contract_addrs[ve.ci]] : -1)
                                               << " dest=" << ddest.first << ":" << ddest.second
@@ -7230,6 +7252,7 @@ contract Exchange {
                                           << resent_cnt << ")" << std::endl;
                             }
                             prev_missing7 = q_missing.size();
+                            prev_failed7 = q_failed.size();
                             pending = std::move(next_pend);
                             if (!pending.empty())
                                 for (int w = 0; w < 100 && !global_stop; ++w) usleep(100000);
@@ -7415,7 +7438,7 @@ contract Exchange {
                             retry.reserve(batch.size());
                             for (auto& e : batch) {
                                 auto it = qstatus.find(e.hash_hex);
-                                if (it == qstatus.end()) { retry.push_back(std::move(e)); continue; }
+                                if (it == qstatus.end()) { retrystuck shard.push_back(std::move(e)); continue; }
                                 if (tx_is_confirmed7(it->second)) continue;
                                 if (e.resends < 8 && e.msg) {
                                     if (tcp_enq7(e.msg, e.dest_ip, e.dest_port)) ++e.resends;
@@ -7602,8 +7625,10 @@ contract Exchange {
                                         auto r = qsdk.batchQueryAccounts(batch);
                                         for (auto& k : batch) {
                                             int64_t n = 0;
+                                            bool got = false;
                                             if (r.contains("accounts") && r["accounts"].contains(k)) {
                                                 auto& acc = r["accounts"][k];
+                                                got = true;
                                                 if (acc.contains("nonce")) {
                                                     try {
                                                         auto ns = acc["nonce"].get<std::string>();
@@ -7611,7 +7636,10 @@ contract Exchange {
                                                     } catch (...) {}
                                                 }
                                             }
-                                            pcur_nonces[k] = n;
+                                            // -1 marks "nonce unknown" (query failed or account
+                                            // absent), so the resend logic below skips it instead
+                                            // of resending from a bogus nonce of 0.
+                                            pcur_nonces[k] = got ? n : -1;
                                         }
                                         usleep(10000);
                                     }
