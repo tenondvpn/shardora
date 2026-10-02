@@ -7,6 +7,8 @@
 #include <set>
 #include <vector>
 #include <future>
+#include <iterator>
+#include <map>
 #include <mutex>
 #include <semaphore>
 #include <condition_variable>
@@ -6796,36 +6798,99 @@ contract Exchange {
                         auto create_t0_7 = std::chrono::steady_clock::now();
                         auto create_tps_print7 = create_t0_7;
                         std::vector<TxTrack7> track7;   // hashes awaiting receipt confirmation
-                        track7.reserve(kReceiptBatch7 + 200);
+                        track7.reserve(200);
+                        uint32_t create_since_flush7 = 0;
 
-                        // Every kReceiptBatch7 sends (and once more after the last
-                        // send), confirm all hashes in this batch arrived at a node.
-                        // Unconfirmed ones are resent from their stored message and
-                        // kept for the next round; confirmed ones are dropped.
-                        auto create_flush7 = [&]() {
-                            if (track7.empty()) return;
-                            std::vector<std::string> hashes;
-                            hashes.reserve(track7.size());
-                            for (auto& e : track7) hashes.push_back(e.hash_hex);
+                        // A tx is accepted only on the node that received it: kTxAccept
+                        // lives in that node's in-memory tx_msg_map. The seeds/leaders
+                        // used for account queries never hold it, so the receipt query
+                        // must go to each tx's own destination node. Hashes are grouped
+                        // by destination first, then sent as one batch per node.
+                        //
+                        // Takes the batch by value and returns the survivors, so the
+                        // send thread holds no state this task could touch while it runs.
+                        // Returning only what needs another round also keeps the copy
+                        // back across the future small.
+                        auto create_flush7_do =
+                            [&](std::vector<TxTrack7> batch,
+                                bool& partial) -> std::vector<TxTrack7> {
+                            std::map<std::pair<std::string, uint16_t>, std::vector<std::string>> by_dest;
+                            for (auto& e : batch)
+                                by_dest[{e.dest_ip, (uint16_t)(e.dest_port + 10000)}].push_back(e.hash_hex);
 
-                            ShardoraSDK vsdk(ep.ip, ep.http_port);
-                            auto r = vsdk.batchTransactionReceipts(hashes);
-                            if (r.value("status", 1) != 0) return;  // query failed, retry next round
+                            std::unordered_map<std::string, int32_t> qstatus;
+                            partial = false;
+                            for (auto& [endpoint, hashes] : by_dest) {
+                                std::unordered_set<std::string> answered;
+                                {
+                                    ShardoraSDK rsdk(endpoint.first, endpoint.second);
+                                    auto r = rsdk.batchTransactionReceipts(hashes);
+                                    if (r.value("status", 1) == 0) {
+                                        if (r.contains("results")) {
+                                            for (auto& [h, v] : r["results"].items()) {
+                                                qstatus[h] = v.value("status", (int32_t)transport::kNotExists);
+                                                answered.insert(h);
+                                            }
+                                        }
+                                        if (r.contains("missing")) {
+                                            for (auto& h : r["missing"]) {
+                                                qstatus[h] = transport::kNotExists;
+                                                answered.insert(h);
+                                            }
+                                        }
+                                    }
+                                }
+                                // No response from this node: leave its hashes unanswered
+                                // rather than calling them missing, so they are retried
+                                // without consuming a resend.
+                                for (auto& h : hashes)
+                                    if (!answered.count(h)) partial = true;
+                            }
 
                             std::vector<TxTrack7> retry;
-                            for (auto& e : track7) {
-                                int32_t st = transport::kNotExists;
-                                if (r.contains("results") && r["results"].contains(e.hash_hex)) {
-                                    st = r["results"][e.hash_hex].value("status", (int32_t)transport::kNotExists);
-                                }
-                                if (tx_is_confirmed7(st)) continue;
+                            retry.reserve(batch.size());
+                            for (auto& e : batch) {
+                                auto it = qstatus.find(e.hash_hex);
+                                if (it == qstatus.end()) { retry.push_back(std::move(e)); continue; }
+                                if (tx_is_confirmed7(it->second)) continue;
+                                // Re-queue the same signed message: re-signing would produce a
+                                // different ECDSA signature and the node rejects it by key.
                                 if (e.resends < 8 && e.msg) {
-                                    tcp_enq7(e.msg, e.dest_ip, e.dest_port);
-                                    ++e.resends;
+                                    if (tcp_enq7(e.msg, e.dest_ip, e.dest_port)) ++e.resends;
                                 }
                                 retry.push_back(std::move(e));
                             }
-                            track7 = std::move(retry);
+                            return retry;
+                        };
+
+                        // Query off the send thread so a slow node cannot stall the
+                        // send loop. The in-flight batch is owned by the task until it
+                        // is joined; new sends accumulate in track7 meanwhile.
+                        bool create_querying7 = false;
+                        bool create_flush_partial7 = false;
+                        std::future<std::vector<TxTrack7>> create_fut7;
+                        auto create_join7 = [&]() {
+                            if (!create_querying7) return;
+                            auto kept = create_fut7.get();
+                            create_querying7 = false;
+                            if (!kept.empty()) {
+                                track7.insert(track7.end(),
+                                    std::make_move_iterator(kept.begin()),
+                                    std::make_move_iterator(kept.end()));
+                            }
+                        };
+                        auto create_flush7 = [&]() -> uint64_t {
+                            create_join7();
+                            if (track7.empty()) return 0;
+                            uint64_t sent = track7.size();
+                            std::vector<TxTrack7> batch;
+                            batch.swap(track7);
+                            create_querying7 = true;
+                            create_fut7 = std::async(std::launch::async,
+                                [&, batch = std::move(batch)]() mutable {
+                                    return create_flush7_do(std::move(batch), create_flush_partial7);
+                                });
+                            return sent;
                         };
 
                         for (uint32_t ui = 0; ui < nu && !global_stop; ++ui) {
@@ -6848,14 +6913,15 @@ contract Exchange {
                                         track7.push_back({tx_hash_of7(tx), tx, dest7.first, dest7.second, 0});
                                     } else { ++create_fail7; --n; }
                                     ++create_sent7;
-                                    if (track7.size() >= kReceiptBatch7) {
-                                        uint32_t before = (uint32_t)track7.size();
-                                        create_flush7();
+                                    ++create_since_flush7;
+                                    if (create_since_flush7 >= kReceiptBatch7) {
+                                        create_since_flush7 = 0;
+                                        uint64_t checked = create_flush7();
                                         std::lock_guard<std::mutex> lk(call_log_mtx7);
                                         std::cout << "  [CreateNewItem shard" << s << "] receipt batch "
                                                   << create_sent7 << " checked, "
-                                                  << (before - track7.size()) << " confirmed, "
-                                                  << track7.size() << " still pending" << std::endl;
+                                                  << checked << " queried, "
+                                                  << track7.size() << " pending prev round" << std::endl;
                                     }
                                     if (create_sent7 % 200 == 0) {
                                         auto now7 = std::chrono::steady_clock::now();
@@ -6877,13 +6943,25 @@ contract Exchange {
                         }
                         tcp_drain7();
                         {
-                            uint32_t before = (uint32_t)track7.size();
-                            create_flush7();
+                            create_join7();                    // drain the in-flight query first
+                            uint64_t pending_before_final = track7.size();
+                            uint64_t queried_final = create_flush7();   // query whatever is left
+                            if (create_querying7) {            // ...and wait for it
+                                auto kept = create_fut7.get();
+                                create_querying7 = false;
+                                if (!kept.empty()) {
+                                    track7.insert(track7.end(),
+                                        std::make_move_iterator(kept.begin()),
+                                        std::make_move_iterator(kept.end()));
+                                }
+                            }
                             std::lock_guard<std::mutex> lk(call_log_mtx7);
                             std::cout << "  [CreateNewItem shard" << s << "] final receipt batch "
-                                      << create_sent7 << " checked, "
-                                      << (before - track7.size()) << " confirmed, "
-                                      << track7.size() << " still pending" << std::endl;
+                                      << create_sent7 << " sent, "
+                                      << queried_final << " queried, "
+                                      << pending_before_final << " carryover, "
+                                      << track7.size() << " unconfirmed"
+                                      << (create_flush_partial7 ? " (node unreachable)" : "") << std::endl;
                         }
                         {
                             std::lock_guard<std::mutex> lk(call_log_mtx7);
@@ -7187,32 +7265,83 @@ contract Exchange {
                         auto purchase_t0_7 = std::chrono::steady_clock::now();
                         auto purchase_tps_print7 = purchase_t0_7;
                         std::vector<TxTrack7> ptrack7;
-                        ptrack7.reserve(kReceiptBatch7 + 200);
+                        ptrack7.reserve(200);
+                        uint32_t purchase_since_flush7 = 0;
 
-                        auto purchase_flush7 = [&]() {
-                            if (ptrack7.empty()) return;
-                            std::vector<std::string> hashes;
-                            hashes.reserve(ptrack7.size());
-                            for (auto& e : ptrack7) hashes.push_back(e.hash_hex);
+                        // Same as CreateNewItem: query each tx's own destination node,
+                        // since kTxAccept only exists in that node's tx_msg_map.
+                        auto purchase_flush7_do =
+                            [&](std::vector<TxTrack7> batch,
+                                bool& partial) -> std::vector<TxTrack7> {
+                            std::map<std::pair<std::string, uint16_t>, std::vector<std::string>> by_dest;
+                            for (auto& e : batch)
+                                by_dest[{e.dest_ip, (uint16_t)(e.dest_port + 10000)}].push_back(e.hash_hex);
 
-                            ShardoraSDK vsdk(ep.ip, ep.http_port);
-                            auto r = vsdk.batchTransactionReceipts(hashes);
-                            if (r.value("status", 1) != 0) return;
+                            std::unordered_map<std::string, int32_t> qstatus;
+                            partial = false;
+                            for (auto& [endpoint, hashes] : by_dest) {
+                                std::unordered_set<std::string> answered;
+                                {
+                                    ShardoraSDK rsdk(endpoint.first, endpoint.second);
+                                    auto r = rsdk.batchTransactionReceipts(hashes);
+                                    if (r.value("status", 1) == 0) {
+                                        if (r.contains("results")) {
+                                            for (auto& [h, v] : r["results"].items()) {
+                                                qstatus[h] = v.value("status", (int32_t)transport::kNotExists);
+                                                answered.insert(h);
+                                            }
+                                        }
+                                        if (r.contains("missing")) {
+                                            for (auto& h : r["missing"]) {
+                                                qstatus[h] = transport::kNotExists;
+                                                answered.insert(h);
+                                            }
+                                        }
+                                    }
+                                }
+                                for (auto& h : hashes)
+                                    if (!answered.count(h)) partial = true;
+                            }
 
                             std::vector<TxTrack7> retry;
-                            for (auto& e : ptrack7) {
-                                int32_t st = transport::kNotExists;
-                                if (r.contains("results") && r["results"].contains(e.hash_hex)) {
-                                    st = r["results"][e.hash_hex].value("status", (int32_t)transport::kNotExists);
-                                }
-                                if (tx_is_confirmed7(st)) continue;
+                            retry.reserve(batch.size());
+                            for (auto& e : batch) {
+                                auto it = qstatus.find(e.hash_hex);
+                                if (it == qstatus.end()) { retry.push_back(std::move(e)); continue; }
+                                if (tx_is_confirmed7(it->second)) continue;
                                 if (e.resends < 8 && e.msg) {
-                                    tcp_enq7(e.msg, e.dest_ip, e.dest_port);
-                                    ++e.resends;
+                                    if (tcp_enq7(e.msg, e.dest_ip, e.dest_port)) ++e.resends;
                                 }
                                 retry.push_back(std::move(e));
                             }
-                            ptrack7 = std::move(retry);
+                            return retry;
+                        };
+
+                        bool purchase_querying7 = false;
+                        bool purchase_flush_partial7 = false;
+                        std::future<std::vector<TxTrack7>> purchase_fut7;
+                        auto purchase_join7 = [&]() {
+                            if (!purchase_querying7) return;
+                            auto kept = purchase_fut7.get();
+                            purchase_querying7 = false;
+                            if (!kept.empty()) {
+                                ptrack7.insert(ptrack7.end(),
+                                    std::make_move_iterator(kept.begin()),
+                                    std::make_move_iterator(kept.end()));
+                            }
+                        };
+                        auto purchase_flush7 = [&]() -> uint64_t {
+                            purchase_join7();
+                            if (ptrack7.empty()) return 0;
+                            uint64_t sent = ptrack7.size();
+                            std::vector<TxTrack7> batch;
+                            batch.swap(ptrack7);
+                            purchase_querying7 = true;
+                            purchase_fut7 = std::async(std::launch::async,
+                                [&, batch = std::move(batch)]() mutable {
+                                    return purchase_flush7_do(std::move(batch), purchase_flush_partial7);
+                                });
+                            return sent;
                         };
 
                         for (uint32_t ui = 0; ui < nu && !global_stop; ++ui) {
@@ -7235,14 +7364,15 @@ contract Exchange {
                                         ptrack7.push_back({tx_hash_of7(tx), tx, pdest7.first, pdest7.second, 0});
                                     } else { ++purchase_fail7; --n; }
                                     ++purchase_sent7;
-                                    if (ptrack7.size() >= kReceiptBatch7) {
-                                        uint32_t before = (uint32_t)ptrack7.size();
-                                        purchase_flush7();
+                                    ++purchase_since_flush7;
+                                    if (purchase_since_flush7 >= kReceiptBatch7) {
+                                        purchase_since_flush7 = 0;
+                                        uint64_t checked = purchase_flush7();
                                         std::lock_guard<std::mutex> lk(call_log_mtx7);
                                         std::cout << "  [PurchaseItem shard" << s << "] receipt batch "
                                                   << purchase_sent7 << " checked, "
-                                                  << (before - ptrack7.size()) << " confirmed, "
-                                                  << ptrack7.size() << " still pending" << std::endl;
+                                                  << checked << " queried, "
+                                                  << ptrack7.size() << " pending prev round" << std::endl;
                                     }
                                     if (purchase_sent7 % 200 == 0) {
                                         auto now7 = std::chrono::steady_clock::now();
@@ -7264,13 +7394,25 @@ contract Exchange {
                         }
                         tcp_drain7();
                         {
-                            uint32_t before = (uint32_t)ptrack7.size();
-                            purchase_flush7();
+                            purchase_join7();                  // drain the in-flight query first
+                            uint64_t pending_before_final = ptrack7.size();
+                            uint64_t queried_final = purchase_flush7();
+                            if (purchase_querying7) {
+                                auto kept = purchase_fut7.get();
+                                purchase_querying7 = false;
+                                if (!kept.empty()) {
+                                    ptrack7.insert(ptrack7.end(),
+                                        std::make_move_iterator(kept.begin()),
+                                        std::make_move_iterator(kept.end()));
+                                }
+                            }
                             std::lock_guard<std::mutex> lk(call_log_mtx7);
                             std::cout << "  [PurchaseItem shard" << s << "] final receipt batch "
-                                      << purchase_sent7 << " checked, "
-                                      << (before - ptrack7.size()) << " confirmed, "
-                                      << ptrack7.size() << " still pending" << std::endl;
+                                      << purchase_sent7 << " sent, "
+                                      << queried_final << " queried, "
+                                      << pending_before_final << " carryover, "
+                                      << ptrack7.size() << " unconfirmed"
+                                      << (purchase_flush_partial7 ? " (node unreachable)" : "") << std::endl;
                         }
                         {
                             std::lock_guard<std::mutex> lk(call_log_mtx7);
