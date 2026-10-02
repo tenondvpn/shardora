@@ -545,14 +545,33 @@ public:
                 }
             };
 
+            auto trunc = [](const std::string& s, size_t n) {
+                return s.size() <= n ? s : (s.substr(0, n) + "...(" + std::to_string(s.size()) + "B)");
+            };
+            // Only the failure paths below print, so the log stays readable and a
+            // run shows exactly which endpoint/body the client could not reach.
+            auto log_req = [&]() {
+                std::cerr << "[HTTP-REQ] POST https://" << client.node_host_ << ":"
+                          << client.node_port_ << "/batch_query_accounts"
+                          << " n=" << (end - offset)
+                          << " body=addresses=" << trunc(addr_list, 200) << std::endl;
+            };
+
             auto res = cli.Post("/batch_query_accounts", params);
             if (!res) {
+                log_req();
+                std::cerr << "[HTTP-RESP] NO RESPONSE (connect/timeout), host="
+                          << client.node_host_ << ":" << client.node_port_
+                          << " err=" << httplib::to_string(res.error()) << std::endl;
                 ++batch_fail;
                 mark_failed();
                 batch_errors.push_back("connection failed (no response) offset=" + std::to_string(offset));
                 continue;
             }
             if (res->status != 200) {
+                log_req();
+                std::cerr << "[HTTP-RESP] HTTP " << res->status
+                          << " body=" << trunc(res->body, 400) << std::endl;
                 ++batch_fail;
                 mark_failed();
                 batch_errors.push_back("HTTP " + std::to_string(res->status) + " offset=" + std::to_string(offset));
@@ -562,6 +581,8 @@ public:
             try {
                 json batch_res = json::parse(res->body);
                 if (!batch_res.contains("status") || batch_res["status"] != 0) {
+                    log_req();
+                    std::cerr << "[HTTP-RESP] status!=0 body=" << trunc(res->body, 400) << std::endl;
                     ++batch_fail;
                     mark_failed();
                     batch_errors.push_back(batch_res.value("msg", "unknown error"));
@@ -580,6 +601,9 @@ public:
                     }
                 }
             } catch (std::exception& e) {
+                log_req();
+                std::cerr << "[HTTP-RESP] parse error: " << e.what()
+                          << " body=" << trunc(res->body, 400) << std::endl;
                 ++batch_fail;
                 mark_failed();
                 batch_errors.push_back(std::string("parse error: ") + e.what());
