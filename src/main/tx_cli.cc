@@ -6565,6 +6565,79 @@ contract Exchange {
             tcp_drain7();
             std::cout << "\n[Phase 5 Result] Total prefunds confirmed: "
                       << total_pf_confirmed.load() << "/" << total_pf_need.load() << std::endl;
+
+            // Phase 6a reads each prepay shadow account to derive its nonce baseline.
+            // A prefund tx is "confirmed" above as soon as the pool accepts it, but the
+            // shadow account only becomes readable via prefix_db once the cross-shard
+            // record lands and commits.  Observed lag is ~20s, so starting 6a straight
+            // after the last prefund send makes the baseline read 0 for accounts that
+            // are still in flight, and every subsequent resend then carries a nonce the
+            // chain rejects.  Poll the shadow accounts until they are readable.
+            if (total_pf_need.load() > 0) {
+                std::cout << "  Waiting for prepay shadow accounts to land (max 180s, concurrent)..."
+                          << std::endl;
+                std::vector<std::thread> pw_threads;
+                for (uint32_t s = kConsensusBegin; s <= kMaxShardId; ++s) {
+                    pw_threads.emplace_back([&, s]() {
+                        if (global_stop) return;
+                        auto& ep = shard_endpoints[s];
+                        std::vector<std::string> valid_contracts_pw;
+                        for (uint32_t i = 0; i < kContractsPerShard7; ++i)
+                            if (contracts_confirmed7[s][i] && !contract_addrs7[s][i].empty())
+                                valid_contracts_pw.push_back(contract_addrs7[s][i]);
+                        if (valid_contracts_pw.empty()) return;
+
+                        uint32_t nc_pw = (uint32_t)valid_contracts_pw.size();
+                        uint32_t kCPU_pw = std::min(10u, nc_pw);
+
+                        // Same (user, contract) pairs Phase 6a will read: user uidx
+                        // takes contracts (uidx + ci) % nc for ci in [0, kCPU).
+                        std::vector<std::string> keys_pw;
+                        uint32_t uidx_pw = 0;
+                        for (uint32_t idx = 0; idx < shard_addrs[s].size(); ++idx) {
+                            if (!checked_addrs[s].count(shard_addrs[s][idx])) continue;
+                            std::string user_hex = common::Encode::HexEncode(shard_addrs[s][idx]);
+                            for (uint32_t ci = 0; ci < kCPU_pw; ++ci)
+                                keys_pw.push_back(valid_contracts_pw[(uidx_pw + ci) % nc_pw] + user_hex);
+                            ++uidx_pw;
+                        }
+                        if (keys_pw.empty()) return;
+
+                        ShardoraSDK pwsdk(ep.ip, ep.http_port);
+                        const uint32_t kPwBatch = 50;
+                        auto pw_t0 = std::chrono::steady_clock::now();
+                        for (int w = 0; w < 1800 && !global_stop; ++w) {
+                            uint32_t found_pw = 0;
+                            for (uint32_t off = 0; off < keys_pw.size() && !global_stop; off += kPwBatch) {
+                                uint32_t end = std::min(off + kPwBatch, (uint32_t)keys_pw.size());
+                                std::vector<std::string> batch(keys_pw.begin() + off, keys_pw.begin() + end);
+                                auto r = pwsdk.batchQueryAccounts(batch);
+                                for (auto& k : batch)
+                                    if (r.contains("accounts") && r["accounts"].contains(k)) ++found_pw;
+                                usleep(10000);
+                            }
+                            auto el_s = std::chrono::duration_cast<std::chrono::seconds>(
+                                std::chrono::steady_clock::now() - pw_t0).count();
+                            if (found_pw == keys_pw.size()) {
+                                std::lock_guard<std::mutex> lk(pf_log_mtx7);
+                                std::cout << "  Shard " << s << ": " << found_pw << "/" << keys_pw.size()
+                                          << " prepay accounts landed after " << el_s << "s" << std::endl;
+                                return;
+                            }
+                            if (w % 20 == 19) {
+                                std::lock_guard<std::mutex> lk(pf_log_mtx7);
+                                std::cout << "  Shard " << s << ": " << found_pw << "/" << keys_pw.size()
+                                          << " prepay accounts landed (" << el_s << "s)" << std::endl;
+                            }
+                            usleep(100000);
+                        }
+                        std::lock_guard<std::mutex> lk(pf_log_mtx7);
+                        std::cerr << "  Shard " << s << ": WARNING prepay accounts incomplete after 180s"
+                                  << std::endl;
+                    });
+                }
+                for (auto& t : pw_threads) t.join();
+            }
             // ── Phase 6: CreateNewItem + PurchaseItem stress test ─────────────
             std::cout << "\n[Phase 6] Contract calls: CreateNewItem x" << kCallRounds7
                       << " then PurchaseItem x" << kPurchaseRounds7
@@ -6695,6 +6768,11 @@ contract Exchange {
 
                         // First pass: fetch pool_index per contract via shard endpoint
                         std::unordered_map<std::string, int64_t> prepay_nonces;
+                        // Pre-send baseline per key, captured before the send loop runs.
+                        // prepay_nonces itself is advanced by the sends, so it cannot
+                        // serve as the baseline for the expected post-send nonce.
+                        std::unordered_map<std::string, int64_t> prepay_base7;
+                        uint32_t base_missing7 = 0;   // keys absent from the baseline read
                         std::unordered_map<std::string, uint32_t> contract_pool7;  // contract_hex → pool_index
                         {
                             std::vector<std::string> keys;
@@ -6752,8 +6830,11 @@ contract Exchange {
                                                     std::from_chars(ns.data(), ns.data() + ns.size(), n);
                                                 } catch (...) {}
                                             }
+                                        } else {
+                                            ++base_missing7;
                                         }
                                         prepay_nonces[k] = n;
+                                        prepay_base7[k] = n;   // pre-send baseline
                                     }
                                     usleep(10000);
                                 }
@@ -6762,7 +6843,10 @@ contract Exchange {
                         {
                             std::lock_guard<std::mutex> lk(call_log_mtx7);
                             std::cout << "  Shard " << s << ": fetched "
-                                      << prepay_nonces.size() << " prepay nonces for CreateNewItem" << std::endl;
+                                      << prepay_nonces.size() << " prepay nonces for CreateNewItem"
+                                      << (base_missing7 ? " (" + std::to_string(base_missing7) +
+                                                          " NOT_FOUND, baseline=0)" : "")
+                                      << std::endl;
                         }
 
                         // Build contract→dest cache using on-chain pool_index
@@ -6981,13 +7065,15 @@ contract Exchange {
                             uint32_t ci;           // contract index in u.contract_addrs
                         };
                         std::vector<VerEntry7> ver_list;
-                        // base_nonce was prepay_nonces[key] at send time (before ++n)
-                        // After kCallRounds7 sends the expected nonce = base_nonce + kCallRounds7
+                        // base_nonce is the nonce read from chain before any send.  It must
+                        // come from prepay_base7, not prepay_nonces, because the send loop
+                        // advanced prepay_nonces by kCallRounds7 for every key it issued.
                         for (uint32_t ui = 0; ui < nu; ++ui) {
                             auto& u = users[ui];
                             for (uint32_t ci = 0; ci < (uint32_t)u.contract_addrs.size(); ++ci) {
                                 std::string pkey = u.contract_addrs[ci] + u.addr_hex;
-                                ver_list.push_back({pkey, prepay_nonces[pkey] - (int64_t)kCallRounds7, ui, ci});
+                                int64_t base = prepay_base7.count(pkey) ? prepay_base7[pkey] : 0;
+                                ver_list.push_back({pkey, base, ui, ci});
                             }
                         }
                         create_need7.fetch_add(ver_list.size());
@@ -6995,6 +7081,7 @@ contract Exchange {
                         std::vector<uint32_t> pending;
                         for (uint32_t i = 0; i < ver_list.size(); ++i) pending.push_back(i);
                         uint32_t confirmed_cnt = 0;
+                        size_t prev_missing7 = 0;   // NOT_FOUND count from the previous round
                         auto ver_t0 = std::chrono::steady_clock::now();
                         const uint32_t kBN = 300;
 
@@ -7006,6 +7093,19 @@ contract Exchange {
                                 std::cerr << "  Shard " << s << ": CreateNewItem verify timeout "
                                           << confirmed_cnt << "/" << ver_list.size() << std::endl;
                                 break;
+                            }
+                            // Grace window: if a whole shard's worth of accounts reads
+                            // NOT_FOUND it is almost always the cross-shard landing lag
+                            // rather than lost txs, so wait one poll interval before
+                            // interpreting anything.  Keyed off the previous round's
+                            // miss count, which is computed below.
+                            if (rd > 0 && prev_missing7 == pending.size()) {
+                                std::lock_guard<std::mutex> lk(call_log_mtx7);
+                                std::cout << "    [shard" << s << " r" << (rd+1)
+                                          << "] all " << pending.size()
+                                          << " accounts NOT_FOUND, waiting for landing"
+                                          << std::endl;
+                                for (int w = 0; w < 30 && !global_stop; ++w) usleep(100000);
                             }
 
                             // Query current nonces via each contract's leader node
@@ -7061,6 +7161,7 @@ contract Exchange {
                             // Check confirmed; resend missing txs for those still pending
                             std::vector<uint32_t> next_pend;
                             uint32_t stuck_printed = 0;  // diagnose: print first 3 unconfirmed
+                            uint32_t resent_cnt = 0;
                             for (uint32_t p : pending) {
                                 auto& ve = ver_list[p];
                                 int64_t cur = cur_nonces[ve.key];
@@ -7095,13 +7196,19 @@ contract Exchange {
                                               << std::endl;
                                 }
 
-                                // Resend missing rounds: from cur to target
+                                // Resend missing rounds: from cur to target.
+                                // cur < 0 means the account is absent from the query, so
+                                // there is no valid nonce to build on.  Resending anything
+                                // here would start at base_nonce and collide with rounds
+                                // that may still be in flight; just wait for the account
+                                // to appear and let the next round compute a real range.
+                                if (cur < 0) {
+                                    continue;
+                                }
                                 auto& u = users[ve.ui];
                                 auto& dest7 = contract_dest7[u.contract_addrs[ve.ci]];
                                 std::shared_ptr<security::Security> sec = std::make_shared<security::Ecdsa>();
                                 sec->SetPrivateKey(u.prikey_raw);
-                                uint64_t now_ms2 = (uint64_t)std::chrono::duration_cast<std::chrono::milliseconds>(
-                                    std::chrono::system_clock::now().time_since_epoch()).count();
                                 int64_t n = cur;
                                 for (int64_t r = cur - ve.base_nonce; r < (int64_t)kCallRounds7 && !global_stop; ++r) {
                                     std::string hash_raw = make_hash7(s, ve.ui * (uint32_t)u.contract_addrs.size() + ve.ci, (uint64_t)r);
@@ -7111,6 +7218,7 @@ contract Exchange {
                                         common::Encode::HexDecode(u.contract_addrs[ve.ci]),
                                         "call", input, 0, 5000000, 1, (int32_t)s);
                                     tcp_enq7(tx, dest7.first, dest7.second);
+                                    ++resent_cnt;
                                 }
                             }
                             {
@@ -7119,9 +7227,9 @@ contract Exchange {
                                           << ", " << elapsed_s << "s] "
                                           << confirmed_cnt << "/" << ver_list.size()
                                           << " (" << next_pend.size() << " pending, resent "
-                                          << (pending.size() - (ver_list.size() - confirmed_cnt - next_pend.size() > 0 ? 0 : 0))
-                                          << ")" << std::endl;
+                                          << resent_cnt << ")" << std::endl;
                             }
+                            prev_missing7 = q_missing.size();
                             pending = std::move(next_pend);
                             if (!pending.empty())
                                 for (int w = 0; w < 100 && !global_stop; ++w) usleep(100000);
@@ -7435,7 +7543,11 @@ contract Exchange {
                             auto& u = users[ui];
                             for (uint32_t ci = 0; ci < (uint32_t)u.contract_addrs.size(); ++ci) {
                                 std::string pkey = u.contract_addrs[ci] + u.addr_hex;
-                                // base = nonce before PurchaseItem sends = prepay_nonces[pkey] - kPurchaseRounds7
+                                // base = the nonce this phase started from.  prepay_nonces
+                                // was advanced by kPurchaseRounds7 during the send loop
+                                // above, so the pre-send value is exactly that much lower.
+                                // Deriving it this way (rather than re-reading chain)
+                                // keeps the expected value aligned with what was sent.
                                 pver_list.push_back({pkey,
                                     prepay_nonces[pkey] - (int64_t)kPurchaseRounds7,
                                     ui, ci});
@@ -7517,6 +7629,12 @@ contract Exchange {
                                 }
                                 pnext_pend.push_back(p);
 
+                                // cur < 0 == account absent from the query; there is no
+                                // nonce to build a resend range from, so skip this round
+                                // and re-evaluate once the account is readable.
+                                if (cur < 0) {
+                                    continue;
+                                }
                                 // Resend missing rounds: from cur to target
                                 auto& u = users[ve.ui];
                                 auto& pdest7 = pcontract_dest7[u.contract_addrs[ve.ci]];
