@@ -589,6 +589,92 @@ public:
         return merged;
     }
 
+    // Batch query tx status via /batch_transaction_receipt.
+    // Input : vector of hex tx hashes (64 chars each).
+    // Output: { "status":0, "results": { hash: {status,msg,output,...} },
+    //           "missing": [...], "partial": bool, "batch_errors": [...] }
+    // "missing" means the node has no record of that hash yet — either the tx
+    // never arrived (delivery loss) or it was already evicted from tx_msg_map
+    // before its execution result was written. Callers treat it as unconfirmed.
+    json batchTransactionReceipts(const std::vector<std::string>& tx_hashes) {
+        json merged;
+        merged["status"] = 0;
+        merged["msg"] = "ok";
+        merged["results"] = json::object();
+        merged["missing"] = json::array();
+        merged["partial"] = false;
+        if (tx_hashes.empty()) {
+            return merged;
+        }
+
+        // Server caps at 500 hashes per call (http_handler.cc BatchTransactionReceipt).
+        const size_t kBatchSize = 500;
+        uint32_t batch_ok = 0;
+        uint32_t batch_fail = 0;
+        json batch_errors = json::array();
+
+        for (size_t offset = 0; offset < tx_hashes.size(); offset += kBatchSize) {
+            size_t end = std::min(offset + kBatchSize, tx_hashes.size());
+            std::string hash_list;
+            for (size_t i = offset; i < end; ++i) {
+                if (!hash_list.empty()) hash_list += ",";
+                hash_list += tx_hashes[i];
+            }
+
+            httplib::SSLClient cli(client.node_host_, client.node_port_);
+            cli.enable_server_certificate_verification(false);
+            cli.set_connection_timeout(10);
+            cli.set_read_timeout(30);
+            httplib::Params params;
+            params.emplace("tx_hashes", hash_list);
+            auto res = cli.Post("/batch_transaction_receipt", params);
+            if (!res) {
+                ++batch_fail;
+                batch_errors.push_back("connection failed (no response) offset=" + std::to_string(offset));
+                continue;
+            }
+            if (res->status != 200) {
+                ++batch_fail;
+                batch_errors.push_back("HTTP " + std::to_string(res->status) + " offset=" + std::to_string(offset));
+                continue;
+            }
+
+            try {
+                json batch_res = json::parse(res->body);
+                if (!batch_res.contains("status") || batch_res["status"] != 0) {
+                    ++batch_fail;
+                    batch_errors.push_back(batch_res.value("msg", "unknown error"));
+                    continue;
+                }
+                ++batch_ok;
+                if (batch_res.contains("results")) {
+                    for (auto& [k, v] : batch_res["results"].items()) {
+                        merged["results"][k] = v;
+                    }
+                }
+                if (batch_res.contains("missing")) {
+                    for (auto& h : batch_res["missing"]) {
+                        merged["missing"].push_back(h);
+                    }
+                }
+            } catch (std::exception& e) {
+                ++batch_fail;
+                batch_errors.push_back(std::string("parse error: ") + e.what());
+            }
+        }
+
+        if (batch_ok == 0) {
+            merged["status"] = 1;
+            merged["msg"] = batch_errors.empty() ? "batch receipt query failed" : batch_errors[0].get<std::string>();
+            return merged;
+        }
+        if (batch_fail > 0) {
+            merged["partial"] = true;
+            merged["batch_errors"] = batch_errors;
+        }
+        return merged;
+    }
+
     // Fetch leader routing table: returns map of pool_index -> {ip, port}
     // Each pool has its own leader. Client sends tx directly to the leader
     // of the sender's pool: leaders[GetAddressPoolIndex(from_addr)]

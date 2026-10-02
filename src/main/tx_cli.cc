@@ -5646,6 +5646,30 @@ contract Exchange {
             }
         };
 
+        // ── Tx receipt tracking (shared by all phases) ───────────────────────
+        // A tx is "accepted" once any node reports kTxAccept (pooled locally) or
+        // a chain-side terminal status. kNotExists means the node has no record:
+        // either it never arrived (queue enqueued but the socket send failed) or
+        // it was evicted from tx_msg_map before its execution result landed.
+        // Both cases are treated as "resend".
+        struct TxTrack7 {
+            std::string hash_hex;
+            transport::MessagePtr msg;
+            std::string dest_ip;
+            uint16_t dest_port;
+            int resends = 0;
+        };
+
+        auto tx_is_confirmed7 = [](int32_t status) -> bool {
+            return status != transport::kNotExists &&
+                   status != transport::kUnkonwn &&
+                   status != transport::kRequestInvalid;
+        };
+
+        auto tx_hash_of7 = [](const transport::MessagePtr& msg) -> std::string {
+            return common::Encode::HexEncode(pools::GetTxMessageHash(msg->header.tx_proto()));
+        };
+
         // Phase 1: Generate addresses routed to each shard
         std::cout << "\n[Phase 1] Generating " << accounts_per_shard << " addresses per shard..." << std::endl;
         std::map<uint32_t, std::vector<std::string>> shard_addrs;
@@ -6767,9 +6791,43 @@ contract Exchange {
                             std::chrono::system_clock::now().time_since_epoch()).count();
 
                         constexpr uint32_t kCreateTps7 = 30000;
+                        constexpr uint32_t kReceiptBatch7 = 10000;  // verify every N sends
                         uint64_t create_sent7 = 0;
                         auto create_t0_7 = std::chrono::steady_clock::now();
                         auto create_tps_print7 = create_t0_7;
+                        std::vector<TxTrack7> track7;   // hashes awaiting receipt confirmation
+                        track7.reserve(kReceiptBatch7 + 200);
+
+                        // Every kReceiptBatch7 sends (and once more after the last
+                        // send), confirm all hashes in this batch arrived at a node.
+                        // Unconfirmed ones are resent from their stored message and
+                        // kept for the next round; confirmed ones are dropped.
+                        auto create_flush7 = [&]() {
+                            if (track7.empty()) return;
+                            std::vector<std::string> hashes;
+                            hashes.reserve(track7.size());
+                            for (auto& e : track7) hashes.push_back(e.hash_hex);
+
+                            ShardoraSDK vsdk(ep.ip, ep.http_port);
+                            auto r = vsdk.batchTransactionReceipts(hashes);
+                            if (r.value("status", 1) != 0) return;  // query failed, retry next round
+
+                            std::vector<TxTrack7> retry;
+                            for (auto& e : track7) {
+                                int32_t st = transport::kNotExists;
+                                if (r.contains("results") && r["results"].contains(e.hash_hex)) {
+                                    st = r["results"][e.hash_hex].value("status", (int32_t)transport::kNotExists);
+                                }
+                                if (tx_is_confirmed7(st)) continue;
+                                if (e.resends < 8 && e.msg) {
+                                    tcp_enq7(e.msg, e.dest_ip, e.dest_port);
+                                    ++e.resends;
+                                }
+                                retry.push_back(std::move(e));
+                            }
+                            track7 = std::move(retry);
+                        };
+
                         for (uint32_t ui = 0; ui < nu && !global_stop; ++ui) {
                             auto& u = users[ui];
                             std::shared_ptr<security::Security> sec = std::make_shared<security::Ecdsa>();
@@ -6785,9 +6843,21 @@ contract Exchange {
                                         common::Encode::HexEncode(u.prikey_raw),
                                         common::Encode::HexDecode(u.contract_addrs[ci]),
                                         "call", input, 0, 5000000, 1, (int32_t)s);
-                                    if (tcp_enq7(tx, dest7.first, dest7.second)) ++create_ok7;
-                                    else { ++create_fail7; --n; }
-                                    if (++create_sent7 % 200 == 0) {
+                                    if (tcp_enq7(tx, dest7.first, dest7.second)) {
+                                        ++create_ok7;
+                                        track7.push_back({tx_hash_of7(tx), tx, dest7.first, dest7.second, 0});
+                                    } else { ++create_fail7; --n; }
+                                    ++create_sent7;
+                                    if (track7.size() >= kReceiptBatch7) {
+                                        uint32_t before = (uint32_t)track7.size();
+                                        create_flush7();
+                                        std::lock_guard<std::mutex> lk(call_log_mtx7);
+                                        std::cout << "  [CreateNewItem shard" << s << "] receipt batch "
+                                                  << create_sent7 << " checked, "
+                                                  << (before - track7.size()) << " confirmed, "
+                                                  << track7.size() << " still pending" << std::endl;
+                                    }
+                                    if (create_sent7 % 200 == 0) {
                                         auto now7 = std::chrono::steady_clock::now();
                                         double elapsed = std::chrono::duration<double>(now7 - create_t0_7).count();
                                         double expected = (double)create_sent7 / kCreateTps7;
@@ -6804,6 +6874,16 @@ contract Exchange {
                                     }
                                 }
                             }
+                        }
+                        tcp_drain7();
+                        {
+                            uint32_t before = (uint32_t)track7.size();
+                            create_flush7();
+                            std::lock_guard<std::mutex> lk(call_log_mtx7);
+                            std::cout << "  [CreateNewItem shard" << s << "] final receipt batch "
+                                      << create_sent7 << " checked, "
+                                      << (before - track7.size()) << " confirmed, "
+                                      << track7.size() << " still pending" << std::endl;
                         }
                         {
                             std::lock_guard<std::mutex> lk(call_log_mtx7);
@@ -7102,9 +7182,39 @@ contract Exchange {
                             std::chrono::system_clock::now().time_since_epoch()).count();
 
                         constexpr uint32_t kPurchaseTps7 = 30000;
+                        constexpr uint32_t kReceiptBatch7 = 10000;
                         uint64_t purchase_sent7 = 0;
                         auto purchase_t0_7 = std::chrono::steady_clock::now();
                         auto purchase_tps_print7 = purchase_t0_7;
+                        std::vector<TxTrack7> ptrack7;
+                        ptrack7.reserve(kReceiptBatch7 + 200);
+
+                        auto purchase_flush7 = [&]() {
+                            if (ptrack7.empty()) return;
+                            std::vector<std::string> hashes;
+                            hashes.reserve(ptrack7.size());
+                            for (auto& e : ptrack7) hashes.push_back(e.hash_hex);
+
+                            ShardoraSDK vsdk(ep.ip, ep.http_port);
+                            auto r = vsdk.batchTransactionReceipts(hashes);
+                            if (r.value("status", 1) != 0) return;
+
+                            std::vector<TxTrack7> retry;
+                            for (auto& e : ptrack7) {
+                                int32_t st = transport::kNotExists;
+                                if (r.contains("results") && r["results"].contains(e.hash_hex)) {
+                                    st = r["results"][e.hash_hex].value("status", (int32_t)transport::kNotExists);
+                                }
+                                if (tx_is_confirmed7(st)) continue;
+                                if (e.resends < 8 && e.msg) {
+                                    tcp_enq7(e.msg, e.dest_ip, e.dest_port);
+                                    ++e.resends;
+                                }
+                                retry.push_back(std::move(e));
+                            }
+                            ptrack7 = std::move(retry);
+                        };
+
                         for (uint32_t ui = 0; ui < nu && !global_stop; ++ui) {
                             auto& u = users[ui];
                             std::shared_ptr<security::Security> sec = std::make_shared<security::Ecdsa>();
@@ -7120,9 +7230,21 @@ contract Exchange {
                                         common::Encode::HexEncode(u.prikey_raw),
                                         common::Encode::HexDecode(u.contract_addrs[ci]),
                                         "call", input, 1, 5000000, 1, (int32_t)s);
-                                    if (tcp_enq7(tx, pdest7.first, pdest7.second)) ++purchase_ok7;
-                                    else { ++purchase_fail7; --n; }
-                                    if (++purchase_sent7 % 200 == 0) {
+                                    if (tcp_enq7(tx, pdest7.first, pdest7.second)) {
+                                        ++purchase_ok7;
+                                        ptrack7.push_back({tx_hash_of7(tx), tx, pdest7.first, pdest7.second, 0});
+                                    } else { ++purchase_fail7; --n; }
+                                    ++purchase_sent7;
+                                    if (ptrack7.size() >= kReceiptBatch7) {
+                                        uint32_t before = (uint32_t)ptrack7.size();
+                                        purchase_flush7();
+                                        std::lock_guard<std::mutex> lk(call_log_mtx7);
+                                        std::cout << "  [PurchaseItem shard" << s << "] receipt batch "
+                                                  << purchase_sent7 << " checked, "
+                                                  << (before - ptrack7.size()) << " confirmed, "
+                                                  << ptrack7.size() << " still pending" << std::endl;
+                                    }
+                                    if (purchase_sent7 % 200 == 0) {
                                         auto now7 = std::chrono::steady_clock::now();
                                         double elapsed = std::chrono::duration<double>(now7 - purchase_t0_7).count();
                                         double expected = (double)purchase_sent7 / kPurchaseTps7;
@@ -7139,6 +7261,16 @@ contract Exchange {
                                     }
                                 }
                             }
+                        }
+                        tcp_drain7();
+                        {
+                            uint32_t before = (uint32_t)ptrack7.size();
+                            purchase_flush7();
+                            std::lock_guard<std::mutex> lk(call_log_mtx7);
+                            std::cout << "  [PurchaseItem shard" << s << "] final receipt batch "
+                                      << purchase_sent7 << " checked, "
+                                      << (before - ptrack7.size()) << " confirmed, "
+                                      << ptrack7.size() << " still pending" << std::endl;
                         }
                         {
                             std::lock_guard<std::mutex> lk(call_log_mtx7);

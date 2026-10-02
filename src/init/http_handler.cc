@@ -1911,18 +1911,23 @@ static void GetBlockWithHash(const UWSRequest& req, UWSResponse& http_res) {
     http_res.set_content(res_json.dump(), "application/json");
 }
 
-static void TransactionReceipt(const UWSRequest& req, UWSResponse& http_res) {
+// Look up one tx's status. Order: execution result in prefix_db temp kv
+// (TxHashStatus written after the tx lands in a block), then the in-memory
+// tx_msg_map (handle_status, kTxAccept..). remove_from_map drops the map entry
+// once the chain-side result exists, which is only safe for one-shot queries.
+static nlohmann::json LookupTxStatus(const std::string& tx_hash_hex, bool remove_from_map) {
     nlohmann::json res_json;
     res_json["status"] = transport::kUnkonwn;
-    res_json["msg"] = transport::MessageStatusToString(res_json["status"]);
-    if (!req.has_param("tx_hash")) {
+    res_json["msg"] = transport::MessageStatusToString(transport::kUnkonwn);
+    res_json["tx_hash"] = tx_hash_hex;
+
+    auto tx_hash = common::Encode::HexDecode(tx_hash_hex);
+    if (tx_hash.empty()) {
         res_json["status"] = transport::kRequestInvalid;
-        res_json["msg"] = std::string("not has tx hash param");
-        http_res.set_content(res_json.dump(), "application/json");
-        return;
+        res_json["msg"] = transport::MessageStatusToString(transport::kRequestInvalid);
+        return res_json;
     }
 
-    auto tx_hash = common::Encode::HexDecode(req.get_param_value("tx_hash"));
     std::string res;
     auto addr = evmc::address{};
     auto id = std::string("tx");
@@ -1931,44 +1936,112 @@ static void TransactionReceipt(const UWSRequest& req, UWSResponse& http_res) {
         block::protobuf::KeyValueInfo kv_info;
         if (kv_info.ParseFromString(res)) {
             block::protobuf::TxHashStatus tx_status;
-            if (!tx_status.ParseFromString(kv_info.value())) {
-                res_json["status"] = transport::kUnkonwn;
-                res_json["msg"] = transport::MessageStatusToString(res_json["status"]);
-            } else {
+            if (tx_status.ParseFromString(kv_info.value())) {
                 try {
                     res_json = nlohmann::json::parse(HttpProtobufToJson(tx_status));
-                    res_json["msg"] = transport::MessageStatusToString(res_json["status"]);;
+                    res_json["msg"] = transport::MessageStatusToString(
+                        static_cast<transport::MessageHandleStatus>(res_json["status"].get<int32_t>()));
                 } catch (std::exception& e) {
-
                 }
             }
-        } else {
-            res_json["status"] = transport::kUnkonwn;
-            res_json["msg"] = transport::MessageStatusToString(res_json["status"]);
         }
 
-        {
+        if (remove_from_map) {
             std::lock_guard<std::mutex> lock(http_handler->tx_msg_map_mutex());
             http_handler->tx_msg_map().Remove(tx_hash);
         }
-    } else {
-        transport::MessagePtr msg_ptr = nullptr;
-        {
-            std::lock_guard<std::mutex> lock(http_handler->tx_msg_map_mutex());
-            http_handler->tx_msg_map().Get(tx_hash, msg_ptr);
-        }
-
-        if (msg_ptr) {
-            res_json["status"] = (int32_t)msg_ptr->handle_status.load();
-            res_json["msg"] = transport::MessageStatusToString(res_json["status"]);
-        } else {
-            res_json["status"] = transport::kNotExists;
-            res_json["msg"] = transport::MessageStatusToString(res_json["status"]);
-        }
+        return res_json;
     }
-    
-    SHARDORA_INFO("transaction receipt query, tx hash: %s, res: %s", 
+
+    transport::MessagePtr msg_ptr = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(http_handler->tx_msg_map_mutex());
+        http_handler->tx_msg_map().Get(tx_hash, msg_ptr);
+    }
+
+    if (msg_ptr) {
+        res_json["status"] = (int32_t)msg_ptr->handle_status.load();
+        res_json["msg"] = transport::MessageStatusToString(res_json["status"]);
+    } else {
+        res_json["status"] = transport::kNotExists;
+        res_json["msg"] = transport::MessageStatusToString(transport::kNotExists);
+    }
+    return res_json;
+}
+
+static void TransactionReceipt(const UWSRequest& req, UWSResponse& http_res) {
+    if (!req.has_param("tx_hash")) {
+        nlohmann::json res_json;
+        res_json["status"] = transport::kRequestInvalid;
+        res_json["msg"] = std::string("not has tx hash param");
+        http_res.set_content(res_json.dump(), "application/json");
+        return;
+    }
+
+    auto res_json = LookupTxStatus(req.get_param_value("tx_hash"), true);
+    SHARDORA_INFO("transaction receipt query, tx hash: %s, res: %s",
         req.get_param_value("tx_hash").c_str(), res_json.dump().c_str());
+    http_res.set_content(res_json.dump(), "application/json");
+}
+
+// Batch form of /transaction_receipt. Parameter: tx_hashes=hash1,hash2,...
+// Returns {status:0, results:{<hash>: {status,msg,...}}, missing:[...]}.
+// Unlike the single-tx endpoint this never removes map entries — the caller
+// polls the same hashes repeatedly until they are confirmed.
+static void BatchTransactionReceipt(const UWSRequest& req, UWSResponse& http_res) {
+    auto tmp_hashes = req.get_param_value("tx_hashes");
+    if (tmp_hashes.empty()) {
+        nlohmann::json err;
+        err["status"] = transport::kRequestInvalid;
+        err["msg"] = "param tx_hashes is empty";
+        http_res.set_content(err.dump(), "application/json");
+        return;
+    }
+
+    auto hashes = common::Split<64>(tmp_hashes.c_str(), ',');
+    if (hashes.Count() == 0) {
+        nlohmann::json err;
+        err["status"] = transport::kRequestInvalid;
+        err["msg"] = "no valid tx hashes";
+        http_res.set_content(err.dump(), "application/json");
+        return;
+    }
+
+    if (hashes.Count() > 500) {
+        nlohmann::json err;
+        err["status"] = transport::kRequestInvalid;
+        err["msg"] = "too many tx hashes, max 500";
+        http_res.set_content(err.dump(), "application/json");
+        return;
+    }
+
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    res_json["msg"] = "ok";
+    res_json["results"] = nlohmann::json::object();
+    res_json["missing"] = nlohmann::json::array();
+
+    uint32_t accepted = 0;
+    uint32_t confirmed = 0;
+    uint32_t missing = 0;
+    for (uint32_t i = 0; i < hashes.Count(); ++i) {
+        std::string hex_hash(hashes[i]);
+        if (hex_hash.empty()) continue;
+        auto one = LookupTxStatus(hex_hash, false);
+        int32_t st = one.value("status", (int32_t)transport::kNotExists);
+        if (st == transport::kNotExists) {
+            res_json["missing"].push_back(hex_hash);
+            ++missing;
+        } else if (st == transport::kTxAccept || st == transport::kMessageHandle) {
+            ++accepted;
+        } else {
+            ++confirmed;
+        }
+        res_json["results"][hex_hash] = std::move(one);
+    }
+
+    SHARDORA_INFO("batch transaction receipt: requested=%u accepted=%u confirmed=%u missing=%u",
+        hashes.Count(), accepted, confirmed, missing);
     http_res.set_content(res_json.dump(), "application/json");
 }
 
@@ -3024,6 +3097,7 @@ void HttpHandler::Run() {
     ).post("/get_latest_pool_info", safeHandler(GetLatestPoolHeights, "/get_latest_pool_info")
     ).post("/get_block_with_hash", safeHandler(GetBlockWithHash, "/get_block_with_hash")
     ).post("/transaction_receipt", safeHandler(TransactionReceipt, "/transaction_receipt")
+    ).post("/batch_transaction_receipt", safeHandler(BatchTransactionReceipt, "/batch_transaction_receipt")
     ).post("/update_private_key", safeHandler(UpdatePrivateKey, "/update_private_key")
     ).post("/eth", safeHandler(EthJsonRpc, "/eth")
     ).get("/eth", safeHandler(EthJsonRpc, "/eth")
