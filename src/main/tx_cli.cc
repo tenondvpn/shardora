@@ -7438,7 +7438,7 @@ contract Exchange {
                             retry.reserve(batch.size());
                             for (auto& e : batch) {
                                 auto it = qstatus.find(e.hash_hex);
-                                if (it == qstatus.end()) { retrystuck shard.push_back(std::move(e)); continue; }
+                                if (it == qstatus.end()) { retry.push_back(std::move(e)); continue; }
                                 if (tx_is_confirmed7(it->second)) continue;
                                 if (e.resends < 8 && e.msg) {
                                     if (tcp_enq7(e.msg, e.dest_ip, e.dest_port)) ++e.resends;
