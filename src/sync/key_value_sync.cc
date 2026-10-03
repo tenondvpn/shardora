@@ -1551,6 +1551,16 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         auto& req_height = sync_msg.sync_value_req().heights(i);
         std::shared_ptr<view_block::protobuf::ViewBlockItem> view_block_ptr = nullptr;
 
+        // pool_idx is a uint32 off the wire.  Every lookup below either calls
+        // chain() -- which indexes pool_hotstuff_ with no bound check -- or
+        // hotstuff(), which does the same, so validate once here rather than at
+        // each dereference.
+        if (req_height.pool_idx() >= common::kInvalidPoolIndex) {
+            SHARDORA_WARN("sync request height pool index out of range: %u, net: %u",
+                req_height.pool_idx(), network_id);
+            continue;
+        }
+
         // Route strictly on `tag`.  The old code probed has_view_block_hash()
         // then has_view() before ever looking at the tag, so a height identity
         // probe (which carries a hash) was served by the hash branch and the
