@@ -1484,11 +1484,25 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         }
 
         uint16_t* pool_index_arr = (uint16_t*)key.c_str();
+        // pool_index_arr[0] comes straight off the wire, so it can name any pool
+        // in 0..65535.  chain() indexes pool_hotstuff_ without a bound check, so
+        // an unchecked value reads a wild shared_ptr past the array and the
+        // dereference below segfaults.
+        if (pool_index_arr[0] >= common::kInvalidPoolIndex) {
+            SHARDORA_WARN("sync request pool index out of range: %u", pool_index_arr[0]);
+            continue;
+        }
+
         // Use remove=false: sync requests only need to look up blocks, not drain
         // the cached_block_queue_. Draining with remove=true from the timer thread
         // causes data races on the SPSC queue and non-thread-safe maps that are
         // owned by the consensus thread.
-        auto view_block_ptr_info = hotstuff_mgr_->chain(pool_index_arr[0])->GetViewBlockWithHash(
+        auto pool_chain = hotstuff_mgr_->chain(pool_index_arr[0]);
+        if (pool_chain == nullptr) {
+            continue;
+        }
+
+        auto view_block_ptr_info = pool_chain->GetViewBlockWithHash(
             std::string(key.c_str() + 2, 32),
             false);
         if (!view_block_ptr_info) {
