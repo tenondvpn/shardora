@@ -1910,11 +1910,6 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     continue;
                 }
             }
-
-            SHARDORA_DEBUG("skip kv response from different shard: %u, local: %u, hash64: %lu",
-                iter->network_id(), common::GlobalInfo::Instance()->network_id(),
-                msg_ptr->header.hash64());
-            continue;
         }
 
         std::string req_key = iter->key();
