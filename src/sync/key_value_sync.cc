@@ -1908,7 +1908,6 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         msg_ptr->header.hash64());
                     continue;
                 }
-               
             }
 
             SHARDORA_DEBUG("skip kv response from different shard: %u, local: %u, hash64: %lu",
@@ -1916,7 +1915,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 msg_ptr->header.hash64());
             continue;
         }
-        
+
         std::string req_key = iter->key();
         if (iter->tag() == kBlockView) {
             // A kBlockView request is answered with several blocks at different
