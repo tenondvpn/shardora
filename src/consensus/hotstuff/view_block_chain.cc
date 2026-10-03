@@ -1319,33 +1319,38 @@ void ViewBlockChain::HandleTimerMessage() {
 
     for (auto iter = view_with_blocks_.rbegin(); iter != view_with_blocks_.rend();) {
         bool commited = false;
+        auto cur_view = iter->first;
         auto view_block = iter->second->view_block;
         if (view_block) {
             bool height_commited = BlockHeightCommited(
                 prefix_db_,
-                view_block->qc().network_id(), 
+                view_block->qc().network_id(),
                 view_block->qc().pool_index(),
                 view_block->block_info().height());
             SHARDORA_DEBUG("network: %d, pool: %d, height: %lu, height_commited: %d, "
-                "now check view_with_blocks_ size: %d", 
+                "now check view_with_blocks_ size: %d",
                 view_with_blocks_.begin()->second->view_block->qc().network_id(),
-                pool_index_, 
+                pool_index_,
                 view_block->block_info().height(),
                 height_commited,
-                view_with_blocks_.size());      
+                view_with_blocks_.size());
             if (height_commited) {
-                auto it_to_erase = std::next(iter).base();
-                auto next_valid_forward = view_with_blocks_.erase(it_to_erase);
-                iter = std::make_reverse_iterator(next_valid_forward);
+                view_with_blocks_.erase(cur_view);
+                // Erasing invalidates `iter`; resume the reverse walk at the
+                // largest remaining view below the one just removed.
+                iter = std::make_reverse_iterator(view_with_blocks_.lower_bound(cur_view));
                 continue;
             }
 
             auto view_block_ptr = CheckCommit(view_block->qc());
             if (view_block_ptr) {
                 Commit(view_block_ptr);
-                auto it_to_erase = std::next(iter).base();
-                auto next_valid_forward = view_with_blocks_.erase(it_to_erase);
-                iter = std::make_reverse_iterator(next_valid_forward);
+                // Commit walks forward and, for every block it commits, erases
+                // that block's parent from view_with_blocks_ — which can be the
+                // very node `iter` points at (the committed block's parent is
+                // always already committed, so that erase always fires).  Erase
+                // by key rather than through the now-dangling iterator.
+                view_with_blocks_.erase(cur_view);
                 commited = true;
                 break;
             }
