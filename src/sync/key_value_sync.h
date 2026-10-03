@@ -57,6 +57,53 @@ enum SyncItemTag : uint32_t {
     kBlockView = 3,
 };
 
+// The three flows share one in-flight dedup map and one "already answered" set,
+// so their keys must never collide.  A height probe, a height+view/hash identity
+// probe and a view catch-up request all once produced keys of the form
+// "net_pool_height_tag", which made a view request and a height request at the
+// same number indistinguishable.  Every key for the height/view flows is now
+// built through SyncKeyOf with the tag folded into a namespace prefix, so the
+// flows can only collide if the tag matches too.
+inline std::string SyncKeyPrefix(uint32_t tag) {
+    switch (tag) {
+    case kBlockHeight:
+        return "h";
+    case kBlockView:
+        return "w";
+    case kViewHash:
+        return "s";
+    default:
+        return "u";
+    }
+}
+
+// Key for the height flow and the view flow.  `identity` is the view (height
+// flow, only when the exact branch is known) or the requested view (view flow);
+// `block_hash` is the hex block hash for a height identity probe.  Both are
+// appended only when meaningful, so a bare probe and an identity probe stay
+// distinct entries and neither is mistaken for the other.
+inline std::string SyncKeyOf(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t number,
+        uint32_t tag,
+        uint64_t identity = common::kInvalidUint64,
+        const std::string& block_hash = std::string()) {
+    std::string key = SyncKeyPrefix(tag) + "_" +
+        std::to_string(network_id) + "_" +
+        std::to_string(pool_idx) + "_" +
+        std::to_string(number);
+    if (identity != common::kInvalidUint64) {
+        key += "_v" + std::to_string(identity);
+    }
+
+    if (!block_hash.empty()) {
+        key += "_h" + common::Encode::HexEncode(block_hash);
+    }
+
+    return key;
+}
+
 class SyncItem {
 public:
     SyncItem(uint32_t net_id, const std::string& in_key, uint32_t pri)
@@ -74,7 +121,17 @@ public:
             uint32_t pri,
             uint32_t sync_tag)
             : SyncItem(net_id, in_pool_idx, in_height, pri, sync_tag,
-                common::kInvalidUint64, std::string()) {}
+                common::kInvalidUint64, std::string(), false) {}
+
+    SyncItem(
+            uint32_t net_id,
+            uint32_t in_pool_idx,
+            uint64_t in_height,
+            uint32_t pri,
+            uint32_t sync_tag,
+            bool in_single_view)
+            : SyncItem(net_id, in_pool_idx, in_height, pri, sync_tag,
+                common::kInvalidUint64, std::string(), in_single_view) {}
 
     // A height is not a unique identity: the same height can be produced by
     // several views when the chain forks, so two requests for "height H" may
@@ -89,21 +146,14 @@ public:
             uint32_t pri,
             uint32_t sync_tag,
             uint64_t in_view,
-            const std::string& in_block_hash)
+            const std::string& in_block_hash,
+            bool in_single_view = false)
             : network_id(net_id), pool_idx(in_pool_idx),
             height(in_height), view(in_view), block_hash(in_block_hash),
             priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64) {
-        key = std::to_string(network_id) + "_" +
-            std::to_string(pool_idx) + "_" +
-            std::to_string(height) + "_" +
-            std::to_string(sync_tag);
-        if (view != common::kInvalidUint64) {
-            key += "_v" + std::to_string(view);
-        }
-        if (!block_hash.empty()) {
-            key += "_h" + common::Encode::HexEncode(block_hash);
-        }
+        key = SyncKeyOf(network_id, pool_idx, height, sync_tag, view, block_hash);
         tag = sync_tag;
+        single_view = in_single_view;
         sync_tm_us = 0;
         common::GlobalInfo::Instance()->AddSharedObj(9);
     }
@@ -128,6 +178,9 @@ public:
     uint64_t sync_tm_us;
     uint64_t responsed_timeout_us;
     uint32_t tag;
+    // kBlockView only: true asks the responder for exactly `height` as a view
+    // and nothing later; false asks for that view onward (a catch-up).
+    bool single_view{ false };
 };
 
 // Canonical dedup key for a block that has been fully identified.  height is
@@ -164,11 +217,30 @@ public:
         uint32_t priority,
         uint64_t in_view,
         const std::string& in_block_hash);
+    // Catch-up request: the peer answers with `view` onward, as many later
+    // views as fit in one packet.
     void AddSyncView(
         uint32_t network_id,
         uint32_t pool_idx,
-        uint64_t height,
+        uint64_t view,
         uint32_t priority);
+    // Exact-view request: the peer answers with `view` alone.  Used when the
+    // node knows the one view it needs — a gap it is filling, or a view whose
+    // own block still lacks a QC — so spilling later views would only crowd the
+    // packet with branches it did not ask for.
+    void AddSyncViewSingle(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t view,
+        uint32_t priority);
+    // True when the local chain already holds `view` with a valid QC.  Both
+    // AddSyncView and AddSyncViewSingle drop such a request instead of queuing
+    // it: a view with a valid QC is immutable and already local, so syncing it
+    // again could only waste a round-trip and a packet slot.
+    bool ViewAlreadySettled(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t view);
     void AddSyncViewHash(
         uint32_t network_id,
         uint32_t pool_idx,

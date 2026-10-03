@@ -133,6 +133,29 @@ void KeyValueSync::AddSyncHeight(
         item->key.c_str(), item->priority, network_id, pool_idx, height, in_view);
 }
 
+// A view that we already hold with a valid QC is settled: the block is in the
+// chain and nothing about it can change, so re-requesting it only spends a
+// round-trip and a packet slot on an answer we would discard.  Every view
+// request goes through here, which is why this one check covers all callers —
+// catch-up, gap fill and prefetch alike.  A view we hold *without* a valid QC
+// (or not at all) still passes, since that is exactly the case sync exists for.
+bool KeyValueSync::ViewAlreadySettled(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t view) {
+    if (hotstuff_mgr_ == nullptr || view == 0) {
+        return false;
+    }
+
+    auto view_chain = hotstuff_mgr_->ChainForNetwork(network_id, pool_idx);
+    if (view_chain == nullptr) {
+        return false;
+    }
+
+    auto vblock = view_chain->GetViewBlockWithView(network_id, view);
+    return vblock != nullptr && !vblock->qc().sign_x().empty();
+}
+
 void KeyValueSync::AddSyncView(
         uint32_t network_id,
         uint32_t pool_idx,
@@ -140,11 +163,36 @@ void KeyValueSync::AddSyncView(
         uint32_t priority) {
     // return;
     //assert(priority <= kSyncHighest);
+    if (ViewAlreadySettled(network_id, pool_idx, height)) {
+        SHARDORA_DEBUG("block view already settled, skip sync: %u_%u_%lu",
+            network_id, pool_idx, height);
+        return;
+    }
+
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority, kBlockView);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
     SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu",
         item->key.c_str(), item->priority, network_id, pool_idx, height);
+}
+
+void KeyValueSync::AddSyncViewSingle(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t view,
+        uint32_t priority) {
+    if (ViewAlreadySettled(network_id, pool_idx, view)) {
+        SHARDORA_DEBUG("block view already settled, skip single sync: %u_%u_%lu",
+            network_id, pool_idx, view);
+        return;
+    }
+
+    auto item = std::make_shared<SyncItem>(
+        network_id, pool_idx, view, priority, kBlockView, true);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    item_queues_[thread_idx].push(item);
+    SHARDORA_DEBUG("block view add single sync item key: %s, priority: %u, %u_%u_%lu",
+        item->key.c_str(), item->priority, network_id, pool_idx, view);
 }
 
 // Decides which of the candidates collected at one height should be handed to
@@ -556,10 +604,7 @@ void KeyValueSync::DropSyncedCandidate(
 
     // Forget the answered marker for a bare height probe of this height; an
     // identity probe carries its own key and is scoped to the rejected hash.
-    std::string height_key = std::to_string(network_id) + "_" +
-        std::to_string(pool_idx) + "_" +
-        std::to_string(height) + "_" +
-        std::to_string(kBlockHeight);
+    std::string height_key = SyncKeyOf(network_id, pool_idx, height, kBlockHeight);
     responsed_keys_.erase(height_key);
     SHARDORA_DEBUG("drop synced candidate %u_%u_%lu hash: %s, answered key erased: %s",
         network_id, pool_idx, height,
@@ -773,8 +818,14 @@ void KeyValueSync::PopItems() {
                     height_item->set_view_block_hash(item->block_hash);
                 }
 
-                SHARDORA_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d, view: %lu",
-                    item->network_id, item->pool_idx, item->height, item->tag, item->view);
+                if (item->tag == kBlockView) {
+                    height_item->set_single_view(item->single_view);
+                }
+
+                SHARDORA_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d, view: %lu, "
+                    "single_view: %d",
+                    item->network_id, item->pool_idx, item->height, item->tag, item->view,
+                    item->single_view);
             } else {
                 sync_req->add_keys(item->key);
                 SHARDORA_DEBUG("success add to sync key: %s", 
@@ -1472,6 +1523,98 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size() && add_size < kSyncPacketMaxSize; ++i) {
         auto& req_height = sync_msg.sync_value_req().heights(i);
         std::shared_ptr<view_block::protobuf::ViewBlockItem> view_block_ptr = nullptr;
+
+        // Route strictly on `tag`.  The old code probed has_view_block_hash()
+        // then has_view() before ever looking at the tag, so a height identity
+        // probe (which carries a hash) was served by the hash branch and the
+        // kBlockHeight path was unreachable for it.  Each flow now decides the
+        // lookup by its own tag, and the number field means exactly one thing
+        // per flow: a height for kBlockHeight, a view for kBlockView.
+        if (req_height.tag() == kBlockView) {
+            auto view_chain = hotstuff_mgr_->ChainForNetwork(network_id, req_height.pool_idx());
+            if (view_chain == nullptr) {
+                SHARDORA_DEBUG("no view chain for net: %u, pool: %u, view: %lu, hash: %lu",
+                    network_id,
+                    req_height.pool_idx(),
+                    req_height.height(),
+                    msg_ptr->header.hash64());
+                continue;
+            }
+
+            // Two kinds of view request share this tag and are told apart by the
+            // requester's explicit `single_view` flag, not by comparing the
+            // requested view against our own maximum (which cannot tell a
+            // catch-up from a gap fill reliably):
+            //   - single_view: answer with exactly that view.  A node filling a
+            //     gap, or one whose own last block still lacks a QC, wants that
+            //     one view; spilling later ones only crowds the packet.
+            //   - otherwise: a catch-up.  Answer with that view plus as many
+            //     later ones as fit, because one round trip per view makes
+            //     catch-up take as long as the view gap.
+            const uint64_t req_view = req_height.height();
+            const bool single_view = req_height.single_view();
+
+            std::vector<ViewBlockPtr> view_blocks;
+            if (single_view) {
+                auto one_block = view_chain->GetViewBlockWithView(network_id, req_view);
+                if (one_block != nullptr) {
+                    view_blocks.push_back(one_block);
+                }
+            } else {
+                view_chain->GetViewBlocksFrom(
+                    network_id, req_view, kMaxViewPerResponse, &view_blocks);
+            }
+
+            // One request key answers one or more blocks, so it must be echoed on
+            // every item: the requester clears its in-flight entry by this key,
+            // and it cannot be rebuilt from the block identity (that would name
+            // the view received, not the view requested).
+            std::string req_view_key = SyncKeyOf(
+                network_id, req_height.pool_idx(), req_view, kBlockView);
+            uint32_t view_added = 0;
+            for (auto& one_block : view_blocks) {
+                if (one_block == nullptr || one_block->qc().sign_x().empty()) {
+                    continue;
+                }
+
+                auto value = SerializeDeterministic(*one_block);
+                if (add_size + 16 + value.size() > kSyncPacketMaxSize) {
+                    break;
+                }
+
+                auto res = sync_res->add_res();
+                res->set_key(req_view_key);
+                res->set_network_id(network_id);
+                res->set_pool_idx(req_height.pool_idx());
+                // Report the block's own identity: the requester dedups on the
+                // view/hash it received, not on the view it asked for.
+                res->set_height(one_block->block_info().height());
+                res->set_view(one_block->qc().view());
+                res->set_view_block_hash(one_block->qc().view_block_hash());
+                res->set_value(value);
+                res->set_tag(kBlockView);
+                add_size += 16 + res->value().size();
+                ++view_added;
+            }
+
+            SHARDORA_DEBUG("view sync answered net: %u, pool: %u, from view: %lu, single: %d, "
+                "blocks: %u, hash64: %lu",
+                network_id,
+                req_height.pool_idx(),
+                req_view,
+                single_view,
+                view_added,
+                msg_ptr->header.hash64());
+            continue;
+        }
+
+        if (req_height.tag() != kBlockHeight) {
+            // Unknown tag: never guess a lookup for a flow this node does not
+            // understand, so a newer peer cannot steer us into answering a
+            // different flow's key space.
+            continue;
+        }
+
         if (req_height.has_view_block_hash()) {
             // The requester named the exact block it wants.  Answer with that
             // block or with nothing: falling back to "whatever is at this
@@ -1509,83 +1652,21 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     msg_ptr->header.hash64());
                 continue;
             }
-        } else if (req_height.tag() == kBlockHeight) {
+        } else {
             view_block_ptr = hotstuff_mgr_->chain(req_height.pool_idx())->GetViewBlockWithHeight(
                 network_id, req_height.height());
             if (!view_block_ptr) {
                 SHARDORA_DEBUG("sync key value %u_%u_%lu, handle sync value failed request "
                     "net: %u, pool: %u, height: %lu, hash: %lu",
-                    network_id, 
+                    network_id,
                     req_height.pool_idx(),
                     req_height.height(),
-                    network_id, 
-                    req_height.pool_idx(),
-                    req_height.height(),
-                    msg_ptr->header.hash64());
-                continue;
-            }
-        }
-
-        if (req_height.tag() == kBlockView) {
-            // A view request is a catch-up request: the requester names the view
-            // it wants next and is behind by many, so answer with that view plus
-            // as many later ones as fit in the packet.  One round trip per view
-            // made catch-up take as long as the view gap.
-            auto view_chain = hotstuff_mgr_->ChainForNetwork(network_id, req_height.pool_idx());
-            if (view_chain == nullptr) {
-                SHARDORA_DEBUG("no view chain for net: %u, pool: %u, view: %lu, hash: %lu",
                     network_id,
                     req_height.pool_idx(),
                     req_height.height(),
                     msg_ptr->header.hash64());
                 continue;
             }
-
-            std::vector<ViewBlockPtr> view_blocks;
-            view_chain->GetViewBlocksFrom(
-                network_id, req_height.height(), kMaxViewPerResponse, &view_blocks);
-            // One request key answers several blocks, so it must be echoed on
-            // every item: the requester clears its in-flight entry by this key,
-            // and it cannot be rebuilt from the block identity (that would name
-            // the view received, not the view requested).
-            std::string req_view_key = std::to_string(network_id) + "_" +
-                std::to_string(req_height.pool_idx()) + "_" +
-                std::to_string(req_height.height()) + "_" +
-                std::to_string(kBlockView);
-            uint32_t view_added = 0;
-            for (auto& one_block : view_blocks) {
-                if (one_block == nullptr || one_block->qc().sign_x().empty()) {
-                    continue;
-                }
-
-                auto value = SerializeDeterministic(*one_block);
-                if (add_size + 16 + value.size() > kSyncPacketMaxSize) {
-                    break;
-                }
-
-                auto res = sync_res->add_res();
-                res->set_key(req_view_key);
-                res->set_network_id(network_id);
-                res->set_pool_idx(req_height.pool_idx());
-                // Report the block's own identity: the requester dedups on the
-                // view/hash it received, not on the view it asked for.
-                res->set_height(one_block->block_info().height());
-                res->set_view(one_block->qc().view());
-                res->set_view_block_hash(one_block->qc().view_block_hash());
-                res->set_value(value);
-                res->set_tag(kBlockView);
-                add_size += 16 + res->value().size();
-                ++view_added;
-            }
-
-            SHARDORA_DEBUG("view sync answered net: %u, pool: %u, from view: %lu, blocks: %u, "
-                "hash64: %lu",
-                network_id,
-                req_height.pool_idx(),
-                req_height.height(),
-                view_added,
-                msg_ptr->header.hash64());
-            continue;
         }
 
         if (view_block_ptr == nullptr) {
@@ -1779,27 +1860,31 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             // back; prefer it, since the block's own view would rebuild the wrong
             // key and the in-flight entry would never clear.
             if (req_key.empty()) {
-                req_key = std::to_string(iter->network_id()) + "_" +
-                    std::to_string(iter->pool_idx()) + "_" +
-                    std::to_string(iter->height()) + "_" +
-                    std::to_string(kBlockView);
+                req_key = SyncKeyOf(
+                    iter->network_id(), iter->pool_idx(), iter->height(), kBlockView);
             }
         } else if (iter->tag() == kBlockHeight) {
-            req_key = std::to_string(iter->network_id()) + "_" +
-                std::to_string(iter->pool_idx()) + "_" +
-                std::to_string(iter->height()) + "_" +
-                std::to_string(iter->tag());
-            if (iter->has_view()) {
-                req_key += "_v" + std::to_string(iter->view());
-            }
-
-            if (iter->has_view_block_hash()) {
-                req_key += "_h" + common::Encode::HexEncode(iter->view_block_hash());
-            }
+            // Rebuild in the same shape PopItems used: a bare height probe, or an
+            // identity probe with the view/hash suffix.  The hash is handed to
+            // SyncKeyOf raw; it hex-encodes internally, so passing the encoded
+            // form here would double-encode and never match.
+            const uint64_t req_view = iter->has_view() ?
+                iter->view() : common::kInvalidUint64;
+            const std::string req_block_hash = iter->has_view_block_hash() ?
+                iter->view_block_hash() : std::string();
+            req_key = SyncKeyOf(
+                iter->network_id(),
+                iter->pool_idx(),
+                iter->height(),
+                kBlockHeight,
+                req_view,
+                req_block_hash);
         } else if (iter->tag() == kViewHash) {
             // AddSyncViewHash builds this key as [u16 pool_idx][raw hash], and
             // the responder echoes it back verbatim via res->set_key(key), so
-            // iter->key() already is the SyncItem key.  Leave it alone.
+            // iter->key() already is the SyncItem key.  Leave it alone: it must
+            // not go through SyncKeyOf, which would prepend a prefix the
+            // responder never saw.
         }
 
         do {
@@ -1864,12 +1949,37 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
             // Clear the in-flight entry unless this was an identity probe that
             // got a different branch back.  An identity probe names one exact
-            // block, so a sibling at the same height does not answer it and the
-            // entry must stay for a retry against another peer.  A bare height
-            // probe is satisfied by any answer: that is the point of asking
-            // without an identity.
-            bool identity_probe = req_key.find("_h") != std::string::npos;
-            if (!identity_probe || req_key == block_key) {
+            // block — by view, by hash, or by both — so a sibling at the same
+            // height does not answer it and the entry must stay for a retry
+            // against another peer.  A bare height probe is satisfied by any
+            // answer: that is the point of asking without an identity.
+            //
+            // Identity is read from the response's own view/hash fields rather
+            // than scanned out of the key string.  The old "_h" scan missed a
+            // view-only probe entirely, and a key compared against block_key
+            // could never match: block_key is SyncedBlockKey, a different shape.
+            bool identity_probe = false;
+            if (iter->tag() == kBlockHeight) {
+                identity_probe = iter->has_view() || iter->has_view_block_hash();
+            }
+
+            // A view-only probe names the branch by view; a hash probe names it
+            // by block hash, which is exactly block_key's hash.  Either way the
+            // entry is cleared once the answer matches the branch that was asked
+            // for, and kept in flight when a sibling came back instead.
+            bool answered = true;
+            if (identity_probe) {
+                if (iter->has_view()) {
+                    answered = pb_vblock->qc().view() == iter->view();
+                }
+
+                if (answered && iter->has_view_block_hash()) {
+                    answered = pb_vblock->qc().view_block_hash() ==
+                        iter->view_block_hash();
+                }
+            }
+
+            if (answered) {
                 synced_map_.erase(req_key);
             }
 
@@ -1963,10 +2073,9 @@ void KeyValueSync::QueueFollowupBlockSync(
     auto now_tm_us = common::TimeUtils::TimestampUs();
     for (uint32_t i = 1; i <= kFollowupSyncHeightCount; ++i) {
         auto next_height = height + i;
-        std::string key = std::to_string(network_id) + "_" +
-            std::to_string(pool_idx) + "_" +
-            std::to_string(next_height) + "_" +
-            std::to_string(kBlockHeight);
+        // A plain height probe: no identity suffix, matching what AddSyncHeight
+        // builds, so the in-flight dedup entry is the same one.
+        std::string key = SyncKeyOf(network_id, pool_idx, next_height, kBlockHeight);
 
         if (synced_map_.exists(key)) {
             continue;

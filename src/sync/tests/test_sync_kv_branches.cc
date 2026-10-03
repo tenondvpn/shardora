@@ -27,7 +27,7 @@ TEST(SyncKvBranches, SyncItemHashKeyConstructor) {
     EXPECT_EQ(item.sync_times, 0u);
     EXPECT_EQ(item.sync_tm_us, 0ull);
     EXPECT_EQ(item.responsed_timeout_us, common::kInvalidUint64);
-    std::string expected_key = "10_2_100_1";
+    std::string expected_key = "h_10_2_100";
     EXPECT_EQ(item.key, expected_key);
 }
 
@@ -45,7 +45,7 @@ TEST(SyncKvBranches, SyncItemViewHashConstructor) {
 TEST(SyncKvBranches, SyncItemBlockViewTag) {
     SyncItem item(1u, 0u, 999ull, 4u, kBlockView);
     EXPECT_EQ(item.tag, kBlockView);
-    std::string expected_key = "1_0_999_3";
+    std::string expected_key = "w_1_0_999";
     EXPECT_EQ(item.key, expected_key);
 }
 

@@ -21,6 +21,15 @@ message SyncHeightItem {
     // instead of whatever the height->hash index happens to point at.
     optional uint64 view = 4;
     optional bytes view_block_hash = 5;
+    // Only meaningful on the kBlockView flow.  `height` there carries the view
+    // the requester wants, and this flag says how much of the chain it means:
+    //   true  -> exactly that one view, nothing later (a gap being filled, or a
+    //            specific view the requester already knows it needs).
+    //   false -> from that view onward, as many later views as fit in the
+    //            packet (a catch-up by a node that is behind).
+    // The two used to be indistinguishable on the wire, so the responder had to
+    // guess by comparing the requested view against its own maximum.
+    optional bool single_view = 6;
 }
 
 message FlushDbItem {

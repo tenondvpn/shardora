@@ -2590,22 +2590,39 @@ void Hotstuff::TryRecoverFromStuck(
             // qc: a root or cross block carries the *producing* shard's pool
             // index, which is not necessarily the instance that holds the chain
             // here, and the responder routes the request by this pair.
-            kv_sync_->AddSyncView(
-                high_view_block->qc().network_id(),
-                chain->pool_index(),
-                high_view_block->qc().view() + 1,
-                sync::kSyncHighest);
+            //
+            // If our own high-view block still has no valid QC, that view itself
+            // is what is missing: its block can never commit and everything above
+            // it is stuck behind it, so asking for view+1 would step over the gap.
+            // Ask for that exact view instead, and only that one — the branch is
+            // already known-named, so there is nothing to catch up to past it.
+            const bool high_view_has_qc = IsQcTcValid(high_view_block->qc());
+            if (!high_view_has_qc && high_view_block->qc().view() > 0) {
+                kv_sync_->AddSyncViewSingle(
+                    high_view_block->qc().network_id(),
+                    chain->pool_index(),
+                    high_view_block->qc().view(),
+                    sync::kSyncHighest);
+            } else {
+                kv_sync_->AddSyncView(
+                    high_view_block->qc().network_id(),
+                    chain->pool_index(),
+                    high_view_block->qc().view() + 1,
+                    sync::kSyncHighest);
+            }
 
             // Only the local chain can hold a block that never got an aggregated
             // QC: root and cross chains are fed exclusively by sync, and every
             // block they receive already carries its QC.  On the local chain such
             // a block cannot commit and everything above it is stuck behind it,
             // yet it sits below the high view, so the request above never names
-            // it.  Ask for the smallest QC-less view explicitly as well.
+            // it.  Ask for the smallest QC-less view explicitly as well — unless
+            // that is the view we just asked for.
             if (is_local) {
                 auto no_qc_view = chain->MinUncommittedViewWithoutQc();
-                if (no_qc_view > 0 && no_qc_view != high_view_block->qc().view() + 1) {
-                    kv_sync_->AddSyncView(
+                if (no_qc_view > 0 &&
+                        (!high_view_has_qc || no_qc_view != high_view_block->qc().view() + 1)) {
+                    kv_sync_->AddSyncViewSingle(
                         high_view_block->qc().network_id(),
                         chain->pool_index(),
                         no_qc_view,
