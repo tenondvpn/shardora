@@ -1525,7 +1525,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     }
 
     auto network_id = sync_msg.sync_value_req().network_id();
-    if (network::IsSameShardOrSameWaitingPool(
+    if (!network::IsSameShardOrSameWaitingPool(
             common::GlobalInfo::Instance()->network_id(),
             network_id)) {
         SHARDORA_DEBUG("get root chain for network: %u, local network: %u", 
@@ -1904,7 +1904,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     SHARDORA_DEBUG("skip kv response from different res net: %u "
                         "pool: %u, local: %u, hash64: %lu",
                         iter->network_id(),
-                        iter->pool_idx(), common::kGlobalPoolIndex,
+                        iter->pool_idx(), 
+                        common::kGlobalPoolIndex,
                         msg_ptr->header.hash64());
                     continue;
                 }
