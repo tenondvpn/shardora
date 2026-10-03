@@ -1859,9 +1859,8 @@ void Hotstuff::HandleSyncedViewBlock(
                 UpdateLatestQcItemPtr(std::make_shared<view_block::protobuf::QcItem>(vblock->qc()));
             }
         }
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-        TryCommit(view_block_chain(), msg_ptr, *latest_qc_item_ptr_);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
+
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         TryCommit(view_block_chain(), msg_ptr, vblock->qc());
         // If the sync server piggybacked a later TC/QC, use it to commit the synced block.
         // The TC references a proposed-but-uncommitted block (e.g. block N+1 that timed out),

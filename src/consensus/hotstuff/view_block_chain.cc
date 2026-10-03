@@ -1432,6 +1432,46 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
         qc.network_id(), qc.pool_index(), qc.view(), ProtobufToJson(cons_debug).c_str());
 #endif
     //assert(v_block1->parent_hash() != qc.view_block_hash());
+    //
+    // The lookup below answers "commit the parent of the QC'd block", so it can
+    // only ever commit a block one height below the QC.  That leaves the QC'd
+    // block itself permanently uncommittable through this path: once its parent
+    // is committed, next_height moves up to its own height and the parent check
+    // (height == next_height - 1) can never pass again, so the chain stalls with
+    // a QC'd block sitting exactly at next_height.
+    //
+    // The two-chain rule does not actually require the parent to be the block we
+    // commit here.  It requires the block being committed to be QC-verified and
+    // to have a QC-verified child on top of it — that is what fast HotStuff's
+    // two-chain (B1 <- B2 <- B3, commit B1) means, and the child is the link that
+    // proves B1 is not a fork that will be superseded.  So when the QC'd block is
+    // itself next_height, hand it back directly if its child carries a valid QC.
+    if (v_block1->block_info().height() == next_height) {
+        auto child_info = FindChildBlock(v_block1);
+        if (child_info != nullptr && child_info->view_block != nullptr &&
+                !child_info->view_block->qc().sign_x().empty()) {
+            SHARDORA_DEBUG("pool: %d, commit qc block itself, height: %lu, view: %lu, "
+                "child height: %lu, hash: %s",
+                pool_index_,
+                v_block1->block_info().height(),
+                v_block1->qc().view(),
+                child_info->view_block->block_info().height(),
+                common::Encode::HexEncode(qc.view_block_hash()).c_str());
+            return v_block1_info;
+        }
+
+        // No QC-verified child yet, so the two-chain rule is not satisfied and
+        // B1 may still lose to a sibling.  Ask for the child's view and stop
+        // rather than committing on one link.
+        SHARDORA_DEBUG("pool: %d, qc block is next height but has no qc child yet, "
+            "height: %lu, view: %lu, hash: %s",
+            pool_index_,
+            v_block1->block_info().height(),
+            v_block1->qc().view(),
+            common::Encode::HexEncode(qc.view_block_hash()).c_str());
+        return nullptr;
+    }
+
     auto v_block2_info = Get(v_block1->parent_hash());
     if (!v_block2_info) {
         SHARDORA_DEBUG("pool: %d, Failed get v block 2 block hash: %s, %u_%u_%lu, now chain: %s", 
