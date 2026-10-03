@@ -159,7 +159,7 @@ public:
     uint64_t GetMaxHeight() {
         auto latest_committed_block = LatestCommittedBlock();
         if (latest_committed_block && latest_committed_block->has_block_info()) {
-            SHARDORA_DEBUG("pool: %d, get max height: %lu, %u_%u_%lu_%lu", 
+            SHARDORA_DEBUG("pool: %d, get max height: %lu, %u_%u_%lu", 
                 pool_index_, 
                 latest_committed_block->block_info().height(),
                 latest_committed_block->qc().network_id(),
