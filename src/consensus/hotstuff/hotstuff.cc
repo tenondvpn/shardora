@@ -2595,6 +2595,23 @@ void Hotstuff::TryRecoverFromStuck(
                 chain->pool_index(),
                 high_view_block->qc().view() + 1,
                 sync::kSyncHighest);
+
+            // Only the local chain can hold a block that never got an aggregated
+            // QC: root and cross chains are fed exclusively by sync, and every
+            // block they receive already carries its QC.  On the local chain such
+            // a block cannot commit and everything above it is stuck behind it,
+            // yet it sits below the high view, so the request above never names
+            // it.  Ask for the smallest QC-less view explicitly as well.
+            if (is_local) {
+                auto no_qc_view = chain->MinUncommittedViewWithoutQc();
+                if (no_qc_view > 0 && no_qc_view != high_view_block->qc().view() + 1) {
+                    kv_sync_->AddSyncView(
+                        high_view_block->qc().network_id(),
+                        chain->pool_index(),
+                        no_qc_view,
+                        sync::kSyncHighest);
+                }
+            }
         };
 
         sync_next_view(view_block_chain_, true);

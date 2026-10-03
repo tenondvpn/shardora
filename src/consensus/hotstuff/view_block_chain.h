@@ -81,6 +81,13 @@ public:
         uint64_t start_view,
         uint32_t max_count,
         std::vector<std::shared_ptr<ViewBlock>>* out);
+    // Oldest uncommitted view this chain holds a block for but never received
+    // an aggregated QC for (sign_x/sign_y empty).  Such a view can never commit
+    // and every later view is stuck behind it, yet it sits below the high view,
+    // so a "request the next view" sync never names it and the gap is never
+    // repaired.  Returns the smallest such view, or 0 when there is none;
+    // callers hand the result to sync so the gap is actually requested.
+    uint64_t MinUncommittedViewWithoutQc() const;
     // std::shared_ptr<ViewBlock> Get(uint64_t view);
     // If has block
     bool Has(const HashStr& hash);
@@ -338,7 +345,18 @@ private:
     void AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch);
-        
+    // Direct child of `parent`: the block whose parent_hash matches and whose
+    // height is exactly one above.  view_with_blocks_ is view-ordered, so the
+    // scan starts above the parent's view and returns the first match.
+    std::shared_ptr<ViewBlockInfo> FindChildBlock(
+        const std::shared_ptr<ViewBlock>& parent) const;
+    // Durable commit of one block: writes it to db, refreshes the account LRU
+    // from the block's address_array, persists pool_latest_info, hands the txs
+    // back to the pool, registers the block with the block manager, and prunes
+    // fork siblings / tracked parents.  Called by Commit once per block walked
+    // forward, in ascending height order.
+    void CommitOneBlock(const std::shared_ptr<ViewBlockInfo>& info);
+
     static const uint32_t kCachedViewBlockCount = 16u;
 
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;

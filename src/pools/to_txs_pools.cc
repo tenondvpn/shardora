@@ -721,9 +721,14 @@ int ToTxsPools::CreateToTxForAllShards(
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         pools::protobuf::AllToTxMessage& all_to_txs) {
 #ifdef TEST_NO_CROSS
+    SHARDORA_WARN("[CreateToTxForAllShards] return kPoolsError, TEST_NO_CROSS defined");
     return kPoolsError;
 #endif
+    SHARDORA_INFO("[CreateToTxForAllShards] enter: leader_heights_size=%d prev_heights_size=%d",
+        leader_to_heights.heights_size(), prev_to_heights->heights_size());
     if (leader_to_heights.heights_size() != common::kInvalidPoolIndex) {
+        SHARDORA_WARN("[CreateToTxForAllShards] return kPoolsError, heights_size=%d != kInvalidPoolIndex=%u",
+            leader_to_heights.heights_size(), common::kInvalidPoolIndex);
         return kPoolsError;
     }
 
@@ -737,6 +742,8 @@ int ToTxsPools::CreateToTxForAllShards(
 
     for (int32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
         if (prev_to_heights->heights(i) > leader_to_heights.heights(i)) {
+            SHARDORA_WARN("[CreateToTxForAllShards] return kPoolsError, prev height ahead of leader: pool=%d prev=%lu leader=%lu",
+                i, prev_to_heights->heights(i), leader_to_heights.heights(i));
             return kPoolsError;
         }
     }
@@ -749,6 +756,9 @@ int ToTxsPools::CreateToTxForAllShards(
         }
     }
     if (!heights_valid) {
+        SHARDORA_WARN("[CreateToTxForAllShards] return kPoolsError, no valid heights: prev=%s leader=%s",
+            prev_to_heights->ShortDebugString().c_str(),
+            leader_to_heights.ShortDebugString().c_str());
         return kPoolsError;
     }
 
@@ -756,6 +766,8 @@ int ToTxsPools::CreateToTxForAllShards(
         uint64_t min_height = prev_to_heights->heights(pool_idx) + 1;
         uint64_t max_height = leader_to_heights.heights(pool_idx);
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
+            SHARDORA_WARN("[CreateToTxForAllShards] return kPoolsError, max_height beyond consensus: pool=%u min=%lu max=%lu cons=%lu",
+                pool_idx, min_height, max_height, pool_consensus_heihgts_[pool_idx]);
             return kPoolsError;
         }
 
@@ -837,6 +849,7 @@ int ToTxsPools::CreateToTxForAllShards(
     }
 
     if (per_shard_acc.empty()) {
+        SHARDORA_INFO("[CreateToTxForAllShards] return kPoolsSuccess, per_shard_acc empty, no to_tx generated");
         return kPoolsSuccess;
     }
 
@@ -866,6 +879,9 @@ int ToTxsPools::CreateToTxForAllShards(
             }
         }
     }
+    SHARDORA_INFO("[CreateToTxForAllShards] return kPoolsSuccess, shards_num=%zu to_tx_arr_size=%d bytes=%zu",
+        per_shard_acc.size(), all_to_txs.to_tx_arr_size(),
+        (size_t)all_to_txs.ByteSizeLong());
     return kPoolsSuccess;
 }
 
