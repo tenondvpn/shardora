@@ -1896,6 +1896,27 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
         // the same shape PopItems used, suffix included, or the in-flight entry
         // never gets cleared.  Two shapes exist: an identity probe (view/hash
         // suffix from SyncItem) and a bare height probe (no suffix).
+        if (!network::IsSameShardOrSameWaitingPool(
+                    common::GlobalInfo::Instance()->network_id(),
+                    iter->network_id())) {
+            if (iter->network_id() != network::kRootCongressNetworkId) {
+                if (iter->pool_idx() != common::kGlobalPoolIndex) {
+                    SHARDORA_DEBUG("skip kv response from different res net: %u "
+                        "pool: %u, local: %u, hash64: %lu",
+                        iter->network_id(),
+                        iter->pool_idx(), common::kGlobalPoolIndex,
+                        msg_ptr->header.hash64());
+                    continue;
+                }
+               
+            }
+
+            SHARDORA_DEBUG("skip kv response from different shard: %u, local: %u, hash64: %lu",
+                iter->network_id(), common::GlobalInfo::Instance()->network_id(),
+                msg_ptr->header.hash64());
+            continue;
+        }
+        
         std::string req_key = iter->key();
         if (iter->tag() == kBlockView) {
             // A kBlockView request is answered with several blocks at different
