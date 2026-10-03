@@ -125,6 +125,15 @@ Status ViewBlockChain::Store(
         for (int32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
             auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
                 view_block->block_info().address_array(i));
+            SHARDORA_DEBUG("%u_%u_%lu_%lu, success addr info: %s, balance: %lu, nonce: %lu, destrcuted: %d", 
+                view_block->qc().network_id(),
+                view_block->qc().pool_index(),
+                view_block->block_info().height(),
+                view_block->qc().view(),
+                common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
+                new_addr_info->balance(),
+                new_addr_info->nonce(),
+                new_addr_info->destructed());
             prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, shardora_host_ptr->db_batch_);
             (*balane_map_ptr)[new_addr_info->addr()] = new_addr_info;
             SHARDORA_DEBUG("step: %d, success add addr: %s, value: %s", 
@@ -132,7 +141,6 @@ Status ViewBlockChain::Store(
                 common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
                 ProtobufToJson(*new_addr_info).c_str());
         }
-
 
         for (int32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
             auto key = view_block->block_info().key_value_array(i).addr() + 
@@ -875,7 +883,8 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
                     (acc_ptr->latest_height() == new_addr_info->latest_height() &&
                      acc_ptr->tx_index() < new_addr_info->tx_index())) {
                 account_lru_map_.insert(new_addr_info);
-                SHARDORA_ERROR("success update address: %s,balance: %lu, nonce: %lu, new balance: %lu, new nonce: %lu, "
+                SHARDORA_ERROR("success update address: %s,balance: %lu, "
+                    "nonce: %lu, new balance: %lu, new nonce: %lu, "
                     "latest height: %lu, tx index: %u, new latest height: %lu, new tx index: %u",
                     common::Encode::HexEncode(new_addr_info->addr()).c_str(),
                     acc_ptr != nullptr ? acc_ptr->balance() : 0,
@@ -1341,6 +1350,16 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
         return nullptr;
     }
 
+    // Blocks must be committed in strictly increasing, contiguous height order.
+    // The only block this function may hand back is the one at exactly
+    // latest committed height + 1; anything else (a block above a gap, or one
+    // whose height is already committed) returns nullptr.  Without this gate a
+    // block can be committed while its predecessor is still missing, and when
+    // that predecessor lands later its older state overwrites the newer state
+    // already written by AddAddressInfo, SaveTemporaryKv,
+    // SaveNodeVerificationVector and AddBlsVerifyG2.
+    const uint64_t next_height = GetMaxHeight() + 1llu;
+
     //assert(!qc.view_block_hash().empty());
     auto v_block1_info = Get(qc.view_block_hash());
     if (!v_block1_info || v_block1_info->view_block->qc().view() <= 0llu){
@@ -1354,6 +1373,16 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
     }
 
     if (ViewBlockIsCheckedParentHash(prefix_db_, qc.view_block_hash())) {
+        if (v_block1_info->view_block->block_info().height() != next_height) {
+            SHARDORA_DEBUG("pool: %d, v block 1 is not the next height to commit: %s, "
+                "%u_%u_%lu, height: %lu, next height: %lu",
+                pool_index_,
+                common::Encode::HexEncode(qc.view_block_hash()).c_str(),
+                qc.network_id(), qc.pool_index(), qc.view(),
+                v_block1_info->view_block->block_info().height(), next_height);
+            return nullptr;
+        }
+
         return v_block1_info;
     }
 
@@ -1394,6 +1423,16 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
             common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
             v_block2->block_info().height(),
             v_block1->block_info().height());
+        return nullptr;
+    }
+
+    if (v_block2->block_info().height() != next_height) {
+        SHARDORA_DEBUG("pool: %d, v block 2 is not the next height to commit: %s, "
+            "%u_%u_%lu, height: %lu, next height: %lu",
+            pool_index_,
+            common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
+            qc.network_id(), qc.pool_index(), qc.view(),
+            v_block2->block_info().height(), next_height);
         return nullptr;
     }
 
