@@ -30,6 +30,15 @@ message SyncHeightItem {
     // The two used to be indistinguishable on the wire, so the responder had to
     // guess by comparing the requested view against its own maximum.
     optional bool single_view = 6;
+    // Only meaningful on the kBlockView flow, and only on a single_view request.
+    // The requester's local height for the view it wants.  A view whose block
+    // already committed is reachable by height long after the by-view caches
+    // have evicted it (they hold only the last few views), so this is the
+    // fallback handle the responder uses when the by-view lookup misses.  The
+    // responder must still check the block it finds carries the requested view:
+    // the height->hash DB index keeps only one branch per height, so a fork
+    // sibling could otherwise be returned for the wrong view.
+    optional uint64 block_height = 7;
 }
 
 message FlushDbItem {

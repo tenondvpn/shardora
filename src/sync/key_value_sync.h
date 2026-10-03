@@ -133,6 +133,22 @@ public:
             : SyncItem(net_id, in_pool_idx, in_height, pri, sync_tag,
                 common::kInvalidUint64, std::string(), in_single_view) {}
 
+    // Single-view request that also carries the block height the requester
+    // knows for that view.  A committed view is only reachable by height once
+    // the by-view caches (which hold the last few views) have dropped it, so the
+    // height is what lets the responder still answer after a cache miss.
+    SyncItem(
+            uint32_t net_id,
+            uint32_t in_pool_idx,
+            uint64_t in_view,
+            uint64_t in_block_height,
+            uint32_t pri,
+            uint32_t sync_tag)
+            : SyncItem(net_id, in_pool_idx, in_view, pri, sync_tag,
+                common::kInvalidUint64, std::string(), true) {
+        block_height = in_block_height;
+    }
+
     // A height is not a unique identity: the same height can be produced by
     // several views when the chain forks, so two requests for "height H" may
     // legitimately want two different blocks.  When the caller knows which
@@ -181,6 +197,12 @@ public:
     // kBlockView only: true asks the responder for exactly `height` as a view
     // and nothing later; false asks for that view onward (a catch-up).
     bool single_view{ false };
+    // kBlockView + single_view only: the block height the requester knows for
+    // the requested view, sent so the responder can fall back to a by-height
+    // lookup when the by-view caches no longer hold that (already committed)
+    // view.  kInvalidUint64 when unknown, in which case the request behaves
+    // exactly as before.
+    uint64_t block_height{ common::kInvalidUint64 };
 };
 
 // Canonical dedup key for a block that has been fully identified.  height is
@@ -227,11 +249,14 @@ public:
     // Exact-view request: the peer answers with `view` alone.  Used when the
     // node knows the one view it needs — a gap it is filling, or a view whose
     // own block still lacks a QC — so spilling later views would only crowd the
-    // packet with branches it did not ask for.
+    // packet with branches it did not ask for.  `block_height` is the height
+    // known for that view; the responder falls back to it when its by-view
+    // caches no longer hold the view, which is the norm once it has committed.
     void AddSyncViewSingle(
         uint32_t network_id,
         uint32_t pool_idx,
         uint64_t view,
+        uint64_t block_height,
         uint32_t priority);
     // True when the local chain already holds `view` with a valid QC.  Both
     // AddSyncView and AddSyncViewSingle drop such a request instead of queuing

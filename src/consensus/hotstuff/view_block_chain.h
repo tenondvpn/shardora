@@ -87,7 +87,11 @@ public:
     // so a "request the next view" sync never names it and the gap is never
     // repaired.  Returns the smallest such view, or 0 when there is none;
     // callers hand the result to sync so the gap is actually requested.
-    uint64_t MinUncommittedViewWithoutQc() const;
+    //
+    // When `out_height` is non-null it receives that block's height, which the
+    // caller passes along with the view so the responder can still reach the
+    // block by height if its by-view caches have already dropped it.
+    uint64_t MinUncommittedViewWithoutQc(uint64_t* out_height = nullptr) const;
     // std::shared_ptr<ViewBlock> Get(uint64_t view);
     // If has block
     bool Has(const HashStr& hash);

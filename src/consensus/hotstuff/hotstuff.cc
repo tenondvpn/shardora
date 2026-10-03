@@ -2602,6 +2602,7 @@ void Hotstuff::TryRecoverFromStuck(
                     high_view_block->qc().network_id(),
                     chain->pool_index(),
                     high_view_block->qc().view(),
+                    high_view_block->block_info().height(),
                     sync::kSyncHighest);
             } else {
                 kv_sync_->AddSyncView(
@@ -2619,13 +2620,15 @@ void Hotstuff::TryRecoverFromStuck(
             // it.  Ask for the smallest QC-less view explicitly as well — unless
             // that is the view we just asked for.
             if (is_local) {
-                auto no_qc_view = chain->MinUncommittedViewWithoutQc();
+                uint64_t no_qc_height = 0;
+                auto no_qc_view = chain->MinUncommittedViewWithoutQc(&no_qc_height);
                 if (no_qc_view > 0 &&
                         (!high_view_has_qc || no_qc_view != high_view_block->qc().view() + 1)) {
                     kv_sync_->AddSyncViewSingle(
                         high_view_block->qc().network_id(),
                         chain->pool_index(),
                         no_qc_view,
+                        no_qc_height,
                         sync::kSyncHighest);
                 }
             }

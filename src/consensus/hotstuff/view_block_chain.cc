@@ -492,7 +492,7 @@ uint32_t ViewBlockChain::GetViewBlocksFrom(
     return added;
 }
 
-uint64_t ViewBlockChain::MinUncommittedViewWithoutQc() const {
+uint64_t ViewBlockChain::MinUncommittedViewWithoutQc(uint64_t* out_height) const {
     // Committed blocks always carry an aggregated QC, so anything at or below
     // the committed view is already settled and must not be re-requested.
     uint64_t committed_view = 0;
@@ -502,6 +502,7 @@ uint64_t ViewBlockChain::MinUncommittedViewWithoutQc() const {
     }
 
     uint64_t min_view = 0;
+    uint64_t min_height = 0;
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); ++it) {
         auto& view_block = it->second->view_block;
         if (view_block == nullptr) {
@@ -519,7 +520,12 @@ uint64_t ViewBlockChain::MinUncommittedViewWithoutQc() const {
 
         if (min_view == 0 || view < min_view) {
             min_view = view;
+            min_height = view_block->block_info().height();
         }
+    }
+
+    if (out_height != nullptr) {
+        *out_height = min_height;
     }
 
     return min_view;

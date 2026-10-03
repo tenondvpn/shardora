@@ -180,6 +180,7 @@ void KeyValueSync::AddSyncViewSingle(
         uint32_t network_id,
         uint32_t pool_idx,
         uint64_t view,
+        uint64_t block_height,
         uint32_t priority) {
     if (ViewAlreadySettled(network_id, pool_idx, view)) {
         SHARDORA_DEBUG("block view already settled, skip single sync: %u_%u_%lu",
@@ -188,11 +189,12 @@ void KeyValueSync::AddSyncViewSingle(
     }
 
     auto item = std::make_shared<SyncItem>(
-        network_id, pool_idx, view, priority, kBlockView, true);
+        network_id, pool_idx, view, block_height, priority, kBlockView);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
-    SHARDORA_DEBUG("block view add single sync item key: %s, priority: %u, %u_%u_%lu",
-        item->key.c_str(), item->priority, network_id, pool_idx, view);
+    SHARDORA_DEBUG("block view add single sync item key: %s, priority: %u, %u_%u_%lu, "
+        "height: %lu",
+        item->key.c_str(), item->priority, network_id, pool_idx, view, block_height);
 }
 
 // Decides which of the candidates collected at one height should be handed to
@@ -820,12 +822,15 @@ void KeyValueSync::PopItems() {
 
                 if (item->tag == kBlockView) {
                     height_item->set_single_view(item->single_view);
+                    if (item->block_height != common::kInvalidUint64) {
+                        height_item->set_block_height(item->block_height);
+                    }
                 }
 
                 SHARDORA_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d, view: %lu, "
-                    "single_view: %d",
+                    "single_view: %d, block_height: %lu",
                     item->network_id, item->pool_idx, item->height, item->tag, item->view,
-                    item->single_view);
+                    item->single_view, item->block_height);
             } else {
                 sync_req->add_keys(item->key);
                 SHARDORA_DEBUG("success add to sync key: %s", 
@@ -1557,6 +1562,35 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             std::vector<ViewBlockPtr> view_blocks;
             if (single_view) {
                 auto one_block = view_chain->GetViewBlockWithView(network_id, req_view);
+                if (one_block == nullptr && req_height.has_block_height()) {
+                    // The by-view lookup only reaches the last few views: the
+                    // in-memory by-view caches are small and a committed view is
+                    // dropped from them, while the block itself lives on in the
+                    // DB under its height.  That is exactly the case a node
+                    // syncing a QC-less view hits, so fall back to the height
+                    // the requester supplied.
+                    const uint64_t req_height_num = req_height.block_height();
+                    one_block = view_chain->GetViewBlockWithHeight(
+                        network_id, req_height_num);
+                    // The DB keeps one branch per height (its index is
+                    // height->hash), so the block found may be a fork sibling
+                    // rather than the view that was asked for.  Returning it
+                    // would be worse than returning nothing: the requester dedups
+                    // on the identity it received and would discard it.  Only
+                    // answer when the view matches.
+                    if (one_block != nullptr && one_block->qc().view() != req_view) {
+                        SHARDORA_DEBUG("view sync height fallback view mismatch, want view: %lu, "
+                            "got view: %lu, net: %u, pool: %u, height: %lu, hash: %lu",
+                            req_view,
+                            one_block->qc().view(),
+                            network_id,
+                            req_height.pool_idx(),
+                            req_height_num,
+                            msg_ptr->header.hash64());
+                        one_block = nullptr;
+                    }
+                }
+
                 if (one_block != nullptr) {
                     view_blocks.push_back(one_block);
                 }
@@ -1598,11 +1632,12 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             }
 
             SHARDORA_DEBUG("view sync answered net: %u, pool: %u, from view: %lu, single: %d, "
-                "blocks: %u, hash64: %lu",
+                "block_height: %lu, blocks: %u, hash64: %lu",
                 network_id,
                 req_height.pool_idx(),
                 req_view,
                 single_view,
+                req_height.has_block_height() ? req_height.block_height() : 0ull,
                 view_added,
                 msg_ptr->header.hash64());
             continue;
