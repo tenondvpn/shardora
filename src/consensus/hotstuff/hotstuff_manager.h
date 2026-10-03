@@ -140,47 +140,17 @@ public:
     // unowned network still finds the instance that actually has it.
     inline std::shared_ptr<ViewBlockChain> ChainForNetwork(
             uint32_t network_id, uint32_t pool_idx) const {
-        if (network::IsSameShardOrSameWaitingPool(
-                network_id, network::kRootCongressNetworkId)) {
-            // Root chain: pooled by the instance's own index.  Prefer the hinted
-            // one, but any instance carries a copy, so fall back if needed.
-            if (pool_idx < common::kInvalidPoolIndex) {
-                auto hf = hotstuff(pool_idx);
-                if (hf) {
-                    auto chain = hf->ChainForNetwork(network_id);
-                    if (chain) {
-                        return chain;
-                    }
-                }
-            }
-
-            for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-                auto hf = hotstuff(i);
-                if (hf) {
-                    auto chain = hf->ChainForNetwork(network_id);
-                    if (chain) {
-                        return chain;
-                    }
-                }
-            }
-
+        if (pool_idx >= common::kInvalidPoolIndex) {
+            SHARDORA_WARN("invalid pool index: %u, network: %u", pool_idx, network_id);
+            return nullptr;
+        }
+        
+        auto hf = hotstuff(pool_idx);
+        if (!hf) {
             return nullptr;
         }
 
-        uint32_t owner_pool = pool_idx;
-        if (pool_idx == common::kGlobalPoolIndex) {
-            // Cross-shard chain: the holder is determined by the shard id.
-            owner_pool = network_id % common::kImmutablePoolSize;
-        }
-
-        if (owner_pool < common::kInvalidPoolIndex) {
-            auto hf = hotstuff(owner_pool);
-            if (hf) {
-                return hf->ChainForNetwork(network_id);
-            }
-        }
-
-        return nullptr;
+        return hf->view_block_chain();
     }
 
     inline std::shared_ptr<IBlockAcceptor> acceptor(uint32_t pool_idx) const {

@@ -1525,6 +1525,14 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     }
 
     auto network_id = sync_msg.sync_value_req().network_id();
+    if (network::IsSameShardOrSameWaitingPool(
+            common::GlobalInfo::Instance()->network_id(),
+            network_id)) {
+        SHARDORA_DEBUG("get root chain for network: %u, local network: %u", 
+            network_id, common::GlobalInfo::Instance()->network_id());
+        return;
+    }
+
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size() && add_size < kSyncPacketMaxSize; ++i) {
         auto& req_height = sync_msg.sync_value_req().heights(i);
         std::shared_ptr<view_block::protobuf::ViewBlockItem> view_block_ptr = nullptr;
