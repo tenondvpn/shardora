@@ -200,9 +200,12 @@ NormalToItemMap FlattenNormalToItems(const pools::protobuf::AllToTxMessage& all_
 }
 
 // Backup follower: compare local ToTxMessageItem with leader proposal.
-// If the leader classifies an uncertain destination address into the root shard,
-// root is authoritative: a local non-root classification is treated as the same
-// destination as long as the receiver and amount match.
+// If the leader classifies an uncertain destination address into the root shard or
+// the universal shard, the leader's block is authoritative: a differing local
+// classification is treated as the same destination as long as receiver and amount
+// match.  Both root and universal are placeholder classifications arising from the
+// leader failing to resolve the destination shard from its own account state; the
+// committed block settles the shard, so the proposal must not be rejected over it.
 bool ToTxMessageItemFieldsMatchForBackup(
         const pools::protobuf::ToTxMessageItem& leader,
         const pools::protobuf::ToTxMessageItem& local) {
@@ -213,14 +216,16 @@ bool ToTxMessageItemFieldsMatchForBackup(
         return false;
     }
 
-    const bool leader_des_is_root =
+    const bool leader_des_is_uncertain =
         leader.has_des_sharding_id() &&
-        leader.des_sharding_id() == network::kRootCongressNetworkId;
-    if (leader_des_is_root) {
-        if (local.des_sharding_id() != network::kRootCongressNetworkId) {
-            SHARDORA_DEBUG("kNormalTo backup: leader root classification accepted, des=%s, "
-                "local_des_sharding_id=%u, amount=%lu",
+        (leader.des_sharding_id() == network::kRootCongressNetworkId ||
+         leader.des_sharding_id() == network::kUniversalNetworkId);
+    if (leader_des_is_uncertain) {
+        if (local.des_sharding_id() != leader.des_sharding_id()) {
+            SHARDORA_DEBUG("kNormalTo backup: leader uncertain classification accepted, des=%s, "
+                "leader_des_sharding_id=%u, local_des_sharding_id=%u, amount=%lu",
                 common::Encode::HexEncode(leader.des()).c_str(),
+                leader.des_sharding_id(),
                 local.des_sharding_id(),
                 leader.amount());
         }
