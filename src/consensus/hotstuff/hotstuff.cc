@@ -2551,6 +2551,9 @@ void Hotstuff::TryRecoverFromStuck(
         // with the normal propose/prevote/commit traffic.  The root and cross
         // shard chains do not run consensus on this node at all and are only
         // ever fed by sync, so they are always requested.
+        SHARDORA_DEBUG("pool: %u, sync next view, local: %d, root: %d, cross: %d",
+            pool_idx_, view_block_chain_->HighView(), root_view_block_chain_->HighView(),
+            cross_shard_view_block_chain_.size());
         auto sync_next_view = [this](std::shared_ptr<ViewBlockChain>& chain, bool is_local) {
             if (chain == nullptr) {
                 return;

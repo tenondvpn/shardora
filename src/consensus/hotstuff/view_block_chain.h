@@ -206,32 +206,43 @@ public:
     }
 
     inline std::shared_ptr<ViewBlock> LatestCommittedBlock() const {
-        std::lock_guard<std::mutex> lock(latest_committed_block_mutex_);
-        return latest_committed_block_;
+        return latest_committed_block_.load(std::memory_order_acquire);
     }
-    // Set the latest committed block
+    // Set the latest committed block.  Only ever moves the pointer forward in
+    // view for the same network: a stale commit arriving late must not roll the
+    // chain back.  The whole read-decide-write runs in one compare_exchange loop
+    // rather than as load-then-store, because two threads committing sibling
+    // branches would otherwise both pass the check and the loser would overwrite
+    // a higher view with a lower one.
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
-        auto view_block = view_block_info->view_block;
-        auto latest_committed_block = LatestCommittedBlock();
-        if (latest_committed_block &&
-                (view_block->qc().network_id() !=
-                latest_committed_block->qc().network_id() ||
-                latest_committed_block->qc().view() >= 
-                view_block->qc().view())) {
+        if (view_block_info == nullptr || view_block_info->view_block == nullptr) {
             return;
         }
 
-        // Allow setting old view blocks
-        SHARDORA_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu, sign x: %s",
-            view_block->qc().network_id(), 
-            view_block->qc().pool_index(), 
-            view_block->block_info().height(),
-            view_block->qc().view(),
-            common::Encode::HexEncode(view_block->qc().sign_x()).c_str());
-        //assert(!view_block->qc().sign_x().empty());
-        {
-            std::lock_guard<std::mutex> lock(latest_committed_block_mutex_);
-            latest_committed_block_ = view_block;
+        auto view_block = view_block_info->view_block;
+        auto old_ptr = latest_committed_block_.load(std::memory_order_acquire);
+        while (true) {
+            if (old_ptr != nullptr &&
+                    (view_block->qc().network_id() != old_ptr->qc().network_id() ||
+                    old_ptr->qc().view() >= view_block->qc().view())) {
+                return;
+            }
+
+            // Allow setting old view blocks
+            SHARDORA_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu, sign x: %s",
+                view_block->qc().network_id(),
+                view_block->qc().pool_index(),
+                view_block->block_info().height(),
+                view_block->qc().view(),
+                common::Encode::HexEncode(view_block->qc().sign_x()).c_str());
+            //assert(!view_block->qc().sign_x().empty());
+            if (latest_committed_block_.compare_exchange_weak(
+                    old_ptr, view_block,
+                    std::memory_order_acq_rel, std::memory_order_acquire)) {
+                return;
+            }
+            // old_ptr now holds the value another thread published, so the loop
+            // re-checks the view order against it instead of blindly retrying.
         }
     }
 
@@ -373,8 +384,12 @@ private:
     std::atomic<View> high_view_block_view_ = 0llu;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
-    std::shared_ptr<ViewBlock> latest_committed_block_; // latest committed block
-    mutable std::mutex latest_committed_block_mutex_;
+    // Latest committed block.  Atomic because consensus commits on its own
+    // thread while sync and the EVM read it: a plain shared_ptr is not safe to
+    // copy concurrently with assignment.  Access through
+    // LatestCommittedBlock()/SetLatestCommittedBlock() only -- a direct read
+    // would race, and a direct write would break the view-order invariant.
+    std::atomic<std::shared_ptr<ViewBlock>> latest_committed_block_; // latest committed block
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
