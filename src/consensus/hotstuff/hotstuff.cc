@@ -2564,29 +2564,29 @@ void Hotstuff::TryRecoverFromStuck(
                 return;
             }
 
-            if (is_local) {
-                // Only skip sync if this node is an active consensus member AND
-                // consensus is progressing normally. If the node is not a committee
-                // member (GetLocalMemberIdx() == kInvalidUint32), it cannot vote
-                // and must rely on sync to get new blocks.
-                auto committed_block = chain->LatestCommittedBlock();
-                bool consensus_active = false;
-                auto local_member_idx = GetLocalMemberIdx();
-                if (local_member_idx != common::kInvalidUint32 &&
-                        committed_block && committed_block->has_block_info() &&
-                        high_view_block->has_block_info()) {
-                    auto gap = high_view_block->block_info().height() -
-                               committed_block->block_info().height();
-                    // gap <= 3 means consensus pipeline is healthy (propose/prevote/commit)
-                    if (gap <= 3) {
-                        consensus_active = true;
-                    }
-                }
+            // if (is_local) {
+            //     // Only skip sync if this node is an active consensus member AND
+            //     // consensus is progressing normally. If the node is not a committee
+            //     // member (GetLocalMemberIdx() == kInvalidUint32), it cannot vote
+            //     // and must rely on sync to get new blocks.
+            //     auto committed_block = chain->LatestCommittedBlock();
+            //     bool consensus_active = false;
+            //     auto local_member_idx = GetLocalMemberIdx();
+            //     if (local_member_idx != common::kInvalidUint32 &&
+            //             committed_block && committed_block->has_block_info() &&
+            //             high_view_block->has_block_info()) {
+            //         auto gap = high_view_block->block_info().height() -
+            //                    committed_block->block_info().height();
+            //         // gap <= 3 means consensus pipeline is healthy (propose/prevote/commit)
+            //         if (gap <= 3) {
+            //             consensus_active = true;
+            //         }
+            //     }
 
-                if (consensus_active) {
-                    return;
-                }
-            }
+            //     if (consensus_active) {
+            //         return;
+            //     }
+            // }
 
             // Use the chain's own network/pool identity rather than the block's
             // qc: a root or cross block carries the *producing* shard's pool
