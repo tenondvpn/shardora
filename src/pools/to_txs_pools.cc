@@ -99,7 +99,7 @@ void ToTxsPools::ThreadToStatistic(
             // forwarded via the normal_to mechanism to the destination shard nodes.
             if (to.has_base_root_address() && !to.base_root_address().empty() &&
                     static_cast<uint32_t>(to.des_sharding_id()) == local_net_id) {
-                SHARDORA_INFO("[XSBT] POOL_SKIP base=%s user=%s amt=%lu des_shard=%u pool=%u src_block=%u_%u_%lu",
+                SHARDORA_DEBUG("[XSBT] POOL_SKIP base=%s user=%s amt=%lu des_shard=%u pool=%u src_block=%u_%u_%lu",
                     common::Encode::HexEncode(to.base_root_address()).c_str(),
                     common::Encode::HexEncode(to.des()).c_str(),
                     to.amount(),
@@ -119,7 +119,7 @@ void ToTxsPools::ThreadToStatistic(
             }
             tx_map[map_key] = to;
             if (to.has_base_root_address() && !to.base_root_address().empty()) {
-                SHARDORA_INFO("[XSBT] POOL_QUEUE base=%s user=%s amt=%lu des_shard=%u pool=%u src_block=%u_%u_%lu",
+                SHARDORA_DEBUG("[XSBT] POOL_QUEUE base=%s user=%s amt=%lu des_shard=%u pool=%u src_block=%u_%u_%lu",
                     common::Encode::HexEncode(to.base_root_address()).c_str(),
                     common::Encode::HexEncode(to.des()).c_str(),
                     to.amount(),
@@ -601,7 +601,7 @@ int ToTxsPools::CreateToTxWithHeights(
                         to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str());
                     acc_amount_map[to_iter->first] = to_iter->second;
                     if (to_iter->second.has_base_root_address() && !to_iter->second.base_root_address().empty()) {
-                        SHARDORA_INFO("acc_amount_map add CrossShardBase: pool=%u h=%lu base=%s user=%s des_shard=%u item_pool=%u",
+                        SHARDORA_DEBUG("acc_amount_map add CrossShardBase: pool=%u h=%lu base=%s user=%s des_shard=%u item_pool=%u",
                             pool_idx, height,
                             common::Encode::HexEncode(to_iter->second.base_root_address()).c_str(),
                             common::Encode::HexEncode(to_iter->second.des()).c_str(),
@@ -644,7 +644,7 @@ int ToTxsPools::CreateToTxWithHeights(
                     }
 
                     if (amount_iter->second.des_sharding_id() != to_iter->second.des_sharding_id()) {
-                        SHARDORA_INFO("CrossShardBase acc_amount_map MERGE des_sharding_id conflict: "
+                        SHARDORA_DEBUG("CrossShardBase acc_amount_map MERGE des_sharding_id conflict: "
                             "des=%s old_shard=%u new_shard=%u base=%s pool=%u height=%lu",
                             common::Encode::HexEncode(to_iter->second.des()).c_str(),
                             amount_iter->second.des_sharding_id(),
@@ -660,7 +660,7 @@ int ToTxsPools::CreateToTxWithHeights(
                         auto base_evmc2 = shardoravm::StrToEvmcAddr(to_iter->second.base_root_address());
                         auto shad_evmc2 = shardoravm::DeriveShardAddress(base_evmc2, to_iter->second.des_sharding_id(), to_iter->second.pool_index());
                         std::string shad_str2(reinterpret_cast<const char*>(shad_evmc2.bytes), 20);
-                        SHARDORA_INFO("to block pool MERGE CrossShardBase: pool=%u h=%lu base=%s shadow=%s des_shard=%u item_pool=%u amount=%lu acc_amount=%lu",
+                        SHARDORA_DEBUG("to block pool MERGE CrossShardBase: pool=%u h=%lu base=%s shadow=%s des_shard=%u item_pool=%u amount=%lu acc_amount=%lu",
                             pool_idx, height,
                             common::Encode::HexEncode(to_iter->second.base_root_address()).c_str(),
                             common::Encode::HexEncode(shad_str2).c_str(),
@@ -697,7 +697,7 @@ int ToTxsPools::CreateToTxWithHeights(
             auto base_evmc3 = shardoravm::StrToEvmcAddr(to_item->base_root_address());
             auto shad_evmc3 = shardoravm::DeriveShardAddress(base_evmc3, to_item->des_sharding_id(), to_item->pool_index());
             std::string shad_str3(reinterpret_cast<const char*>(shad_evmc3.bytes), 20);
-            SHARDORA_INFO("set to CrossShardBase: des=%s amount=%lu des_shard=%u pool=%u base=%s shadow=%s prefund=%lu",
+            SHARDORA_DEBUG("set to CrossShardBase: des=%s amount=%lu des_shard=%u pool=%u base=%s shadow=%s prefund=%lu",
                 common::Encode::HexEncode(to_item->des()).c_str(),
                 iter->second.amount(), to_item->des_sharding_id(), to_item->pool_index(),
                 common::Encode::HexEncode(to_item->base_root_address()).c_str(),
@@ -724,7 +724,7 @@ int ToTxsPools::CreateToTxForAllShards(
     SHARDORA_WARN("[CreateToTxForAllShards] return kPoolsError, TEST_NO_CROSS defined");
     return kPoolsError;
 #endif
-    SHARDORA_INFO("[CreateToTxForAllShards] enter: leader_heights_size=%d prev_heights_size=%d",
+    SHARDORA_DEBUG("[CreateToTxForAllShards] enter: leader_heights_size=%d prev_heights_size=%d",
         leader_to_heights.heights_size(), prev_to_heights->heights_size());
     if (leader_to_heights.heights_size() != common::kInvalidPoolIndex) {
         SHARDORA_WARN("[CreateToTxForAllShards] return kPoolsError, heights_size=%d != kInvalidPoolIndex=%u",
@@ -798,7 +798,7 @@ int ToTxsPools::CreateToTxForAllShards(
                 if (amount_iter == acc_map.end()) {
                     acc_map[to_iter->first] = to_iter->second;
                     if (to_iter->second.has_base_root_address() && !to_iter->second.base_root_address().empty()) {
-                        SHARDORA_INFO("acc_amount_map add CrossShardBase: pool=%u h=%lu base=%s user=%s des_shard=%u item_pool=%u",
+                        SHARDORA_DEBUG("acc_amount_map add CrossShardBase: pool=%u h=%lu base=%s user=%s des_shard=%u item_pool=%u",
                             pool_idx, height,
                             common::Encode::HexEncode(to_iter->second.base_root_address()).c_str(),
                             common::Encode::HexEncode(to_iter->second.des()).c_str(),
@@ -822,7 +822,7 @@ int ToTxsPools::CreateToTxForAllShards(
                     if (to_iter->second.prefund() > 0)
                         amount_iter->second.set_prefund(amount_iter->second.prefund() + to_iter->second.prefund());
                     if (amount_iter->second.des_sharding_id() != to_iter->second.des_sharding_id()) {
-                        SHARDORA_INFO("CrossShardBase acc_amount_map MERGE des_sharding_id conflict: "
+                        SHARDORA_DEBUG("CrossShardBase acc_amount_map MERGE des_sharding_id conflict: "
                             "des=%s old_shard=%u new_shard=%u base=%s pool=%u height=%lu",
                             common::Encode::HexEncode(to_iter->second.des()).c_str(),
                             amount_iter->second.des_sharding_id(), shard,
@@ -836,7 +836,7 @@ int ToTxsPools::CreateToTxForAllShards(
                         auto base_evmc2 = shardoravm::StrToEvmcAddr(to_iter->second.base_root_address());
                         auto shad_evmc2 = shardoravm::DeriveShardAddress(base_evmc2, shard, to_iter->second.pool_index());
                         std::string shad_str2(reinterpret_cast<const char*>(shad_evmc2.bytes), 20);
-                        SHARDORA_INFO("to block pool MERGE CrossShardBase: pool=%u h=%lu base=%s shadow=%s des_shard=%u item_pool=%u amount=%lu acc_amount=%lu",
+                        SHARDORA_DEBUG("to block pool MERGE CrossShardBase: pool=%u h=%lu base=%s shadow=%s des_shard=%u item_pool=%u amount=%lu acc_amount=%lu",
                             pool_idx, height,
                             common::Encode::HexEncode(to_iter->second.base_root_address()).c_str(),
                             common::Encode::HexEncode(shad_str2).c_str(),
@@ -849,7 +849,7 @@ int ToTxsPools::CreateToTxForAllShards(
     }
 
     if (per_shard_acc.empty()) {
-        SHARDORA_INFO("[CreateToTxForAllShards] return kPoolsSuccess, per_shard_acc empty, no to_tx generated");
+        SHARDORA_DEBUG("[CreateToTxForAllShards] return kPoolsSuccess, per_shard_acc empty, no to_tx generated");
         return kPoolsSuccess;
     }
 
@@ -865,7 +865,7 @@ int ToTxsPools::CreateToTxForAllShards(
                 auto base_evmc3 = shardoravm::StrToEvmcAddr(to_item->base_root_address());
                 auto shad_evmc3 = shardoravm::DeriveShardAddress(base_evmc3, to_item->des_sharding_id(), to_item->pool_index());
                 std::string shad_str3(reinterpret_cast<const char*>(shad_evmc3.bytes), 20);
-                SHARDORA_INFO("set to CrossShardBase: des=%s amount=%lu des_shard=%u pool=%u base=%s shadow=%s prefund=%lu",
+                SHARDORA_DEBUG("set to CrossShardBase: des=%s amount=%lu des_shard=%u pool=%u base=%s shadow=%s prefund=%lu",
                     common::Encode::HexEncode(to_item->des()).c_str(),
                     to_item->amount(), to_item->des_sharding_id(), to_item->pool_index(),
                     common::Encode::HexEncode(to_item->base_root_address()).c_str(),
@@ -879,7 +879,7 @@ int ToTxsPools::CreateToTxForAllShards(
             }
         }
     }
-    SHARDORA_INFO("[CreateToTxForAllShards] return kPoolsSuccess, shards_num=%zu to_tx_arr_size=%d bytes=%zu",
+    SHARDORA_DEBUG("[CreateToTxForAllShards] return kPoolsSuccess, shards_num=%zu to_tx_arr_size=%d bytes=%zu",
         per_shard_acc.size(), all_to_txs.to_tx_arr_size(),
         (size_t)all_to_txs.ByteSizeLong());
     return kPoolsSuccess;

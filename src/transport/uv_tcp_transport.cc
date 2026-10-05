@@ -286,7 +286,7 @@ static void PruneAckedPackets(ex_uv_tcp_t* ex_uv_tcp) {
 }
 
 void on_close(uv_handle_t* handle) {
-    SHARDORA_INFO("close called: %p!", static_cast<void*>(handle));
+    SHARDORA_DEBUG("close called: %p!", static_cast<void*>(handle));
     ex_uv_tcp_t* ex_uv_tcp = (ex_uv_tcp_t*)handle;
     //assert(ex_uv_tcp->msg_decoder != nullptr);
     if (ex_uv_tcp->msg_decoder) {

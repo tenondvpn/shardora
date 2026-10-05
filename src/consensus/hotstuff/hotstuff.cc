@@ -1571,7 +1571,7 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
     qc_item.set_tm_height(tm_height);
     auto qc_hash = GetQCMsgHash(qc_item);
     if (latest_leader_propose_message_)
-    SHARDORA_INFO("success set view block hash: %s, qc_hash: %s, "
+    SHARDORA_DEBUG("success set view block hash: %s, qc_hash: %s, "
         "sign x: %s, replica: %d, elect_height: %lu, %u_%u_%lu, "
         "vote_msg.leader_idx: %d, use time: %lu, hash64: %lu",
         common::Encode::HexEncode(qc_item.view_block_hash()).c_str(),
@@ -1676,7 +1676,7 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
     BroadcastGlobalPoolBlock(view_block_info_ptr->view_block);
     pacemaker()->NewQcView(qc_item.view());
     if (latest_leader_propose_message_) {
-    SHARDORA_INFO("NewView propose newview called %u_%u_%lu, tc_view: %lu, "
+    SHARDORA_DEBUG("NewView propose newview called %u_%u_%lu, tc_view: %lu, "
         "propose_debug: %s, use time: %lu, latest_leader_propose_message_ = nullptr, "
         "hash64: %lu, tx size: %lu",
         qc_item.network_id(),

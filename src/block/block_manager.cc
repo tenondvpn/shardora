@@ -385,7 +385,7 @@ void BlockManager::HandleNormalToTx(
         auto to_tx = to_txs.tos(i);
         if (to_tx.des_sharding_id() == local_net_id) {
             if (to_tx.has_base_root_address() && !to_tx.base_root_address().empty()) {
-                SHARDORA_INFO("[XSBT] OUT_RELAY base=%s user=%s amt=%lu des_shard=%u pool=%u src_block=%u_%u_%lu",
+                SHARDORA_DEBUG("[XSBT] OUT_RELAY base=%s user=%s amt=%lu des_shard=%u pool=%u src_block=%u_%u_%lu",
                     common::Encode::HexEncode(to_tx.base_root_address()).c_str(),
                     common::Encode::HexEncode(to_tx.des()).c_str(),
                     to_tx.amount(),
@@ -413,7 +413,7 @@ void BlockManager::HandleNormalToTx(
                 std::string existing_code;
                 if (!prefix_db_->GetTemporaryKv(kv_key, &existing_code) || existing_code.empty()) {
                     prefix_db_->SaveTemporaryKv(kv_key, to_tx.runtime_bytecode());
-                    SHARDORA_INFO("HandleNormalToTx: saved XSB bytecode for addr=%s shard=%u",
+                    SHARDORA_DEBUG("HandleNormalToTx: saved XSB bytecode for addr=%s shard=%u",
                         common::Encode::HexEncode(addr).c_str(), local_net_id);
                 }
             } else {
@@ -445,7 +445,7 @@ void BlockManager::HandleNormalToTx(
                     db::DbWriteBatch db_batch;
                     prefix_db_->AddAddressInfo(addr, lib_info, db_batch);
                     db_->Put(db_batch);
-                    SHARDORA_INFO("HandleNormalToTx: saved library bytecode for addr=%s shard=%u",
+                    SHARDORA_DEBUG("HandleNormalToTx: saved library bytecode for addr=%s shard=%u",
                         common::Encode::HexEncode(addr).c_str(), local_net_id);
                 }
             } else {
@@ -605,7 +605,7 @@ void BlockManager::HandleCrossShardBaseTx(const view_block::protobuf::ViewBlockI
             evmc::address shadow_evmc = shardoravm::DeriveShardAddress(
                 base_evmc, to_tx.sharding_id(), static_cast<uint32_t>(to_tx.pool_index()));
             std::string shadow_str(reinterpret_cast<const char*>(shadow_evmc.bytes), 20);
-            SHARDORA_INFO("[XSBT] OUT_LOCAL base=%s user=%s shd=%s amt=%lu shard=%u pool=%u src_block=%u_%u_%lu",
+            SHARDORA_DEBUG("[XSBT] OUT_LOCAL base=%s user=%s shd=%s amt=%lu shard=%u pool=%u src_block=%u_%u_%lu",
                 common::Encode::HexEncode(to_tx.base_root_address()).c_str(),
                 common::Encode::HexEncode(to_tx.des()).c_str(),
                 common::Encode::HexEncode(shadow_str).c_str(),
@@ -643,7 +643,7 @@ void BlockManager::CreateLocalToTx(
                 static_cast<uint32_t>(to_tx_item.sharding_id()),
                 pool_index);
             std::string shadow_str(reinterpret_cast<const char*>(shadow_arr.data()), 20);
-            SHARDORA_INFO("CreateLocalToTx CrossShardBase: base=%s user=%s shadow=%s shard=%u pool=%u",
+            SHARDORA_DEBUG("CreateLocalToTx CrossShardBase: base=%s user=%s shadow=%s shard=%u pool=%u",
                 common::Encode::HexEncode(to_tx_item.base_root_address()).c_str(),
                 common::Encode::HexEncode(addr).c_str(),
                 common::Encode::HexEncode(shadow_str).c_str(),
