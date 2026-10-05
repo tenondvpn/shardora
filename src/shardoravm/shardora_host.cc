@@ -81,7 +81,7 @@ evmc::bytes32 ShardorahainHost::get_storage(
         if (storage_iter != it->second.storage.end()) {
             std::string val_hex = common::Encode::HexEncode(
                 std::string((char*)storage_iter->second.value.bytes, sizeof(storage_iter->second.value.bytes)));
-            SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=cache "
+            SHARDORA_DEBUG("[TRANSFER_CALL][GET_STORAGE] src=cache "
                 "contract=%s key=%s value=%s my_addr=%s origin=%s dirty=%d",
                 addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
                 my_addr_hex.c_str(), origin_addr_hex.c_str(),
@@ -98,13 +98,13 @@ evmc::bytes32 ShardorahainHost::get_storage(
         if (parent_val) {
             // Cache for subsequent reads
             const_cast<ShardorahainHost*>(this)->accounts_[addr].storage[key] = {parent_val};
-            SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=parent_host "
+            SHARDORA_DEBUG("[TRANSFER_CALL][GET_STORAGE] src=parent_host "
                 "contract=%s key=%s value=%s my_addr=%s origin=%s",
                 addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
                 my_addr_hex.c_str(), origin_addr_hex.c_str());
             return parent_val;
         }
-        SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=parent_host(empty) "
+        SHARDORA_DEBUG("[TRANSFER_CALL][GET_STORAGE] src=parent_host(empty) "
             "contract=%s key=%s value=%s my_addr=%s origin=%s",
             addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
             my_addr_hex.c_str(), origin_addr_hex.c_str());
@@ -118,14 +118,14 @@ evmc::bytes32 ShardorahainHost::get_storage(
             std::string((char*)res_val.bytes, sizeof(res_val.bytes)));
         if (res_val) {
             const_cast<ShardorahainHost*>(this)->accounts_[addr].storage[key] = {res_val};
-            SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=view_chain "
+            SHARDORA_DEBUG("[TRANSFER_CALL][GET_STORAGE] src=view_chain "
                 "contract=%s key=%s value=%s my_addr=%s origin=%s parent_hash=%s",
                 addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
                 my_addr_hex.c_str(), origin_addr_hex.c_str(),
                 common::Encode::HexEncode(parent_hash_).c_str());
             return res_val;
         }
-        SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=view_chain(miss) "
+        SHARDORA_DEBUG("[TRANSFER_CALL][GET_STORAGE] src=view_chain(miss) "
             "contract=%s key=%s value=%s my_addr=%s origin=%s",
             addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
             my_addr_hex.c_str(), origin_addr_hex.c_str());
@@ -138,12 +138,12 @@ evmc::bytes32 ShardorahainHost::get_storage(
         std::string((char*)tmp_val.bytes, sizeof(tmp_val.bytes)));
     if (tmp_val) {
         const_cast<ShardorahainHost*>(this)->accounts_[addr].storage[key] = {tmp_val};
-        SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=db "
+        SHARDORA_DEBUG("[TRANSFER_CALL][GET_STORAGE] src=db "
             "contract=%s key=%s value=%s my_addr=%s origin=%s",
             addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
             my_addr_hex.c_str(), origin_addr_hex.c_str());
     } else {
-        SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=db(miss) "
+        SHARDORA_DEBUG("[TRANSFER_CALL][GET_STORAGE] src=db(miss) "
             "contract=%s key=%s value=%s my_addr=%s origin=%s",
             addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
             my_addr_hex.c_str(), origin_addr_hex.c_str());
@@ -180,7 +180,7 @@ evmc_storage_status ShardorahainHost::set_storage(
         gas_more_ += gas_charged;
     }
 
-    SHARDORA_INFO("[TRANSFER_CALL][SET_STORAGE] "
+    SHARDORA_DEBUG("[TRANSFER_CALL][SET_STORAGE] "
         "contract=%s key=%s old_value=%s new_value=%s "
         "my_addr=%s origin=%s was_dirty=%d gas_charged=%lu gas_more_total=%lu",
         addr_hex.c_str(), key_hex.c_str(), old_val_hex.c_str(), new_val_hex.c_str(),
