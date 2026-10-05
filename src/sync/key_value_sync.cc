@@ -1594,6 +1594,13 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             std::vector<ViewBlockPtr> view_blocks;
             if (single_view) {
                 auto one_block = view_chain->GetViewBlockWithView(network_id, req_view);
+                SHARDORA_DEBUG("view sync single view lookup, net: %u, pool: %u, view: %lu, "
+                    "found: %s, hash: %lu",
+                    network_id,
+                    req_height.pool_idx(),
+                    req_view,
+                    one_block ? "yes" : "no",
+                    msg_ptr->header.hash64());
                 if (one_block == nullptr && req_height.has_block_height()) {
                     // The by-view lookup only reaches the last few views: the
                     // in-memory by-view caches are small and a committed view is
@@ -1610,6 +1617,14 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     // would be worse than returning nothing: the requester dedups
                     // on the identity it received and would discard it.  Only
                     // answer when the view matches.
+                    SHARDORA_DEBUG("view sync height fallback lookup, net: %u, pool: %u, "
+                        "view: %lu, height: %lu, found: %s, hash: %lu",
+                        network_id,
+                        req_height.pool_idx(),
+                        req_view,
+                        req_height_num,
+                        one_block ? "yes" : "no",
+                        msg_ptr->header.hash64());
                     if (one_block != nullptr && one_block->qc().view() != req_view) {
                         SHARDORA_DEBUG("view sync height fallback view mismatch, want view: %lu, "
                             "got view: %lu, net: %u, pool: %u, height: %lu, hash: %lu",
