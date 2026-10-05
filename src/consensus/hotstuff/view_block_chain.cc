@@ -1396,6 +1396,83 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
     // SaveNodeVerificationVector and AddBlsVerifyG2.
     const uint64_t next_height = GetMaxHeight() + 1llu;
 
+    // Height alone does not identify the parent: two different blocks can sit at
+    // the same height when the leader changes mid-view (a fork).  Matching only
+    // on `next_height` therefore lets a block whose parent hash never equals the
+    // committed tip be committed, and its descendants commit on top of it,
+    // leaving a parent-hash break in the stored chain.  Anchor every candidate
+    // to the tip's hash so only the branch that actually extends the committed
+    // chain can be committed.
+    auto extends_committed_tip = [&](const std::shared_ptr<ViewBlock>& candidate) {
+        if (candidate == nullptr) {
+            return false;
+        }
+
+        // Nothing committed yet (genesis): there is no tip hash to match.
+        auto tip = LatestCommittedBlock();
+        if (tip == nullptr || !tip->has_block_info() ||
+                tip->block_info().height() == 0) {
+            return true;
+        }
+
+        if (candidate->parent_hash() == tip->qc().view_block_hash()) {
+            return true;
+        }
+
+        SHARDORA_DEBUG("pool: %d, fork rejected: block %u_%u_%lu, height: %lu, view: %lu, "
+            "parent hash: %s does not extend committed tip: %s, tip height: %lu",
+            pool_index_,
+            candidate->qc().network_id(), candidate->qc().pool_index(),
+            candidate->qc().view(),
+            candidate->block_info().height(),
+            common::Encode::HexEncode(candidate->parent_hash()).c_str(),
+            common::Encode::HexEncode(tip->qc().view_block_hash()).c_str(),
+            tip->block_info().height());
+
+        // The candidate's parent sits at the committed tip's height but is a
+        // different block, so the whole branch below the candidate is a losing
+        // fork.  Nothing on it can ever commit; leaving it in the maps makes it
+        // keep answering "this height is already here" and blocks re-sync of the
+        // real branch.  Erase the parent and let its descendants be dropped with
+        // it -- keyed on the parent's own hash, never on the tip's.
+        auto parent_info = Get(candidate->parent_hash());
+        if (parent_info != nullptr && parent_info->view_block != nullptr) {
+            auto parent_view = parent_info->view_block->qc().view();
+            auto view_iter = view_with_blocks_.find(parent_view);
+            if (view_iter != view_with_blocks_.end() && view_iter->second == parent_info) {
+                view_with_blocks_.erase(view_iter);
+            }
+
+            auto cached_iter = cached_view_with_blocks_.find(parent_view);
+            if (cached_iter != cached_view_with_blocks_.end()) {
+                auto& blocks = cached_iter->second;
+                for (auto bit = blocks.begin(); bit != blocks.end();) {
+                    if (*bit == parent_info) {
+                        bit = blocks.erase(bit);
+                    } else {
+                        ++bit;
+                    }
+                }
+
+                if (blocks.empty()) {
+                    cached_view_with_blocks_.erase(cached_iter);
+                }
+            }
+
+            if (kv_sync_) {
+                kv_sync_->DropSyncedCandidate(
+                    parent_info->view_block->qc().network_id(),
+                    parent_info->view_block->qc().pool_index(),
+                    parent_info->view_block->block_info().height(),
+                    candidate->parent_hash());
+            }
+
+            view_blocks_info_.erase(candidate->parent_hash());
+        }
+
+        return false;
+    };
+
     //assert(!qc.view_block_hash().empty());
     auto v_block1_info = Get(qc.view_block_hash());
     if (!v_block1_info || v_block1_info->view_block->qc().view() <= 0llu){
@@ -1416,6 +1493,15 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
                 common::Encode::HexEncode(qc.view_block_hash()).c_str(),
                 qc.network_id(), qc.pool_index(), qc.view(),
                 v_block1_info->view_block->block_info().height(), next_height);
+            return nullptr;
+        }
+
+        if (!extends_committed_tip(v_block1_info->view_block)) {
+            // A different block already committed at this height; this block
+            // belongs to a losing branch and must never be committed.  Leave the
+            // maps alone here: the committed tip sits at the same height as this
+            // block's parent, so any sibling cleanup keyed on that height would
+            // erase the tip itself.
             return nullptr;
         }
 
@@ -1449,7 +1535,8 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
     if (v_block1->block_info().height() == next_height) {
         auto child_info = FindChildBlock(v_block1);
         if (child_info != nullptr && child_info->view_block != nullptr &&
-                !child_info->view_block->qc().sign_x().empty()) {
+                !child_info->view_block->qc().sign_x().empty() &&
+                extends_committed_tip(v_block1)) {
             SHARDORA_DEBUG("pool: %d, commit qc block itself, height: %lu, view: %lu, "
                 "child height: %lu, hash: %s",
                 pool_index_,
@@ -1509,6 +1596,10 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
             common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
             qc.network_id(), qc.pool_index(), qc.view(),
             v_block2->block_info().height(), next_height);
+        return nullptr;
+    }
+
+    if (!extends_committed_tip(v_block2)) {
         return nullptr;
     }
 

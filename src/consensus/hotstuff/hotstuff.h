@@ -116,18 +116,18 @@ public:
         latest_elect_height_ = elect_height;
         consecutive_failures_ = 0;
         update_latest_view_tm_ = true;
-        if (latest_qc_item_ptr_ == nullptr || latest_elect_height_ > latest_qc_item_ptr_->elect_height()) {
+        // One atomic snapshot drives both the ordering decision and the leader
+        // lookup.  latest_qc_item_ptr_ is reassigned by the hotstuff network
+        // thread and the sync timer thread, so two separate loads could observe
+        // different values (null then non-null), and a plain shared_ptr copy
+        // could race with that reassignment and corrupt the refcount block.
+        auto qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
+        if (qc_ptr == nullptr || latest_elect_height_ > qc_ptr->elect_height()) {
             last_stable_leader_member_index_ = GetEpochLeaderIndex();
             SHARDORA_DEBUG("pool: %u, new elect block, elect height: %lu, last_stable_leader_member_index_: %u",
                 pool_idx_, latest_elect_height_, last_stable_leader_member_index_.load());
         }
 
-        // Pin the qc before dereferencing it.  latest_qc_item_ptr_ is written by
-        // the hotstuff network thread and the sync timer thread without a lock,
-        // so a null check followed by a separate *latest_qc_item_ptr_ can race
-        // with a reassignment that frees the old pointee.  The local copy keeps
-        // the QcItem alive for as long as GetLeader holds the reference.
-        auto qc_ptr = latest_qc_item_ptr_;
         if (qc_ptr == nullptr) {
             SHARDORA_WARN("pool: %u, OnNewElectBlock skipping GetLeader: latest_qc_item_ptr_ is null, "
                 "elect_height: %lu", pool_idx_, elect_height);
@@ -299,7 +299,7 @@ public:
     }
 
     std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr() const {
-        return latest_qc_item_ptr_;
+        return latest_qc_item_ptr_.load(std::memory_order_acquire);
     }
 
 private:
@@ -329,7 +329,7 @@ private:
             laste_vote_prev_view_tm_.Put(qc_ptr->view(), common::TimeUtils::TimestampMs());
         }
 
-        latest_qc_item_ptr_ = qc_ptr;
+        latest_qc_item_ptr_.store(qc_ptr, std::memory_order_release);
         auto high_view_block = view_block_chain_->HighViewBlock();
         if (latest_leader_propose_message_ && high_view_block != nullptr && 
                 high_view_block->qc().view() < qc_ptr->view() && 
@@ -728,7 +728,12 @@ private:
     SyncPoolFn sync_pool_fn_ = nullptr;
     std::unordered_map<uint32_t, std::map<View, transport::MessagePtr>> voted_msgs_;
     uint64_t latest_propose_msg_tm_ms_ = 0;
-    std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr_;
+    // Atomic: written by the hotstuff network thread and the sync timer thread
+    // without a lock while consensus, sync and the propose path copy it.  A
+    // plain shared_ptr copy racing with that reassignment corrupts the refcount
+    // block and crashes in the destructor.  Access via .load()/.store() only --
+    // never touch the member directly, since that bypasses the atomic.
+    std::atomic<std::shared_ptr<view_block::protobuf::QcItem>> latest_qc_item_ptr_;
     uint64_t propose_debug_index_ = 0;
     uint64_t recover_from_stuck_timeout_ = 0;
     bool has_user_tx_tag_ = false;

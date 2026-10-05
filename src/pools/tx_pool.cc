@@ -330,7 +330,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                     //     pool_index_,
                     //     common::Encode::HexEncode(addr).c_str(), 
                     //     nonce_iter->first);
-                    auto tx_ptr = nonce_iter->second;
+                    // auto tx_ptr = nonce_iter->second;
                     // SHARDORA_DEBUG("pool: %d, over pop success add system tx nonce addr: %s, "
                     //     "addr nonce: %lu, tx nonce: %lu, unique hash: %s, step: %d",
                     //     pool_index_,

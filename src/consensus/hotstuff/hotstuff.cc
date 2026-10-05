@@ -92,13 +92,14 @@ void Hotstuff::StartInit() {
         // reject the resent propose for the same view (176 >= 176 → reject).
         // The pacemaker still needs the high view to advance cur_view_.
         pacemaker_->NewQcView(high_view_block->qc().view());
+        auto init_qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
         SHARDORA_DEBUG("init load pool: %d, high view block view: %lu, high view block hash: %s, "
             "pacemaker updated to view: %lu, latest_qc_item_ptr_ view: %lu",
             pool_idx_,
             high_view_block->qc().view(),
             common::Encode::HexEncode(high_view_block->qc().view_block_hash()).c_str(),
             high_view_block->qc().view(),
-            latest_qc_item_ptr_ ? latest_qc_item_ptr_->view() : 0);
+            init_qc_ptr ? init_qc_ptr->view() : 0);
     }
 
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -352,8 +353,9 @@ Status Hotstuff::Propose(
 #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
-    if (latest_qc_item_ptr_) {
-        *pb_pro_msg->mutable_tc() = *latest_qc_item_ptr_;
+    auto propose_qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
+    if (propose_qc_ptr) {
+        *pb_pro_msg->mutable_tc() = *propose_qc_ptr;
     }
 
     if (!header.has_broadcast()) {
@@ -413,7 +415,8 @@ Status Hotstuff::Propose(
     }
     
     latest_leader_propose_message_ = tmp_msg_ptr;
-    latest_leader_propose_message_->latest_qc_view = latest_qc_item_ptr_->view();
+    latest_leader_propose_message_->latest_qc_view =
+        latest_qc_item_ptr_.load(std::memory_order_acquire)->view();
     uint64_t tm = 0;
     if (view_with_block_tm_map_.Get(pb_pro_msg->view_item().qc().view(), tm)) {
         pb_pro_msg->mutable_view_item()->mutable_block_info()->set_timestamp(tm);
@@ -429,9 +432,10 @@ Status Hotstuff::Propose(
         pb_pro_msg->view_item().block_info().timestamp());
     
 
-    if (hotstuff_msg->pro_msg().tx_propose().txs_size() == 0 && 
-            latest_qc_item_ptr_ && latest_qc_item_ptr_->view() > 0) {
-        auto latest_view_block_ptr = view_block_chain()->Get(latest_qc_item_ptr_->view_block_hash());
+    auto propose_qc_ptr2 = latest_qc_item_ptr_.load(std::memory_order_acquire);
+    if (hotstuff_msg->pro_msg().tx_propose().txs_size() == 0 &&
+            propose_qc_ptr2 && propose_qc_ptr2->view() > 0) {
+        auto latest_view_block_ptr = view_block_chain()->Get(propose_qc_ptr2->view_block_hash());
         if (latest_view_block_ptr && latest_view_block_ptr->view_block &&
                 latest_view_block_ptr->view_block->block_info().tx_list_size() == 0) {
             SHARDORA_DEBUG("pool: %d, set latest_leader_propose_message_ = nullptr, "
@@ -603,6 +607,7 @@ void Hotstuff::ResendLeaderLatestProposeMessage() {
         ++sendout_bft_message_count_;
         transport::protobuf::ConsensusDebug cons_debug;
         cons_debug.ParseFromString(header.debug());
+        auto debug_qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
         SHARDORA_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
             "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, "
             "msg view: %lu, cur view: %lu, propose msg: %s, sendout_bft_message_count_: %u, "
@@ -620,7 +625,7 @@ void Hotstuff::ResendLeaderLatestProposeMessage() {
             ProtobufToJson(header.hotstuff().pro_msg()).c_str(),
             sendout_bft_message_count_.fetch_add(0),
             latest_leader_propose_message_->latest_qc_view,
-            latest_qc_item_ptr_->view());
+            debug_qc_ptr ? debug_qc_ptr->view() : 0);
 #endif
         latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     } else {
@@ -950,17 +955,20 @@ Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> p
 
 Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     auto& view_item = *pro_msg_wrap->view_block_ptr;
+    // Single snapshot for the whole function: the "locked view" decision below
+    // must not be split across two loads that could observe a reassignment.
+    auto vote_qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
     SHARDORA_DEBUG("HandleProposeMsgStep_HasVote called hash: %lu, "
         "last_vote_view_: %lu, last qc view: %lu, "
         "view_item.qc().view(): %lu, propose_debug: %s",
-        pro_msg_wrap->msg_ptr->header.hash64(), last_vote_view_, 
-        latest_qc_item_ptr_->view(), view_item.qc().view(),
+        pro_msg_wrap->msg_ptr->header.hash64(), last_vote_view_,
+        vote_qc_ptr ? vote_qc_ptr->view() : 0, view_item.qc().view(),
         ProtobufToJson(cons_debug).c_str());
 #endif
-    if (latest_qc_item_ptr_->view() >= view_item.qc().view()) {
+    if (vote_qc_ptr != nullptr && vote_qc_ptr->view() >= view_item.qc().view()) {
         // locked view
         return Status::kError;
     }
@@ -969,7 +977,7 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
         SHARDORA_DEBUG("pool: %d has voted view: %lu, last_locked_view_: %u, "
             "last_vote_view_: %lu, hash64: %lu, pacemaker()->CurView(): %lu",
             pool_idx_, view_item.qc().view(),
-            latest_qc_item_ptr_->view(), last_vote_view_,
+            vote_qc_ptr ? vote_qc_ptr->view() : 0, last_vote_view_,
             pro_msg_wrap->msg_ptr->header.hash64(),
             pacemaker()->CurView());
         if (last_vote_view_ == view_item.qc().view()) {
@@ -979,7 +987,7 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
                     "last_vote_view_: %lu, hash64: %lu, pacemaker()->CurView(): %lu",
                     view_item.qc().leader_idx(),
                     pool_idx_, view_item.qc().view(),
-                    latest_qc_item_ptr_->view(), last_vote_view_,
+                    vote_qc_ptr ? vote_qc_ptr->view() : 0, last_vote_view_,
                     pro_msg_wrap->msg_ptr->header.hash64(),
                     pacemaker()->CurView());
                 return Status::kSuccess;
@@ -1008,7 +1016,7 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
                     "last_vote_view_: %lu, hash64: %lu, pacemaker()->CurView(): %lu",
                     view_item.qc().leader_idx(),
                     pool_idx_, view_item.qc().view(),
-                    latest_qc_item_ptr_->view(), last_vote_view_,
+                    vote_qc_ptr ? vote_qc_ptr->view() : 0, last_vote_view_,
                     pro_msg_wrap->msg_ptr->header.hash64(),
                     pacemaker()->CurView());
             }
@@ -1055,9 +1063,10 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         pro_msg.tc().has_view_block_hash());
 #endif
     if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash()) {
-        if (pro_msg.tc().view() < latest_qc_item_ptr_->view()) {
+        auto tc_cur_qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
+        if (tc_cur_qc_ptr != nullptr && pro_msg.tc().view() < tc_cur_qc_ptr->view()) {
             SHARDORA_WARN("pool: %d verify tc old view: %lu, latest qc view: %lu, hash: %lu, propose_debug: %s",
-                pool_idx_, pro_msg.tc().view(), latest_qc_item_ptr_->view(), pro_msg_wrap->msg_ptr->header.hash64(),
+                pool_idx_, pro_msg.tc().view(), tc_cur_qc_ptr->view(), pro_msg_wrap->msg_ptr->header.hash64(),
                 ProtobufToJson(pro_msg).c_str());
             return Status::kError;
         }
@@ -1078,8 +1087,9 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         auto msg_ptr = pro_msg_wrap->msg_ptr;
         ADD_DEBUG_PROCESS_TIMESTAMP();
         TryCommit(view_block_chain(), pro_msg_wrap->msg_ptr, qc);
-        if (latest_qc_item_ptr_ == nullptr ||
-                tc_ptr->view() >= latest_qc_item_ptr_->view()) {
+        auto tc_update_qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
+        if (tc_update_qc_ptr == nullptr ||
+                tc_ptr->view() >= tc_update_qc_ptr->view()) {
             //assert(IsQcTcValid(*tc_ptr));
             UpdateLatestQcItemPtr(tc_ptr);
         }
@@ -1152,7 +1162,7 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
             true, 
             balance_map,
             shardora_host,
-            latest_qc_item_ptr_) != Status::kSuccess) {
+            latest_qc_item_ptr_.load(std::memory_order_acquire)) != Status::kSuccess) {
         SHARDORA_DEBUG("====1.1.2 Accept pool: %d, verify view block failed, "
             "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
             pool_idx_,
@@ -1250,7 +1260,7 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
         false, 
         balance_and_nonce_map,
         shardora_host,
-        latest_qc_item_ptr_,
+        latest_qc_item_ptr_.load(std::memory_order_acquire),
         pro_msg_wrap->leader_nonce_map.get());
     if (s != Status::kSuccess) {
 #ifndef NDEBUG
@@ -1718,9 +1728,10 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (latest_qc_item_ptr_ != nullptr) {
+    auto reset_qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
+    if (reset_qc_ptr != nullptr) {
         SHARDORA_DEBUG("reset timer propose message called view: %lu",
-            latest_qc_item_ptr_->view());
+            reset_qc_ptr->view());
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
@@ -1735,9 +1746,9 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     View out_view = 0;
     auto local_idx = GetLocalMemberIdx();
     auto leader_block_tm = GetLeaderBlockTimestamp();
-    // Pin the qc: latest_qc_item_ptr_ is reassigned without a lock by the sync
-    // timer thread, and GetLeader holds this reference across its whole body.
-    auto qc_ptr = latest_qc_item_ptr_;
+    // Pin the qc: latest_qc_item_ptr_ is reassigned by the sync timer thread,
+    // and GetLeader holds this reference across its whole body.
+    auto qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
     if (qc_ptr == nullptr) {
         return;
     }
@@ -1853,8 +1864,9 @@ void Hotstuff::HandleSyncedViewBlock(
         pacemaker_->NewQcView(vblock->qc().view());
         view_block_chain()->Store(vblock, true, nullptr, nullptr, false);
         view_block_chain()->UpdateHighViewBlock(vblock->qc());
-        if (latest_qc_item_ptr_ == nullptr ||
-                vblock->qc().view() >= latest_qc_item_ptr_->view()) {
+        auto sync_update_qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
+        if (sync_update_qc_ptr == nullptr ||
+                vblock->qc().view() >= sync_update_qc_ptr->view()) {
             if (IsQcTcValid(vblock->qc())) {
                 UpdateLatestQcItemPtr(std::make_shared<view_block::protobuf::QcItem>(vblock->qc()));
             }
@@ -1887,7 +1899,8 @@ void Hotstuff::HandleSyncedViewBlock(
                     // For a synced non-consensus node the high_view_block does not need to advance
                     // beyond what the synced block's own QC already provided.
                     TryCommit(view_block_chain(), nullptr, *tc_item);
-                    if (latest_qc_item_ptr_ == nullptr || tc_item->view() >= latest_qc_item_ptr_->view()) {
+                    auto sync_tc_qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
+                    if (sync_tc_qc_ptr == nullptr || tc_item->view() >= sync_tc_qc_ptr->view()) {
                         UpdateLatestQcItemPtr(tc_item);
                     }
                 }
@@ -2513,8 +2526,9 @@ void Hotstuff::TryRecoverFromStuck(
         bool has_user_tx, 
         bool has_system_tx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (latest_qc_item_ptr_ && update_latest_view_tm_) {
-        laste_vote_prev_view_tm_.Put(latest_qc_item_ptr_->view(), now_tm_ms);
+    auto recover_qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
+    if (recover_qc_ptr && update_latest_view_tm_) {
+        laste_vote_prev_view_tm_.Put(recover_qc_ptr->view(), now_tm_ms);
         update_latest_view_tm_ = false;
     }
 
@@ -2650,10 +2664,10 @@ void Hotstuff::TryRecoverFromStuck(
     auto local_idx = GetLocalMemberIdx();
     View out_view = 0;
     auto leader_block_tm = GetLeaderBlockTimestamp();
-    // Pin the qc: latest_qc_item_ptr_ is reassigned without a lock by the
-    // hotstuff network thread and the sync timer thread.  A bare null check
-    // followed by *latest_qc_item_ptr_ can race with that reassignment.
-    auto qc_ptr = latest_qc_item_ptr_;
+    // Pin the qc: latest_qc_item_ptr_ is reassigned by the hotstuff network
+    // thread and the sync timer thread.  A bare null check followed by
+    // *latest_qc_item_ptr_ can race with that reassignment.
+    auto qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
     if (qc_ptr == nullptr) {
         // if (pool_idx_ == common::kImmutablePoolSize) {
             // SHARDORA_DEBUG("pool %u: latest_qc_item_ptr_ is null, cannot get leader", pool_idx_);
