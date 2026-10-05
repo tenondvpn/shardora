@@ -2101,6 +2101,25 @@ Status Hotstuff::VerifyViewBlock(
         return Status::kError;
     }
 
+    // The parent existing is not enough: a same-height fork sibling is a valid
+    // parent by height and by view, yet the branch below it never descends from
+    // the committed block.  Voting for such a proposal lets a QC form on the
+    // fork and the chain leave the committed branch, so the proposal is refused
+    // unless its parent chain reaches the committed tip.
+    if (!view_block_chain->ExtendsCommittedTip(v_block)) {
+        SHARDORA_WARN("%u_%u_%lu_%lu, reject propose on fork branch: parent hash: %s, "
+            "committed tip: %s, tip height: %lu",
+            common::GlobalInfo::Instance()->network_id(),
+            pool_idx_,
+            v_block.qc().view(),
+            v_block.block_info().height(),
+            common::Encode::HexEncode(v_block.parent_hash()).c_str(),
+            common::Encode::HexEncode(
+                view_block_chain->LatestCommittedBlock()->qc().view_block_hash()).c_str(),
+            view_block_chain->LatestCommittedBlock()->block_info().height());
+        return Status::kError;
+    }
+
     SHARDORA_DEBUG("pool: %d, block view message is success. %lu, %lu, %s, %s, "
         "v_block.qc().view(): %lu, pacemaker()->CurView(): %lu, "
         "v_block.qc().view(): %lu",
@@ -2353,14 +2372,26 @@ Status Hotstuff::ConstructViewBlock(
     // restart), fall back to LatestCommittedBlock as the parent for height
     // calculation. Otherwise Wrap() would set height = 0+1 = 1, which is
     // rejected by all voters that have already committed higher blocks.
-    if (!pre_v_block->has_block_info() || pre_v_block->block_info().height() == 0) {
+    //
+    // The same fallback also covers a HighViewBlock that sits on a fork branch:
+    // high_view_block_ advances on view order alone, so a QC formed on a sibling
+    // at the committed height can briefly occupy it.  Proposing on that branch
+    // would extend a chain that no committed block is an ancestor of, so the
+    // leader always falls back to the committed tip in that case.
+    bool high_block_on_fork = !view_block_chain_->ExtendsCommittedTip(*pre_v_block);
+    if (high_block_on_fork || !pre_v_block->has_block_info() ||
+            pre_v_block->block_info().height() == 0) {
         auto committed = view_block_chain_->LatestCommittedBlock();
-        if (committed && committed->has_block_info() && 
+        if (committed && committed->has_block_info() &&
                 committed->block_info().height() > 0) {
-            SHARDORA_WARN("pool: %d, HighViewBlock has no valid block_info (view: %lu), "
-                "falling back to LatestCommittedBlock (height: %lu) for propose",
-                pool_idx_, pre_v_block->qc().view(), 
-                committed->block_info().height());
+            SHARDORA_WARN("pool: %d, HighViewBlock %s (view: %lu, hash: %s), "
+                "falling back to LatestCommittedBlock (height: %lu, hash: %s) for propose",
+                pool_idx_,
+                high_block_on_fork ? "sits on a fork branch" : "has no valid block_info",
+                pre_v_block->qc().view(),
+                common::Encode::HexEncode(pre_v_block->qc().view_block_hash()).c_str(),
+                committed->block_info().height(),
+                common::Encode::HexEncode(committed->qc().view_block_hash()).c_str());
             pre_v_block = committed;
             view_block->set_parent_hash(pre_v_block->qc().view_block_hash());
         }

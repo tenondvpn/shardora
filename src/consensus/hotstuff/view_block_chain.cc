@@ -749,6 +749,65 @@ bool ViewBlockChain::Extends(const ViewBlock& block, const ViewBlock& target) {
     return s == Status::kSuccess && tmp_block->qc().view_block_hash() == target.qc().view_block_hash();
 }
 
+bool ViewBlockChain::ExtendsCommittedTip(const ViewBlock& view_block) const {
+    auto tip = LatestCommittedBlock();
+    if (tip == nullptr || tip->qc().view_block_hash().empty() ||
+            !tip->has_block_info() || tip->block_info().height() == 0) {
+        // Nothing committed yet: every block extends the (empty) chain.
+        return true;
+    }
+
+    const std::string& tip_hash = tip->qc().view_block_hash();
+    const uint64_t tip_height = tip->block_info().height();
+
+    // Start from the block itself rather than from a map lookup: callers hand in
+    // blocks that may have been read straight from the db and never inserted
+    // into view_blocks_info_, and looking them up again would report them as
+    // unknown.  Only parents are resolved through the map.
+    if (!view_block.has_block_info()) {
+        return false;
+    }
+
+    // `current` points at the caller's block on the first iteration and at
+    // `holder` afterwards; `holder` owns whatever the previous lookup returned so
+    // it stays alive for the next one.
+    const ViewBlock* current = &view_block;
+    std::shared_ptr<ViewBlock> holder;
+
+    // Heights strictly decrease along the walk and the loop stops as soon as the
+    // tip's height is reached, so the number of steps is bounded by the distance
+    // from the block to the tip.  The counter is a guard against a malformed
+    // chain that never decreases.
+    uint64_t steps = view_block.block_info().height() + 1;
+    while (steps-- > 0) {
+        if (current->qc().view_block_hash() == tip_hash ||
+                current->parent_hash() == tip_hash) {
+            return true;
+        }
+
+        if (!current->has_block_info() || current->block_info().height() <= tip_height) {
+            // Reached the tip's height (or below) on a different hash: this is a
+            // fork branch, and nothing on it can ever extend the committed chain.
+            return false;
+        }
+
+        // Only uncommitted blocks are walked here (anything at or below the tip's
+        // height has already returned above), and those live solely in
+        // view_blocks_info_ -- committed blocks are the ones written to db.  A
+        // parent that cannot be resolved therefore means the branch cannot be
+        // shown to extend the tip, and it is refused rather than trusted.
+        auto parent_info = Get(current->parent_hash());
+        if (parent_info == nullptr || parent_info->view_block == nullptr) {
+            return false;
+        }
+
+        holder = parent_info->view_block;
+        current = holder.get();
+    }
+
+    return false;
+}
+
 Status ViewBlockChain::GetAll(std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
     // CheckThreadIdValid();
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
@@ -2056,8 +2115,37 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
             view_block_ptr->block_info().height());
     }
 
+    // A QC at the same height as the committed block can belong to a fork
+    // sibling.  Advancing high_view_block_ to it would make the leader propose
+    // on that fork and backups vote on it, so the branch must first be shown to
+    // extend the committed tip.  A block that does not is still stored above
+    // (it may be needed to answer sync), but it never becomes the high block.
+    if (!ExtendsCommittedTip(*view_block_ptr)) {
+        auto committed_tip = LatestCommittedBlock();
+        SHARDORA_DEBUG("pool: %d, reject high view block on fork branch: %u_%u_%lu, "
+            "height: %lu, parent hash: %s, committed tip: %s, tip height: %lu",
+            pool_index_,
+            view_block_ptr->qc().network_id(),
+            view_block_ptr->qc().pool_index(),
+            view_block_ptr->qc().view(),
+            view_block_ptr->block_info().height(),
+            common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
+            committed_tip ? common::Encode::HexEncode(
+                committed_tip->qc().view_block_hash()).c_str() : "",
+            committed_tip && committed_tip->has_block_info() ?
+                committed_tip->block_info().height() : 0);
+        return;
+    }
+
+    // The candidate is on the committed branch.  It replaces the current high
+    // block when it is taller, or equally tall with a higher view -- and also
+    // when the current high block is stale or sits on a fork branch, because a
+    // fork branch usually carries the *higher* view, so view order alone would
+    // never let the valid branch take the pointer back.
+    bool high_block_on_fork = high_view_block_ != nullptr &&
+        !ExtendsCommittedTip(*high_view_block_);
     if (high_view_block_ == nullptr || high_view_block_->qc().sign_x().empty() ||
-            !high_view_block_->block_info().has_height() ||
+            !high_view_block_->block_info().has_height() || high_block_on_fork ||
             high_view_block_->block_info().height() < view_block_ptr->block_info().height() ||
             high_view_block_->qc().view() < view_block_ptr->qc().view()) {
 #ifndef NDEBUG

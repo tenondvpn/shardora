@@ -209,6 +209,15 @@ public:
     inline std::shared_ptr<ViewBlock> LatestCommittedBlock() const {
         return latest_committed_block_.load(std::memory_order_acquire);
     }
+
+    // True when the latest committed block is the block itself or one of its
+    // ancestors.  Two blocks at the same height can both carry a valid QC when
+    // the leader changes mid-view, and every view-based comparison prefers the
+    // higher one, so without this anchor a fork branch takes over as the parent
+    // the leader proposes on and as the high block backups are willing to vote
+    // on.  Both roles call it so only the branch that extends the committed
+    // chain is ever built on or voted for.
+    bool ExtendsCommittedTip(const ViewBlock& view_block) const;
     // Set the latest committed block.  Only ever moves the pointer forward in
     // view for the same network: a stale commit arriving late must not roll the
     // chain back.  The whole read-decide-write runs in one compare_exchange loop
