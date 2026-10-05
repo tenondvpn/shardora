@@ -808,6 +808,51 @@ bool ViewBlockChain::ExtendsCommittedTip(const ViewBlock& view_block) const {
     return false;
 }
 
+bool ViewBlockChain::ParentHeightCommittedOnOtherBranch(const ViewBlock& view_block) const {
+    if (!view_block.has_block_info() || view_block.block_info().height() <= 1) {
+        return false;
+    }
+
+    const uint64_t parent_height = view_block.block_info().height() - 1;
+    auto tip = LatestCommittedBlock();
+    if (tip == nullptr || !tip->has_block_info() ||
+            tip->qc().view_block_hash().empty() || tip->block_info().height() == 0) {
+        return false;
+    }
+
+    const uint64_t committed_height = tip->block_info().height();
+    if (parent_height > committed_height) {
+        // Nothing at the parent height has committed: the fork there is still
+        // live and the ordinary chain rules decide it.
+        return false;
+    }
+
+    if (parent_height == committed_height) {
+        // The committed tip is authoritative for this height, so the comparison
+        // needs no db read.
+        return view_block.parent_hash() != tip->qc().view_block_hash();
+    }
+
+    // The parent height is below the committed tip: the block is lagging behind
+    // the commit frontier, so the committed hash at that height has to come from
+    // the height index.
+    const uint32_t network_id = view_block.qc().network_id();
+    const uint32_t block_pool_index = view_block.qc().pool_index();
+    if (!BlockHeightCommited(prefix_db_, network_id, block_pool_index, parent_height)) {
+        return false;
+    }
+
+    std::string committed_hash;
+    if (!prefix_db_->GetBlockHashWithBlockHeight(
+            network_id, block_pool_index, parent_height, &committed_hash)) {
+        // Marked committed with no readable hash: an unresolvable entry cannot
+        // bless the block, so it is refused rather than trusted.
+        return true;
+    }
+
+    return committed_hash != view_block.parent_hash();
+}
+
 Status ViewBlockChain::GetAll(std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
     // CheckThreadIdValid();
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
@@ -2120,7 +2165,13 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
     // on that fork and backups vote on it, so the branch must first be shown to
     // extend the committed tip.  A block that does not is still stored above
     // (it may be needed to answer sync), but it never becomes the high block.
-    if (!ExtendsCommittedTip(*view_block_ptr)) {
+    //
+    // The parent-height check catches the case one level further out: when the
+    // parent's height is already committed, the QC proves a quorum voted for a
+    // block whose branch lost at that height, which the tip walk alone may not
+    // see if the parent is still in memory with a stale status.
+    if (!ExtendsCommittedTip(*view_block_ptr) ||
+            ParentHeightCommittedOnOtherBranch(*view_block_ptr)) {
         auto committed_tip = LatestCommittedBlock();
         SHARDORA_DEBUG("pool: %d, reject high view block on fork branch: %u_%u_%lu, "
             "height: %lu, parent hash: %s, committed tip: %s, tip height: %lu",
@@ -2143,7 +2194,37 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
     // fork branch usually carries the *higher* view, so view order alone would
     // never let the valid branch take the pointer back.
     bool high_block_on_fork = high_view_block_ != nullptr &&
-        !ExtendsCommittedTip(*high_view_block_);
+        (!ExtendsCommittedTip(*high_view_block_) ||
+            ParentHeightCommittedOnOtherBranch(*high_view_block_));
+
+    // Self-heal: the high block may have been promoted onto a branch whose parent
+    // height has since committed to a different block.  Left alone it would keep
+    // pulling the leader onto a dead branch, and no later candidate can displace
+    // it (the dead branch carries the higher view), so it is repointed at the
+    // committed tip, which is the only parent that can still extend the chain.
+    if (high_block_on_fork) {
+        auto committed_tip = LatestCommittedBlock();
+        if (committed_tip != nullptr && committed_tip->has_block_info() &&
+                committed_tip->qc().view_block_hash() !=
+                    high_view_block_->qc().view_block_hash()) {
+            SHARDORA_WARN("pool: %d, high view block %s is on a dead branch "
+                "(view: %lu, height: %lu, parent: %s), repoint to committed tip "
+                "(view: %lu, height: %lu, hash: %s)",
+                pool_index_,
+                common::Encode::HexEncode(
+                    high_view_block_->qc().view_block_hash()).c_str(),
+                high_view_block_->qc().view(),
+                high_view_block_->block_info().height(),
+                common::Encode::HexEncode(high_view_block_->parent_hash()).c_str(),
+                committed_tip->qc().view(),
+                committed_tip->block_info().height(),
+                common::Encode::HexEncode(
+                    committed_tip->qc().view_block_hash()).c_str());
+            high_view_block_ = committed_tip;
+            high_view_block_view_.store(committed_tip->qc().view());
+            high_block_on_fork = false;
+        }
+    }
     if (high_view_block_ == nullptr || high_view_block_->qc().sign_x().empty() ||
             !high_view_block_->block_info().has_height() || high_block_on_fork ||
             high_view_block_->block_info().height() < view_block_ptr->block_info().height() ||

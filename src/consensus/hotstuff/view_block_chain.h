@@ -218,6 +218,13 @@ public:
     // on.  Both roles call it so only the branch that extends the committed
     // chain is ever built on or voted for.
     bool ExtendsCommittedTip(const ViewBlock& view_block) const;
+
+    // True when the block's parent height is already committed and the parent the
+    // block points at is not the block that was committed at that height.  Once a
+    // height is committed the competition at its parent level is over: a sibling
+    // at the parent height can still gather a QC, but nothing built on it can
+    // ever commit, so it must not be proposed on and must not receive votes.
+    bool ParentHeightCommittedOnOtherBranch(const ViewBlock& view_block) const;
     // Set the latest committed block.  Only ever moves the pointer forward in
     // view for the same network: a stale commit arriving late must not roll the
     // chain back.  The whole read-decide-write runs in one compare_exchange loop

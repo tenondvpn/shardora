@@ -2101,22 +2101,29 @@ Status Hotstuff::VerifyViewBlock(
         return Status::kError;
     }
 
-    // The parent existing is not enough: a same-height fork sibling is a valid
-    // parent by height and by view, yet the branch below it never descends from
-    // the committed block.  Voting for such a proposal lets a QC form on the
-    // fork and the chain leave the committed branch, so the proposal is refused
-    // unless its parent chain reaches the committed tip.
-    if (!view_block_chain->ExtendsCommittedTip(v_block)) {
+    // The parent existing is not enough.  Two cases are refused here:
+    //   * the branch below the proposal never descends from the committed block
+    //     (a same-height fork sibling is a valid parent by height and by view),
+    //   * the proposal's parent height is already committed to a different block,
+    //     so the block lost its race at that height even though it can still
+    //     gather a QC.
+    // Voting for either lets a QC form off the committed chain, which is how a
+    // fork stays alive across hundreds of views.
+    const bool parent_height_on_other_branch =
+        view_block_chain->ParentHeightCommittedOnOtherBranch(v_block);
+    if (!view_block_chain->ExtendsCommittedTip(v_block) || parent_height_on_other_branch) {
+        auto committed_tip = view_block_chain->LatestCommittedBlock();
         SHARDORA_WARN("%u_%u_%lu_%lu, reject propose on fork branch: parent hash: %s, "
-            "committed tip: %s, tip height: %lu",
+            "parent height committed on other branch: %d, committed tip: %s, tip height: %lu",
             common::GlobalInfo::Instance()->network_id(),
             pool_idx_,
             v_block.qc().view(),
             v_block.block_info().height(),
             common::Encode::HexEncode(v_block.parent_hash()).c_str(),
+            (int32_t)parent_height_on_other_branch,
             common::Encode::HexEncode(
-                view_block_chain->LatestCommittedBlock()->qc().view_block_hash()).c_str(),
-            view_block_chain->LatestCommittedBlock()->block_info().height());
+                committed_tip->qc().view_block_hash()).c_str(),
+            committed_tip->block_info().height());
         return Status::kError;
     }
 
@@ -2378,7 +2385,12 @@ Status Hotstuff::ConstructViewBlock(
     // at the committed height can briefly occupy it.  Proposing on that branch
     // would extend a chain that no committed block is an ancestor of, so the
     // leader always falls back to the committed tip in that case.
-    bool high_block_on_fork = !view_block_chain_->ExtendsCommittedTip(*pre_v_block);
+    // A high block whose parent height is already committed to a different block
+    // is on a dead branch: proposing a child of it would hand every voter a
+    // proposal they must reject, so it is treated exactly like a fork branch and
+    // the leader falls back to the committed tip.
+    bool high_block_on_fork = !view_block_chain_->ExtendsCommittedTip(*pre_v_block) ||
+        view_block_chain_->ParentHeightCommittedOnOtherBranch(*pre_v_block);
     if (high_block_on_fork || !pre_v_block->has_block_info() ||
             pre_v_block->block_info().height() == 0) {
         auto committed = view_block_chain_->LatestCommittedBlock();
