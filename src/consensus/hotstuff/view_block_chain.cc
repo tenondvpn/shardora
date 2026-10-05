@@ -1033,7 +1033,7 @@ void ViewBlockChain::CommitOneBlock(const std::shared_ptr<ViewBlockInfo>& info) 
                 (acc_ptr->latest_height() == new_addr_info->latest_height() &&
                  acc_ptr->tx_index() < new_addr_info->tx_index())) {
             account_lru_map_.insert(new_addr_info);
-            SHARDORA_ERROR("success update address: %s,balance: %lu, "
+            SHARDORA_DEBUG("success update address: %s,balance: %lu, "
                 "nonce: %lu, new balance: %lu, new nonce: %lu, "
                 "latest height: %lu, tx index: %u, new latest height: %lu, new tx index: %u",
                 common::Encode::HexEncode(new_addr_info->addr()).c_str(),

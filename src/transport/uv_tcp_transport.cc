@@ -1325,7 +1325,7 @@ void TcpTransport::CheckConnectionsHealth() {
         PruneAckedPackets(kv.second);
         const char* reason = nullptr;
         if (IsConnectionStale(kv.second, now, &reason)) {
-            SHARDORA_WARN("[TCP_RECONN] health sweep: stale %s (reason=%s, last_recv=%lu) — freeing",
+            SHARDORA_DEBUG("[TCP_RECONN] health sweep: stale %s (reason=%s, last_recv=%lu) — freeing",
                 kv.first.c_str(), reason ? reason : "unknown", kv.second->last_recv_ts);
             stale_conns.push_back(kv.second);
         }
@@ -1394,7 +1394,7 @@ void TcpTransport::FreeConnection(ex_uv_tcp_t* ex_uv_tcp) {
     std::string peer_spec = std::string(ex_uv_tcp->ip) + ":" + std::to_string(ex_uv_tcp->port);
     auto iter = conn_map_.find(peer_spec);
     if (iter != conn_map_.end() && iter->second == ex_uv_tcp) {
-        SHARDORA_WARN("[TCP_RECONN] FreeConnection: %s:%d %p — removed from conn_map, "
+        SHARDORA_DEBUG("[TCP_RECONN] FreeConnection: %s:%d %p — removed from conn_map, "
             "next send will create new connection (closing=%d, type=%d)",
             ex_uv_tcp->ip, ex_uv_tcp->port, static_cast<void*>(&ex_uv_tcp->uv_tcp),
             uv_is_closing((uv_handle_t*)&ex_uv_tcp->uv_tcp),
@@ -1409,7 +1409,7 @@ void TcpTransport::FreeConnection(ex_uv_tcp_t* ex_uv_tcp) {
         // Not the map's current connection for this peer — either already evicted
         // or replaced by a newer handle. Reclaim this handle only; deleting the
         // map entry here would tear down the live connection instead.
-        SHARDORA_WARN("[TCP_RECONN] FreeConnection: %s:%d %p is not the current connection "
+        SHARDORA_DEBUG("[TCP_RECONN] FreeConnection: %s:%d %p is not the current connection "
             "(closing=%d, type=%d) — reclaiming handle only",
             ex_uv_tcp->ip, ex_uv_tcp->port, static_cast<void*>(&ex_uv_tcp->uv_tcp),
             uv_is_closing((uv_handle_t*)&ex_uv_tcp->uv_tcp),

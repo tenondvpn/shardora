@@ -476,7 +476,7 @@ int ContractCall::HandleTx(
                             common::Encode::HexEncode(action.to).c_str(),
                             common::Encode::HexEncode(_ss).c_str(),
                             action.nonce, action.dest_shard_id, action.dest_pool_index);
-                        SHARDORA_WARN("XBAL_OUT base=%s user=%s shd=%s amt=%s nonce=%lu dshard=%u dpool=%u",
+                        SHARDORA_DEBUG("XBAL_OUT base=%s user=%s shd=%s amt=%s nonce=%lu dshard=%u dpool=%u",
                             common::Encode::HexEncode(action.base_root_address).c_str(),
                             common::Encode::HexEncode(action.to).c_str(),
                             common::Encode::HexEncode(_ss).c_str(),
@@ -489,7 +489,7 @@ int ContractCall::HandleTx(
                     SHARDORA_DEBUG("CrossShardBase cross-transfer accumulated: user=%s dest_shard=%u pool=%u",
                         common::Encode::HexEncode(action.to).c_str(),
                         action.dest_shard_id, action.dest_pool_index);
-                    SHARDORA_WARN("XBAL_OUT_ACC base=%s user=%s amt_add=%s nonce=%lu dshard=%u dpool=%u",
+                    SHARDORA_DEBUG("XBAL_OUT_ACC base=%s user=%s amt_add=%s nonce=%lu dshard=%u dpool=%u",
                         common::Encode::HexEncode(action.base_root_address).c_str(),
                         common::Encode::HexEncode(action.to).c_str(),
                         common::Encode::HexEncode(action.amount_bytes).c_str(),
