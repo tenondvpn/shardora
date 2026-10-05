@@ -1419,7 +1419,7 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
             return true;
         }
 
-        SHARDORA_DEBUG("pool: %d, fork rejected: block %u_%u_%lu, height: %lu, view: %lu, "
+        SHARDORA_DEBUG("pool: %d, fork rejected: block %u_%u_%lu, height: %lu, "
             "parent hash: %s does not extend committed tip: %s, tip height: %lu",
             pool_index_,
             candidate->qc().network_id(), candidate->qc().pool_index(),
