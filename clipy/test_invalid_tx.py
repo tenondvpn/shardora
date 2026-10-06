@@ -179,14 +179,42 @@ def parse_reject(body: str, http_code: int):
     return -1, f"HTTP {http_code}: {b[:120]}"
 
 
-def post_tx(base_url, payload, timeout=10):
+def dump_tx(label, msg, pub_hex, to_hex, payload, sig=None):
+    """打印待签原文、哈希、签名与 POST 字段，便于与 C++ GetTxMessageHash 逐字段对照。"""
+    txh = keccak256(msg)
+    print(f"    ── {label} 交易详情 ──")
+    print(f"      待签原文(msg) len={len(msg)}: {msg.hex()}")
+    print(f"      msg 字段序: nonce(8LE) | pubkey({len(pub_hex)//2}B) | "
+          f"to(20B) | amount(8LE) | gas_limit(8LE) | gas_price(8LE) | step(8LE)")
+    print(f"      tx_hash(keccak256(msg)): {txh.hex()}")
+    print(f"      pubkey: {pub_hex}")
+    print(f"      to:     {to_hex}")
+    if sig is not None:
+        print(f"      sign(r||s) len={len(sig)}: {bytes(sig).hex()}")
+        print(f"      sign_r: {bytes(sig[:32]).hex()}")
+        print(f"      sign_s: {bytes(sig[32:64]).hex()}")
+    print(f"      POST 字段:")
+    for k in ("nonce", "pubkey", "to", "amount", "gas_limit", "gas_price",
+              "shard_id", "type", "sign_r", "sign_s", "sign_v",
+              "bytes_code", "input", "prefund"):
+        if k in payload:
+            v = payload[k]
+            shown = v if len(str(v)) <= 80 else f"{str(v)[:80]}...(len={len(str(v))})"
+            print(f"        {k} = {shown}")
+
+
+def post_tx(base_url, payload, timeout=10, show=False):
     """返回 (http_code, body, (status, detail))。"""
+    if show:
+        print(f"      POST {base_url}/transaction")
     try:
         r = requests.post(f"{base_url}/transaction", data=payload,
                           verify=False, timeout=timeout)
     except Exception as e:
         return 0, f"<连接异常: {e}>", (-1, str(e))
     status, detail = parse_reject(r.text, r.status_code)
+    if show:
+        print(f"      http={r.status_code} body={r.text.strip()!r}")
     return r.status_code, r.text.strip(), (status, detail)
 
 
@@ -261,7 +289,8 @@ def case1_tamper(base_url, pk_a, pub_a, to_hex, nonce, amount):
     print(f"    篡改位置: sign 第 {idx} 字节  0x{old:02x} → 0x{sig[idx]:02x}")
     payload = build_payload(nonce, pub_a, to_hex, amount,
                             bytes(sig[:32]).hex(), bytes(sig[32:64]).hex())
-    return post_tx(base_url, payload)
+    dump_tx("用例1 篡改签名", msg, pub_a, to_hex, payload, sig)
+    return post_tx(base_url, payload, show=True)
 
 
 def case2_wrong_key(base_url, pub_a, pk_b, to_hex, nonce, amount):
@@ -272,7 +301,8 @@ def case2_wrong_key(base_url, pub_a, pk_b, to_hex, nonce, amount):
     print(f"    pubkey=A({pub_a[:16]}...)  sign=B(私钥对应地址 {addr_b})")
     payload = build_payload(nonce, pub_a, to_hex, amount,
                             sig[:32].hex(), sig[32:64].hex())
-    return post_tx(base_url, payload)
+    dump_tx("用例2 A地址+B私钥", msg, pub_a, to_hex, payload, sig)
+    return post_tx(base_url, payload, show=True)
 
 
 def case3_truncate(base_url, pk_a, pub_a, to_hex, nonce, amount):
@@ -287,7 +317,8 @@ def case3_truncate(base_url, pk_a, pub_a, to_hex, nonce, amount):
             r_hex, s_hex = sig[:32].hex(), sig[32:32 + trim].hex()
         print(f"    {label}: sign_r(len={len(r_hex)}), sign_s(len={len(s_hex)})")
         payload = build_payload(nonce, pub_a, to_hex, amount, r_hex, s_hex)
-        results.append((label, post_tx(base_url, payload)))
+        dump_tx(f"用例3 {label} (原始签名)", msg, pub_a, to_hex, payload, sig)
+        results.append((label, post_tx(base_url, payload, show=True)))
     return results
 
 
@@ -307,7 +338,8 @@ def case4_malformed(base_url, pk_a, pub_a, to_hex, nonce, amount):
         print(f"    {label}: sign_r='{r_hex[:24]}'(len={len(r_hex)}), "
               f"sign_s len={len(s_hex)}")
         payload = build_payload(nonce, pub_a, to_hex, amount, r_hex, s_hex)
-        results.append((label, post_tx(base_url, payload)))
+        dump_tx(f"用例4 {label} (原始签名)", msg, pub_a, to_hex, payload, sig)
+        results.append((label, post_tx(base_url, payload, show=True)))
     return results
 
 
@@ -325,10 +357,15 @@ def case5_replay(base_url, pk_a, pub_a, to_hex, amount, wait_timeout=120):
     payload = build_payload(nonce, pub_a, to_hex, amount,
                             sig[:32].hex(), sig[32:64].hex())
 
-    http_code, body, (status, detail) = post_tx(base_url, payload)
-    print(f"    [首次提交] tx_hash={txh} http={http_code} body={body!r}")
+    dump_tx("用例5 合法交易", msg, pub_a, to_hex, payload, sig)
+    http_code, body, (status, detail) = post_tx(base_url, payload, show=True)
+    print(f"    [首次提交] http={http_code} body={body!r}")
     if status is not None:
-        raise RuntimeError(f"合法交易被拒绝: {detail}")
+        print("    [注意] 合法交易被同步拒绝，下面的重放结果不能作为 nonce 判重依据")
+        return txh, None, [
+            (f"重放 {i + 1}", post_tx(base_url, payload, show=True))
+            for i in range(3)
+        ]
 
     print(f"    等待上链 (最多 {wait_timeout}s) ...")
     receipt = wait_final(base_url, txh, timeout=wait_timeout)
