@@ -490,6 +490,7 @@ Status Hotstuff::Propose(
     auto send_end_ms = common::TimeUtils::TimestampMs();
     if (hotstuff_msg->pro_msg().tx_propose().txs_size() > 0) {
         latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
+        SHARDORA_DEBUG("pool: %d, latest_propose_msg_tm_ms_: %lu", pool_idx_, latest_propose_msg_tm_ms_);
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -628,6 +629,7 @@ void Hotstuff::ResendLeaderLatestProposeMessage() {
             debug_qc_ptr ? debug_qc_ptr->view() : 0);
 #endif
         latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
+        SHARDORA_DEBUG("pool: %d, latest_propose_msg_tm_ms_: %lu", pool_idx_, latest_propose_msg_tm_ms_);
     } else {
         SHARDORA_DEBUG("pool: %d, no need resend leader latest propose message, "
             "latest_leader_propose_message_ view: %lu, pacemaker cur view: %lu",
@@ -867,6 +869,7 @@ int Hotstuff::HandleProposeMsgImpl(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.debug().c_str());
     if (msg_ptr->header.hotstuff().pro_msg().tx_propose().txs_size() > 0) {
         latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
+        SHARDORA_DEBUG("pool: %d, latest_propose_msg_tm_ms_: %lu", pool_idx_, latest_propose_msg_tm_ms_);
     }
 
     leader_view_block_hash_ = "";
@@ -1690,7 +1693,8 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     latest_leader_propose_message_ = nullptr;
     last_leader_propose_view_ = 0llu;
-    latest_propose_msg_tm_ms_ = now_tm_ms;
+    latest_propose_msg_tm_ms_ = 0llu;
+    SHARDORA_DEBUG("pool: %d, latest_propose_msg_tm_ms_: %lu", pool_idx_, latest_propose_msg_tm_ms_);
     UpdateLatestQcItemPtr(qc_item_ptr);
     auto leader = LocalMember();
     auto leader_tm = GetLeaderBlockTimestamp();
