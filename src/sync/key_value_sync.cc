@@ -1082,6 +1082,8 @@ void KeyValueSync::EnqueueVerifyBlock(
         bool is_broadcast,
         uint64_t msg_hash) {
     if (!pb_vblock) {
+        SHARDORA_DEBUG("EnqueueVerifyBlock pb_vblock is nullptr, key: %s, tag: %d, is_broadcast: %d, msg_hash: %lu",
+            common::Encode::HexEncode(key).c_str(), tag, is_broadcast, msg_hash);
         return;
     }
 
@@ -1101,6 +1103,8 @@ void KeyValueSync::EnqueueVerifyBlock(
     {
         std::lock_guard<std::mutex> lock(verify_mutex_);
         if (!item.key.empty() && verifying_keys_.find(item.key) != verifying_keys_.end()) {
+            SHARDORA_DEBUG("EnqueueVerifyBlock key: %s is already verifying, tag: %d, is_broadcast: %d, msg_hash: %lu",
+                common::Encode::HexEncode(item.key).c_str(), item.tag, item.is_broadcast, item.msg_hash);
             return;
         }
 
@@ -1120,6 +1124,8 @@ void KeyValueSync::EnqueueVerifyBlock(
     }
 
     if (!need_notify) {
+        SHARDORA_DEBUG("EnqueueVerifyBlock key: %s is suspended, tag: %d, is_broadcast: %d, msg_hash: %lu",
+            common::Encode::HexEncode(item.key).c_str(), item.tag, item.is_broadcast, item.msg_hash);
         return;
     }
 
@@ -1655,11 +1661,25 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             uint32_t view_added = 0;
             for (auto& one_block : view_blocks) {
                 if (one_block == nullptr || one_block->qc().sign_x().empty()) {
+                    SHARDORA_DEBUG("view sync skip empty sign block, net: %u, pool: %u, view: %lu, hash: %lu",
+                        network_id,
+                        req_height.pool_idx(),
+                        one_block ? one_block->qc().view() : 0,
+                        msg_ptr->header.hash64());
                     continue;
                 }
 
                 auto value = SerializeDeterministic(*one_block);
                 if (add_size + 16 + value.size() > kSyncPacketMaxSize) {
+                    SHARDORA_DEBUG("view sync packet full, net: %u, pool: %u, view: %lu, "
+                        "added: %u, value size: %lu, max: %u, hash: %lu",
+                        network_id,
+                        req_height.pool_idx(),
+                        one_block->qc().view(),
+                        view_added,
+                        value.size(),
+                        kSyncPacketMaxSize,
+                        msg_ptr->header.hash64());
                     break;
                 }
 
