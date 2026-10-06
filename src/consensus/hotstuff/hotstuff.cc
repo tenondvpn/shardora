@@ -489,7 +489,7 @@ Status Hotstuff::Propose(
     network::Route::Instance()->Send(tmp_msg_ptr);
     auto send_end_ms = common::TimeUtils::TimestampMs();
     if (hotstuff_msg->pro_msg().tx_propose().txs_size() > 0) {
-        latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
+        // latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
         SHARDORA_DEBUG("pool: %d, latest_propose_msg_tm_ms_: %lu", pool_idx_, latest_propose_msg_tm_ms_);
     }
 
@@ -628,7 +628,7 @@ void Hotstuff::ResendLeaderLatestProposeMessage() {
             latest_leader_propose_message_->latest_qc_view,
             debug_qc_ptr ? debug_qc_ptr->view() : 0);
 #endif
-        latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
+        // latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
         SHARDORA_DEBUG("pool: %d, latest_propose_msg_tm_ms_: %lu", pool_idx_, latest_propose_msg_tm_ms_);
     } else {
         SHARDORA_DEBUG("pool: %d, no need resend leader latest propose message, "
@@ -868,7 +868,7 @@ int Hotstuff::HandleProposeMsgImpl(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hash64(),
         msg_ptr->header.debug().c_str());
     if (msg_ptr->header.hotstuff().pro_msg().tx_propose().txs_size() > 0) {
-        latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
+        // latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
         SHARDORA_DEBUG("pool: %d, latest_propose_msg_tm_ms_: %lu", pool_idx_, latest_propose_msg_tm_ms_);
     }
 
@@ -2741,17 +2741,17 @@ void Hotstuff::TryRecoverFromStuck(
     auto qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
     if (qc_ptr == nullptr) {
         // if (pool_idx_ == common::kImmutablePoolSize) {
-            SHARDORA_DEBUG("pool %u: latest_qc_item_ptr_ is null, cannot get leader", pool_idx_);
+            // SHARDORA_DEBUG("pool %u: latest_qc_item_ptr_ is null, cannot get leader", pool_idx_);
         // }
         return;
     }
     auto leader = GetLeader(local_idx, *qc_ptr, &out_view, leader_block_tm, true);
     if (!leader) {
-        SHARDORA_DEBUG("pool index: %d, no leader", pool_idx_);
+        // SHARDORA_DEBUG("pool index: %d, no leader", pool_idx_);
         return;
     }
 
-    SHARDORA_DEBUG("pool: %u, get leader index: %u, local index: %u", pool_idx_, leader->index, local_idx);
+    // SHARDORA_DEBUG("pool: %u, get leader index: %u, local index: %u", pool_idx_, leader->index, local_idx);
     if (leader->index != local_idx) {
         SyncLocalTxToLeader(msg_ptr, leader, has_system_tx);
         if (latest_leader_propose_message_) {
@@ -2766,15 +2766,15 @@ void Hotstuff::TryRecoverFromStuck(
     }
 
     if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
-        SHARDORA_DEBUG("pool index: %d, GetLeader return leader: %d, "
-            "out_view: %lu, local_idx: %d, latest_propose_msg_tm_ms_: %lu, now_tm_ms: %lu",
-            pool_idx_, leader ? leader->index : -1, out_view, local_idx, 
-            latest_propose_msg_tm_ms_, now_tm_ms);
+        // SHARDORA_DEBUG("pool index: %d, GetLeader return leader: %d, "
+        //     "out_view: %lu, local_idx: %d, latest_propose_msg_tm_ms_: %lu, now_tm_ms: %lu",
+        //     pool_idx_, leader ? leader->index : -1, out_view, local_idx, 
+        //     latest_propose_msg_tm_ms_, now_tm_ms);
         return;
     }
 
-    SHARDORA_DEBUG("pool index: %d, GetLeader return leader: %d, out_view: %lu, local_idx: %d",
-        pool_idx_, leader ? leader->index : -1, out_view, local_idx);
+    // SHARDORA_DEBUG("pool index: %d, GetLeader return leader: %d, out_view: %lu, local_idx: %d",
+    //     pool_idx_, leader ? leader->index : -1, out_view, local_idx);
     // if (prev_recover_check_tm_ms_ + 3000lu > now_tm_ms) {
     //     return;
     // }
@@ -2790,6 +2790,7 @@ void Hotstuff::TryRecoverFromStuck(
     // SHARDORA_DEBUG("pool index: %d, found leader: %d, local_index: %d",
     //     pool_idx_, leader->index, local_idx);
     if (leader && leader->index == local_idx) {
+        latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
         if (leader->pubkey != crypto_->security()->GetPublicKey()) {
             SHARDORA_ERROR("leader pubkey: %s != local pubkey: %s, pool index: %d",
                 common::Encode::HexEncode(leader->pubkey).c_str(),
@@ -2841,8 +2842,6 @@ void Hotstuff::TryRecoverFromStuck(
         if (latest_propose_msg_tm_ms_ > prev_sync_latest_view_tm_ms_) {
             prev_sync_latest_view_tm_ms_ = latest_propose_msg_tm_ms_;
         }
-
-        return;
     }
 }
 
