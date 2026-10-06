@@ -2738,17 +2738,17 @@ void Hotstuff::TryRecoverFromStuck(
     auto qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
     if (qc_ptr == nullptr) {
         // if (pool_idx_ == common::kImmutablePoolSize) {
-            // SHARDORA_DEBUG("pool %u: latest_qc_item_ptr_ is null, cannot get leader", pool_idx_);
+            SHARDORA_DEBUG("pool %u: latest_qc_item_ptr_ is null, cannot get leader", pool_idx_);
         // }
         return;
     }
     auto leader = GetLeader(local_idx, *qc_ptr, &out_view, leader_block_tm, true);
     if (!leader) {
-        // SHARDORA_DEBUG("pool index: %d, no leader", pool_idx_);
+        SHARDORA_DEBUG("pool index: %d, no leader", pool_idx_);
         return;
     }
 
-    // SHARDORA_DEBUG("pool: %u, get leader index: %u, local index: %u", pool_idx_, leader->index, local_idx);
+    SHARDORA_DEBUG("pool: %u, get leader index: %u, local index: %u", pool_idx_, leader->index, local_idx);
     if (leader->index != local_idx) {
         SyncLocalTxToLeader(msg_ptr, leader, has_system_tx);
         if (latest_leader_propose_message_) {
