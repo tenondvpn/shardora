@@ -348,7 +348,16 @@ def case4_malformed(base_url, pk_a, pub_a, to_hex, nonce, amount):
 
 
 def case5_replay(base_url, pk_a, pub_a, to_hex, amount, wait_timeout=120):
-    """用例 5：合法交易上链后，完全相同的交易原文重复提交 3 次。"""
+    """用例 5：合法交易上链后做两轮重放。
+
+    5a 完全相同的交易原文重复提交 3 次。
+       HTTP 同步只验签，返回 'ok' 表示受理；nonce 判重在异步路径
+       （tx_pool_manager.cc:NewTxValid）。且 tx_hash 不变 → 回执查询优先命中
+       prefix_db 里首次落块的 TxHashStatus，因此这是幂等语义，期望回执与首次一致。
+
+    5b 同一 nonce、不同内容（换接收地址）→ 新 tx_hash，不走缓存，
+       此时地址 nonce 已推进，走 NewTxValid 判重，期望 kTxUserNonceInvalid。
+    """
     addr_a = pub_to_addr(pub_a)
     start_nonce = query_nonce(base_url, addr_a)
     nonce = start_nonce + 1
@@ -369,29 +378,55 @@ def case5_replay(base_url, pk_a, pub_a, to_hex, amount, wait_timeout=120):
         rejected = []
         for i in range(3):
             code, body, (st, dt) = post_tx(base_url, payload, show=True)
-            rejected.append((f"重放 {i + 1}", (code, body, st, dt)))
-        expected = "kSignatureInvalid"
-        print(f"    [诊断] 合法交易被判 {detail}，说明签名构造有误，"
-              f"重放结果不代表 nonce 判重")
-        return txh, None, rejected
+            rejected.append((f"5a-重放 {i + 1}", (code, body, st, dt)))
+        print(f"    [诊断] 合法交易被判 {detail}，说明签名构造有误")
+        return txh, None, rejected, []
 
     print(f"    等待上链 (最多 {wait_timeout}s) ...")
     receipt = wait_final(base_url, txh, timeout=wait_timeout)
     if receipt is None:
         print("    [警告] 等待回执超时，仍继续做重放测试")
-        final_nonce = query_nonce(base_url, addr_a)
     else:
         print(f"    回执: {receipt}")
-        final_nonce = query_nonce(base_url, addr_a)
+    final_nonce = query_nonce(base_url, addr_a)
     print(f"    上链后账号 nonce={final_nonce}")
 
-    results = []
+    # ── 5a 完全相同原文重放（同一 tx_hash）──
+    print("    [5a] 相同原文重放（tx_hash 不变，期望幂等：回执与首次一致）")
+    results_a = []
     for i in range(3):
-        http_code, body, (status, detail) = post_tx(base_url, payload)
-        print(f"    [重放 {i + 1}/3] http={http_code} body={body!r}")
-        results.append((f"重放 {i + 1}", (http_code, body, status, detail)))
+        code, body, (st, dt) = post_tx(base_url, payload, show=True)
+        rep = wait_final(base_url, txh, timeout=10, not_exists_retries=2)
+        rst = rep.get("status") if rep else None
+        print(f"      [5a-{i + 1}/3] http={code} body={body!r} "
+              f"receipt.status={rst} receipt.msg={rep.get('msg') if rep else None}")
+        results_a.append((f"5a-相同原文重放 {i + 1}",
+                          (code, body, st, dt, rst, rep)))
         time.sleep(0.3)
-    return txh, receipt, results
+
+    # ── 5b 同一 nonce、不同内容（新 tx_hash）──
+    print("    [5b] 同一 nonce 换内容重放（新 tx_hash，期望 kTxUserNonceInvalid）")
+    alt_seed = secrets.token_bytes(32)
+    alt_to = derive(derive_from_seed(alt_seed))[2]
+    print(f"      改动项: to {to_hex} → {alt_to}（nonce 仍为 {nonce}）")
+    msg_b = build_msg(nonce, pub_a, alt_to, amount, GAS_LIMIT, GAS_PRICE, 0)
+    sig_b = sign_tx(pk_a, msg_b)
+    txh_b = keccak256(msg_b).hex()
+    payload_b = build_payload(nonce, pub_a, alt_to, amount,
+                              sig_b[:32].hex(), sig_b[32:64].hex())
+    dump_tx("5b 同 nonce 不同内容", msg_b, pub_a, alt_to, payload_b, sig_b)
+    results_b = []
+    for i in range(3):
+        code, body, (st, dt) = post_tx(base_url, payload_b, show=True)
+        rep = wait_final(base_url, txh_b, timeout=15, not_exists_retries=3)
+        rst = rep.get("status") if rep else None
+        print(f"      [5b-{i + 1}/3] http={code} body={body!r} "
+              f"receipt.status={rst} receipt.msg={rep.get('msg') if rep else None}")
+        results_b.append((f"5b-同nonce换内容 {i + 1}",
+                          (code, body, st, dt, rst, rep)))
+        time.sleep(0.3)
+
+    return txh, receipt, results_a, results_b
 
 
 def pub_to_addr(pub_hex: str) -> str:
@@ -418,6 +453,28 @@ def judge(label, result, expect_status, expect_text):
     expect_desc = "/".join(expect_text)
     print(f"    [{mark}] {label}: 期望 {expect_desc} | 实际 status={status} "
           f"detail={detail!r}")
+    return ok
+
+
+def judge_replay_idempotent(label, result, first_status):
+    """5a：相同原文重放，tx_hash 不变 → 回执应仍为首次终态（幂等）。"""
+    code, body, st, dt, rst, rep = result
+    ok = (rst == first_status) or (body == "ok" and rst in (None, 0, 10003, 10001))
+    mark = "PASS" if ok else "FAIL"
+    print(f"    [{mark}] {label}: 期望幂等(回执 status={first_status}) | "
+          f"实际 receipt.status={rst}")
+    return ok
+
+
+def judge_replay_nonce(label, result):
+    """5b：同 nonce 换内容 → 期望 kTxUserNonceInvalid(10007)，可能出现在
+    响应体或回执里。"""
+    code, body, st, dt, rst, rep = result
+    text = f"{body} {rep}"
+    ok = (rst == 10007) or (st == 10007) or ("kTxUserNonceInvalid" in text)
+    mark = "PASS" if ok else "FAIL"
+    print(f"    [{mark}] {label}: 期望 kTxUserNonceInvalid(10007) | "
+          f"http_status={st} receipt.status={rst}")
     return ok
 
 
@@ -511,16 +568,22 @@ def main() -> int:
                                                         args.amount)]
 
     if want(5) and not args.skip_replay:
-        print("\n[用例 5] nonce 重放：合法交易上链后重复提交 3 次")
+        print("\n[用例 5] nonce 重放：合法交易上链后重复提交")
         try:
-            txh, receipt, replay_results = case5_replay(
+            txh, receipt, results_a, results_b = case5_replay(
                 base_url, args.key, pub_a, to_hex, args.amount,
                 wait_timeout=args.wait_timeout)
-            results[5] = [
-                judge(label, res, {10007},
-                      ("kTxUserNonceInvalid", "nonce invalid"))
-                for label, res in replay_results
-            ]
+            first_status = receipt.get("status") if receipt else 0
+            checks = []
+            if results_a and results_a[0][1][5] is not None:
+                checks = [judge_replay_idempotent(lbl, res, first_status)
+                          for lbl, res in results_a]
+            elif results_a:
+                checks = [judge(lbl, res[:4], {5},
+                                ("kSignatureInvalid", "kTxInvalidSignature"))
+                          for lbl, res in results_a]
+            checks += [judge_replay_nonce(lbl, res) for lbl, res in results_b]
+            results[5] = checks
         except RuntimeError as e:
             print(f"    [SKIP] {e}")
             results[5] = []
