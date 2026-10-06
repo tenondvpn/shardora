@@ -779,7 +779,7 @@ void TxPoolManager::TxPoolHandleMessage(const transport::MessagePtr& msg_ptr) {
 //                 prev_tps_count_ = 0;
 //             }
 // #endif
-            SHARDORA_ERROR("tx coming: %s", common::Encode::HexEncode(address_info->addr()).c_str());
+            SHARDORA_DEBUG("tx coming: %s", common::Encode::HexEncode(address_info->addr()).c_str());
         }
     }
 

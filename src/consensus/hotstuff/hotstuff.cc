@@ -2690,6 +2690,31 @@ void Hotstuff::TryRecoverFromStuck(
                         no_qc_height,
                         sync::kSyncHighest);
                 }
+
+                // Heights the committed branch cannot walk, which the view
+                // requests above never name: a view-based request follows the
+                // block's own branch, and a gap is exactly a height whose
+                // parent link points at a block this node never received.
+                // Nothing above such a gap can commit, so it has to be asked
+                // for by height.  Bounded — the request is a probe for that
+                // height alone, and only genuinely absent heights are named.
+                std::vector<uint64_t> missing_heights;
+                chain->CollectMissingHeights(
+                    high_view_block->qc().network_id(),
+                    kMaxSyncMissingHeightCount,
+                    &missing_heights);
+                for (auto missing_height : missing_heights) {
+                    SHARDORA_DEBUG("pool: %u, sync missing height: %u_%u_%lu",
+                        pool_idx_,
+                        high_view_block->qc().network_id(),
+                        chain->pool_index(),
+                        missing_height);
+                    kv_sync_->AddSyncHeight(
+                        high_view_block->qc().network_id(),
+                        chain->pool_index(),
+                        missing_height,
+                        sync::kSyncHighest);
+                }
             }
         };
 

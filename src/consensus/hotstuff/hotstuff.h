@@ -711,6 +711,13 @@ private:
 
     static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 10000lu;
 
+    // Cap on how many absent heights one recovery round asks for.  The request
+    // is one probe per height rather than a range, so this bounds both the
+    // request size and the number of queue entries a single stuck chain can
+    // create; a chain with more holes than this closes the rest on later
+    // rounds, oldest first.
+    static const uint32_t kMaxSyncMissingHeightCount = 64u;
+
     std::shared_ptr<block::BlockManager> block_mgr_;
     uint32_t pool_idx_;
     std::shared_ptr<Crypto> crypto_;

@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <vector>
 
 #include "block/account_manager.h"
 #include "block/account_lru_map.h"
@@ -171,6 +172,19 @@ public:
 
         return 0;
     }
+
+    // Every height between the committed tip and the high block that is not
+    // walkable on the committed branch, ascending, and at most max_count of
+    // them.  A height whose block is absent is missing; so is a height whose
+    // block is present but is a fork sibling, which is why the walk follows
+    // parent_hash instead of asking "is there some block at height H".  The
+    // latter would answer yes for a sibling and hide the gap: the block above
+    // it points at a parent the chain never had, so nothing past it can commit,
+    // and only the parent link shows it.
+    void CollectMissingHeights(
+        uint32_t network_id,
+        uint32_t max_count,
+        std::vector<uint64_t>* out_heights);
 
     inline void Clear() {
         view_blocks_info_.clear();

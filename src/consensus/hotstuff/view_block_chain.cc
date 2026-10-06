@@ -853,6 +853,99 @@ bool ViewBlockChain::ParentHeightCommittedOnOtherBranch(const ViewBlock& view_bl
     return committed_hash != view_block.parent_hash();
 }
 
+void ViewBlockChain::CollectMissingHeights(
+        uint32_t network_id,
+        uint32_t max_count,
+        std::vector<uint64_t>* out_heights) {
+    if (out_heights == nullptr || max_count == 0) {
+        return;
+    }
+
+    out_heights->clear();
+
+    auto high_block = high_view_block_;
+    if (high_block == nullptr || !high_block->has_block_info() ||
+            high_block->qc().network_id() != network_id) {
+        return;
+    }
+
+    auto tip = LatestCommittedBlock();
+    uint64_t committed_height = 0;
+    if (tip != nullptr && tip->has_block_info()) {
+        committed_height = tip->block_info().height();
+    }
+
+    const uint64_t high_height = high_block->block_info().height();
+    if (high_height <= committed_height) {
+        return;
+    }
+
+    // Walk down from the high block along parent_hash, which is the only link
+    // that follows the branch rather than the height.  A height whose stored
+    // block is a fork sibling still resolves through GetViewBlockWithHeight,
+    // so presence there proves nothing; the parent pointer is what does.
+    const ViewBlock* current = high_block.get();
+    std::shared_ptr<ViewBlock> holder;
+    std::vector<uint64_t> descending;
+    uint64_t steps = high_height - committed_height;
+    while (steps-- > 0 && descending.size() < max_count) {
+        if (!current->has_block_info()) {
+            break;
+        }
+
+        const uint64_t height = current->block_info().height();
+        if (height <= committed_height) {
+            break;
+        }
+
+        // The gap sits at height - 1 whenever the parent cannot be resolved, or
+        // resolves to something that is not one below.
+        bool parent_missing = true;
+        auto parent_info = Get(current->parent_hash());
+        if (parent_info != nullptr && parent_info->view_block != nullptr &&
+                parent_info->view_block->has_block_info() &&
+                parent_info->view_block->block_info().height() + 1 == height) {
+            parent_missing = false;
+        }
+
+        if (parent_missing) {
+            descending.push_back(height - 1);
+        }
+
+        if (!current->has_parent_hash()) {
+            break;
+        }
+
+        if (parent_info != nullptr && parent_info->view_block != nullptr) {
+            holder = parent_info->view_block;
+            current = holder.get();
+        } else {
+            // The branch is broken here and cannot be followed by hash any
+            // further.  Fall back to the height index for the rest of the
+            // window so a chain with more than one hole still reports all of
+            // them.  height - 1 was just recorded above, so the scan starts
+            // one below it to avoid reporting the same hole twice.
+            if (height >= 2) {
+                for (uint64_t h = height - 1; h > committed_height; --h) {
+                    if (descending.size() >= max_count) {
+                        break;
+                    }
+
+                    if (GetViewBlockWithHeight(network_id, h) == nullptr) {
+                        descending.push_back(h);
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+
+    // Reported ascending so the caller requests the oldest gap first: the
+    // chain cannot commit past the lowest hole, so it is the one that matters.
+    out_heights->assign(descending.rbegin(), descending.rend());
+}
+
 Status ViewBlockChain::GetAll(std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
     // CheckThreadIdValid();
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
