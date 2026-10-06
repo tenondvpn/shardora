@@ -1699,7 +1699,6 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
     } else {
         SHARDORA_DEBUG("pool index: %d, no leader", pool_idx_);
     }
-
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // prev_recover_check_tm_ms_ = 0;
     return Status::kSuccess;
