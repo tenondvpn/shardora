@@ -350,17 +350,6 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetWithHeight(
         return nullptr;
     }
 
-    // 1. Check cached_view_with_blocks_ (no queue drain)
-    for (auto& [view, blocks] : cached_view_with_blocks_) {
-        for (auto& info : blocks) {
-            if (info && info->view_block &&
-                    info->view_block->block_info().height() == height &&
-                    info->view_block->qc().network_id() == network_id) {
-                return info->view_block;
-            }
-        }
-    }
-
     // 2. Check high_view_block_
     auto latest_view_block = high_view_block_;
     if (latest_view_block && latest_view_block->block_info().height() == height) {
@@ -1352,22 +1341,6 @@ void ViewBlockChain::EraseIllegalForkSiblings(
         // and the block must be gone from all three maps before its shared_ptr
         // is released.
         auto view = vblock->qc().view();
-        auto cached_iter = cached_view_with_blocks_.find(view);
-        if (cached_iter != cached_view_with_blocks_.end()) {
-            auto& blocks = cached_iter->second;
-            for (auto bit = blocks.begin(); bit != blocks.end();) {
-                if (*bit == info) {
-                    bit = blocks.erase(bit);
-                } else {
-                    ++bit;
-                }
-            }
-
-            if (blocks.empty()) {
-                cached_view_with_blocks_.erase(cached_iter);
-            }
-        }
-
         auto view_iter = view_with_blocks_.find(view);
         if (view_iter != view_with_blocks_.end() && view_iter->second == info) {
             view_with_blocks_.erase(view_iter);
