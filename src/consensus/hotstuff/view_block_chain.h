@@ -146,6 +146,16 @@ public:
     // (re-)requested.
     void EraseIllegalForkSiblings(
         const std::shared_ptr<ViewBlock>& committed_block);
+    // Erase one block from cached_view_with_blocks_ and the whole view entry
+    // once it empties.  Only the key-value sync timer thread may call this:
+    // the container is owned there, and consensus runs on the hotstuff
+    // threads.  A hotstuff thread that wants a block gone queues it with
+    // QueueEraseCachedViewBlock instead.
+    void EraseCachedViewBlock(uint64_t view, const std::string& block_hash);
+    // Hand a removal to the timer thread.  Safe from any thread.
+    void QueueEraseCachedViewBlock(uint64_t view, const std::string& block_hash);
+    // Apply the queued removals.  Timer thread only.
+    void DrainPendingEraseCachedViewBlocks();
     // A block that just committed must have its parent already committed.
     // When it does not and the parent is not in memory either, the chain cannot
     // close the gap by itself: it records the parent hash in tracked_parents_ so
@@ -480,6 +490,14 @@ private:
         uint64_t height = 0;
     };
     std::unordered_map<HashStr, TrackedParent> tracked_parents_;
+    // Removals from cached_view_with_blocks_ that consensus asked for.  One
+    // queue per hotstuff thread, all drained by the key-value sync timer
+    // thread, which is the only writer of that container.
+    struct PendingViewBlockErase {
+        uint64_t view = 0;
+        std::string block_hash;
+    };
+    common::ThreadSafeQueue<PendingViewBlockErase> pending_erase_cached_view_queues_[common::kMaxThreadCount];
     common::LRUMap<BlockViewKey, std::shared_ptr<ViewBlockInfo>> latest_commited_view_lru_map_{ 16 };
     common::LRUMap<std::string, std::shared_ptr<ViewBlockInfo>> latest_commited_hash_lru_map_{ 16 };
     common::LRUMap<BlockViewKey, std::shared_ptr<ViewBlockInfo>> latest_commited_height_lru_map_{ 16 };

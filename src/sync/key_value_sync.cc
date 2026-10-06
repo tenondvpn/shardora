@@ -577,6 +577,52 @@ void KeyValueSync::AddSyncViewHash(
         item_queues_[thread_idx].size());
 }
 
+void KeyValueSync::AddDropSyncedCandidate(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        const std::string& view_block_hash) {
+    if (height == common::kInvalidUint64 || view_block_hash.empty()) {
+        return;
+    }
+
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    DropSyncedCandidateItem item;
+    item.network_id = network_id;
+    item.pool_idx = pool_idx;
+    item.height = height;
+    item.view_block_hash = view_block_hash;
+    drop_synced_candidate_queues_[thread_idx].push(item);
+    SHARDORA_DEBUG("queue drop synced candidate %u_%u_%lu hash: %s, thread_idx: %u, queue size: %u",
+        network_id, pool_idx, height,
+        common::Encode::HexEncode(view_block_hash).c_str(),
+        thread_idx,
+        drop_synced_candidate_queues_[thread_idx].size());
+}
+
+void KeyValueSync::DrainDropSyncedCandidates() {
+    uint32_t dropped = 0;
+    for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
+        while (true) {
+            DropSyncedCandidateItem item;
+            if (!drop_synced_candidate_queues_[thread_idx].pop(&item)) {
+                break;
+            }
+
+            DropSyncedCandidate(
+                item.network_id,
+                item.pool_idx,
+                item.height,
+                item.view_block_hash);
+            ++dropped;
+        }
+    }
+
+    if (dropped > 0) {
+        SHARDORA_DEBUG("drained drop synced candidates: %u", dropped);
+    }
+}
+
 void KeyValueSync::DropSyncedCandidate(
         uint32_t network_id,
         uint32_t pool_idx,
@@ -643,6 +689,9 @@ void KeyValueSync::ConsensusTimerMessage() {
     }
     auto now_tm_ms1 = common::TimeUtils::TimestampMs();
     DrainVerifiedBlocks();
+    // Drops requested by consensus run before PopItems: the rejected candidate
+    // must be gone before this round decides the height is already answered.
+    DrainDropSyncedCandidates();
     PopItems();
     auto now_tm_ms2 = common::TimeUtils::TimestampMs();
     // Note: Do NOT call GetViewBlockWithHash("", true) here.
@@ -1463,7 +1512,15 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     // because the underlying ReaderWriterQueue is SPSC and those methods
     // can be called from multiple threads.
     for (uint32_t i = 0; i <= common::kImmutablePoolSize; ++i) {
-        hotstuff_mgr_->chain(i)->DrainCachedBlockQueue();
+        auto pool_chain = hotstuff_mgr_->chain(i);
+        if (pool_chain == nullptr) {
+            continue;
+        }
+
+        // Removals consensus queued are applied before the drain, so a block it
+        // just rejected cannot be re-added by the very next pop.
+        pool_chain->DrainPendingEraseCachedViewBlocks();
+        pool_chain->DrainCachedBlockQueue();
     }
 
     transport::protobuf::Header msg;

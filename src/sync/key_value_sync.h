@@ -280,6 +280,15 @@ public:
         uint32_t pool_idx,
         uint64_t height,
         const std::string& view_block_hash);
+    // Same thing, callable from any thread: consensus runs on the hotstuff
+    // threads while DropSyncedCandidate touches synced_res_map_ and
+    // responsed_keys_, which only the key-value sync timer thread owns.  This
+    // queues the request for ConsensusTimerMessage to apply on that thread.
+    void AddDropSyncedCandidate(
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        const std::string& view_block_hash);
     void Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
         const std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr,
@@ -520,6 +529,17 @@ private:
     using SyncedPoolMap = std::map<uint32_t, SyncedHeightMap>;
     using SyncedNetworkMap = std::map<uint32_t, SyncedPoolMap>;
 
+    // A candidate consensus rejected, queued by a hotstuff thread for the timer
+    // thread to drop.
+    struct DropSyncedCandidateItem {
+        uint32_t network_id = 0;
+        uint32_t pool_idx = 0;
+        uint64_t height = 0;
+        std::string view_block_hash;
+    };
+    // Apply queued drop requests.  Timer thread only.
+    void DrainDropSyncedCandidates();
+
     // True while the height still holds a candidate that could be committed:
     // not dead and seen recently enough.  A height full of dead or expired
     // candidates has to become requestable again, both for an identity probe
@@ -565,6 +585,9 @@ private:
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> tx_pool_mgr_ = nullptr;
     common::ThreadSafeQueue<SyncItemPtr> item_queues_[common::kMaxThreadCount];
+    // One queue per hotstuff thread, same shape as item_queues_: the producer
+    // indexes by its own thread, the timer thread drains every queue.
+    common::ThreadSafeQueue<DropSyncedCandidateItem> drop_synced_candidate_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<ViewBlockPtr> broadcast_global_blocks_queues_[common::kMaxThreadCount];
     common::UniqueMap<std::string, SyncItemPtr, kCacheSyncKeyValueCount> synced_map_;
     SyncedNetworkMap synced_res_map_;

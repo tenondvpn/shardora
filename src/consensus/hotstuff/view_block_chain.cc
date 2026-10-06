@@ -444,6 +444,68 @@ void ViewBlockChain::DrainCachedBlockQueue() {
     GetViewBlockWithHash("", true);
 }
 
+void ViewBlockChain::EraseCachedViewBlock(uint64_t view, const std::string& block_hash) {
+    if (block_hash.empty()) {
+        return;
+    }
+
+    auto cached_iter = cached_view_with_blocks_.find(view);
+    if (cached_iter == cached_view_with_blocks_.end()) {
+        return;
+    }
+
+    auto& blocks = cached_iter->second;
+    for (auto bit = blocks.begin(); bit != blocks.end();) {
+        if (*bit != nullptr && (*bit)->view_block != nullptr &&
+                (*bit)->view_block->qc().view_block_hash() == block_hash) {
+            bit = blocks.erase(bit);
+        } else {
+            ++bit;
+        }
+    }
+
+    if (blocks.empty()) {
+        cached_view_with_blocks_.erase(cached_iter);
+    }
+}
+
+void ViewBlockChain::QueueEraseCachedViewBlock(uint64_t view, const std::string& block_hash) {
+    if (block_hash.empty()) {
+        return;
+    }
+
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    PendingViewBlockErase item;
+    item.view = view;
+    item.block_hash = block_hash;
+    pending_erase_cached_view_queues_[thread_idx].push(item);
+    SHARDORA_DEBUG("pool: %d, queue erase cached view block %lu, hash: %s, thread_idx: %u, size: %u",
+        pool_index_,
+        view,
+        common::Encode::HexEncode(block_hash).c_str(),
+        thread_idx,
+        pending_erase_cached_view_queues_[thread_idx].size());
+}
+
+void ViewBlockChain::DrainPendingEraseCachedViewBlocks() {
+    uint32_t erased = 0;
+    for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
+        while (true) {
+            PendingViewBlockErase item;
+            if (!pending_erase_cached_view_queues_[thread_idx].pop(&item)) {
+                break;
+            }
+
+            EraseCachedViewBlock(item.view, item.block_hash);
+            ++erased;
+        }
+    }
+
+    if (erased > 0) {
+        SHARDORA_DEBUG("pool: %d, drained pending erase cached view blocks: %u", pool_index_, erased);
+    }
+}
+
 uint32_t ViewBlockChain::GetViewBlocksFrom(
         uint32_t network_id,
         uint64_t start_view,
@@ -1346,11 +1408,6 @@ void ViewBlockChain::EraseIllegalForkSiblings(
             view_with_blocks_.erase(view_iter);
         }
 
-        if (kv_sync_) {
-            kv_sync_->DropSyncedCandidate(
-                network_id, pool_idx, parent_height, iter->first);
-        }
-
         iter = view_blocks_info_.erase(iter);
         ++erased;
     }
@@ -1613,24 +1670,15 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
                 view_with_blocks_.erase(view_iter);
             }
 
-            auto cached_iter = cached_view_with_blocks_.find(parent_view);
-            if (cached_iter != cached_view_with_blocks_.end()) {
-                auto& blocks = cached_iter->second;
-                for (auto bit = blocks.begin(); bit != blocks.end();) {
-                    if (*bit == parent_info) {
-                        bit = blocks.erase(bit);
-                    } else {
-                        ++bit;
-                    }
-                }
-
-                if (blocks.empty()) {
-                    cached_view_with_blocks_.erase(cached_iter);
-                }
-            }
+            // cached_view_with_blocks_ belongs to the key-value sync timer
+            // thread, so the removal is queued rather than done here on a
+            // hotstuff thread.
+            QueueEraseCachedViewBlock(parent_view, candidate->parent_hash());
 
             if (kv_sync_) {
-                kv_sync_->DropSyncedCandidate(
+                // Queued, not called inline: DropSyncedCandidate touches maps
+                // that only the key-value sync timer thread owns.
+                kv_sync_->AddDropSyncedCandidate(
                     parent_info->view_block->qc().network_id(),
                     parent_info->view_block->qc().pool_index(),
                     parent_info->view_block->block_info().height(),
