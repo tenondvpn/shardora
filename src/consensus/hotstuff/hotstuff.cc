@@ -1690,7 +1690,7 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     latest_leader_propose_message_ = nullptr;
     last_leader_propose_view_ = 0llu;
-    latest_propose_msg_tm_ms_ = 0;
+    latest_propose_msg_tm_ms_ = now_tm_ms;
     UpdateLatestQcItemPtr(qc_item_ptr);
     auto leader = LocalMember();
     auto leader_tm = GetLeaderBlockTimestamp();
