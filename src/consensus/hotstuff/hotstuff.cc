@@ -1592,7 +1592,7 @@ Status Hotstuff::HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr) {
         return Status::kError;
     }
 
-    auto bls_begin_ms = common::TimeUtils::TimestampMs();
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
     Status ret = crypto()->ReconstructAndVerifyThresSign(
         msg_ptr,
         elect_height,
