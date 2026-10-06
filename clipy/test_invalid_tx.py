@@ -86,11 +86,15 @@ def hexdecode(s: str) -> bytes:
 
 
 def derive(pk_hex: str):
-    """返回 (私钥hex, 64字节公钥hex, 20字节地址hex)。"""
+    """返回 (私钥hex, 65字节公钥hex, 20字节地址hex)。
+
+    公钥必须是 65 字节未压缩形式（含 0x04 前缀）：节点侧 ToAddressWithPublicKey
+    对 65 字节走 keccak256(pub[1:65])，且待签原文里 pubkey 也是这 65 字节。
+    """
     pk_hex = pk_hex.strip().lower().replace("0x", "")
     sk = SigningKey.from_string(bytes.fromhex(pk_hex), curve=SECP256k1)
-    pub = sk.verifying_key.to_string("uncompressed")[1:]  # 去掉 0x04 前缀
-    return pk_hex, pub.hex(), keccak256(pub)[-20:].hex()
+    pub65 = sk.verifying_key.to_string("uncompressed")  # 65 字节，04||X||Y
+    return pk_hex, pub65.hex(), keccak256(pub65[1:])[-20:].hex()
 
 
 def derive_from_seed(seed: bytes) -> str:
@@ -362,10 +366,14 @@ def case5_replay(base_url, pk_a, pub_a, to_hex, amount, wait_timeout=120):
     print(f"    [首次提交] http={http_code} body={body!r}")
     if status is not None:
         print("    [注意] 合法交易被同步拒绝，下面的重放结果不能作为 nonce 判重依据")
-        return txh, None, [
-            (f"重放 {i + 1}", post_tx(base_url, payload, show=True))
-            for i in range(3)
-        ]
+        rejected = []
+        for i in range(3):
+            code, body, (st, dt) = post_tx(base_url, payload, show=True)
+            rejected.append((f"重放 {i + 1}", (code, body, st, dt)))
+        expected = "kSignatureInvalid"
+        print(f"    [诊断] 合法交易被判 {detail}，说明签名构造有误，"
+              f"重放结果不代表 nonce 判重")
+        return txh, None, rejected
 
     print(f"    等待上链 (最多 {wait_timeout}s) ...")
     receipt = wait_final(base_url, txh, timeout=wait_timeout)
@@ -387,7 +395,11 @@ def case5_replay(base_url, pk_a, pub_a, to_hex, amount, wait_timeout=120):
 
 
 def pub_to_addr(pub_hex: str) -> str:
-    return keccak256(bytes.fromhex(pub_hex))[-20:].hex()
+    """由 65 字节（或 64 字节）公钥推地址，与 derive() 保持一致。"""
+    b = bytes.fromhex(pub_hex)
+    if len(b) == 65:
+        b = b[1:]
+    return keccak256(b)[-20:].hex()
 
 
 # ── 结果判定 ─────────────────────────────────────────────────────────────────
@@ -507,9 +519,7 @@ def main() -> int:
             results[5] = [
                 judge(label, res, {10007},
                       ("kTxUserNonceInvalid", "nonce invalid"))
-                for label, res in
-                [(label, (code, body, status, detail))
-                 for label, (code, body, status, detail) in replay_results]
+                for label, res in replay_results
             ]
         except RuntimeError as e:
             print(f"    [SKIP] {e}")
