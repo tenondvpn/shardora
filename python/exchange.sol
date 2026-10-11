@@ -300,6 +300,59 @@ contract Exchange {
         return bytesConcat(all_bytes, validLen + 1);
     }
 
+    // ── 新增：原生 ABI 结构体查询接口 ─────────────────────────────────────
+
+    /// @notice 原生 ABI 查询：直接返回单个条目完整的 ItemInfo 结构体
+    function GetSellDetailStruct(bytes32 hash) external view returns (ItemInfo memory) {
+        require(item_map[hash].exists, "item not found");
+        return item_map[hash];
+    }
+
+    /// @notice 原生 ABI 查询：分页返回条目结构体数组 ItemInfo[]
+    function GetAllItems(uint256 start_pos, uint256 len) external view returns (ItemInfo[] memory) {
+        uint256 total = all_hashes.length;
+        if (start_pos >= total || len == 0) {
+            return new ItemInfo[](0);
+        }
+
+        uint256 end = start_pos + len;
+        if (end > total) {
+            end = total;
+        }
+
+        uint256 count = end - start_pos;
+        ItemInfo[] memory items = new ItemInfo[](count);
+
+        for (uint256 i = 0; i < count; i++) {
+            items[i] = item_map[all_hashes[start_pos + i]];
+        }
+
+        return items;
+    }
+
+    /// @notice 原生 ABI 查询：分页返回特定 Owner 的条目结构体数组 ItemInfo[]
+    function GetOwnerItems(address owner, uint256 start_pos, uint256 len) external view returns (ItemInfo[] memory) {
+        bytes32[] storage hash_array = owner_with_hash_map[owner];
+        uint256 total = hash_array.length;
+        if (start_pos >= total || len == 0) {
+            return new ItemInfo[](0);
+        }
+
+        uint256 end = start_pos + len;
+        if (end > total) {
+            end = total;
+        }
+
+        uint256 count = end - start_pos;
+        ItemInfo[] memory items = new ItemInfo[](count);
+
+        for (uint256 i = 0; i < count; i++) {
+            items[i] = item_map[hash_array[start_pos + i]];
+        }
+
+        return items;
+    }
+
     // ── State query helpers ───────────────────────────────────────────────
 
     /// @notice Returns true if an item with the given hash exists.
