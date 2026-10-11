@@ -873,7 +873,7 @@ static void QueryContract(const UWSRequest& req, UWSResponse& http_res) {
         SHARDORA_DEBUG("query contract error: %s.", res.c_str());
         return;
     }
-	
+
     std::string qdata((char*)result.output_data, result.output_size);
     SHARDORA_DEBUG("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
     if (result.output_size < 64) {

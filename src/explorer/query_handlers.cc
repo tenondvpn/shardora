@@ -69,12 +69,13 @@ void ExplorerBlock(const init::UWSRequest& req, init::UWSResponse& res) {
 }
 
 // GET /explorer/transactions
-// Params: block_hash, shard_id, step_type, is_system (0=user,1=system,-1=all), before_id, limit
+// Params: block_hash, shard_id, pool_index, step_type, is_system (0=user,1=system,-1=all), before_id, limit
 void ExplorerTxList(const init::UWSRequest& req, init::UWSResponse& res) {
     if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
 
     std::string block_hash = ParamStr(req, "block_hash");
     uint32_t shard_id  = static_cast<uint32_t>(ParamInt(req, "shard_id", 0));
+    int pool_index     = ParamInt(req, "pool_index", -1);
     int step_type      = ParamInt(req, "step_type", -1);
     int is_system      = ParamInt(req, "is_system", -1);
     int64_t before_id  = ParamInt64(req, "before_id", 0);
@@ -82,7 +83,7 @@ void ExplorerTxList(const init::UWSRequest& req, init::UWSResponse& res) {
     if (limit <= 0 || limit > 100) limit = 20;
 
     res.set_content(
-        g_explorer->QueryTransactions(block_hash, shard_id, step_type,
+        g_explorer->QueryTransactions(block_hash, shard_id, pool_index, step_type,
                                       is_system, before_id, limit),
         kJson);
 }

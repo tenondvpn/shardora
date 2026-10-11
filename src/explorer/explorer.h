@@ -36,7 +36,8 @@ public:
                             int64_t before_id, int limit);
     std::string QueryBlock(const std::string& hash);
     std::string QueryTransactions(const std::string& block_hash,
-                                  uint32_t shard_id, int step_type,
+                                  uint32_t shard_id, int pool_index,
+                                  int step_type,
                                   int is_system,
                                   int64_t before_id, int limit);
     std::string QueryTransaction(const std::string& tx_hash);

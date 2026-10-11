@@ -610,7 +610,8 @@ std::string Explorer::QueryBlock(const std::string& hash) {
 }
 
 std::string Explorer::QueryTransactions(const std::string& block_hash,
-                                        uint32_t shard_id, int step_type,
+                                        uint32_t shard_id, int pool_index,
+                                        int step_type,
                                         int is_system,
                                         int64_t before_id, int limit) {
     int fetch = limit + 1;
@@ -622,6 +623,7 @@ std::string Explorer::QueryTransactions(const std::string& block_hash,
     if (before_id > 0)         ss << " AND id<" << before_id;
     if (!block_hash.empty())   ss << " AND block_hash='" << block_hash << "'";
     if (shard_id > 0)          ss << " AND shard_id=" << shard_id;
+    if (pool_index >= 0)       ss << " AND pool_index=" << pool_index;
     if (step_type >= 0)        ss << " AND step_type=" << step_type;
     if (is_system == 0)        ss << " AND is_system_tx=0";
     else if (is_system == 1)   ss << " AND is_system_tx=1";
