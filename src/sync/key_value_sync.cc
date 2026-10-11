@@ -163,10 +163,12 @@ void KeyValueSync::AddSyncView(
         uint32_t priority) {
     // return;
     //assert(priority <= kSyncHighest);
-    // Not checked here: ViewAlreadySettled reads cached_view_with_blocks_, which
-    // only the key-value sync timer thread owns, and this runs on a hotstuff
-    // thread.  PopItems re-tests it on the timer thread before the request goes
-    // out.
+    if (ViewAlreadySettled(network_id, pool_idx, height)) {
+        SHARDORA_DEBUG("block view already settled, skip sync: %u_%u_%lu",
+            network_id, pool_idx, height);
+        return;
+    }
+
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority, kBlockView);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
@@ -180,9 +182,12 @@ void KeyValueSync::AddSyncViewSingle(
         uint64_t view,
         uint64_t block_height,
         uint32_t priority) {
-    // Same as AddSyncView: the settled check needs cached_view_with_blocks_,
-    // which belongs to the key-value sync timer thread.  PopItems applies it
-    // there instead.
+    if (ViewAlreadySettled(network_id, pool_idx, view)) {
+        SHARDORA_DEBUG("block view already settled, skip single sync: %u_%u_%lu",
+            network_id, pool_idx, view);
+        return;
+    }
+
     auto item = std::make_shared<SyncItem>(
         network_id, pool_idx, view, block_height, priority, kBlockView);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
@@ -841,18 +846,6 @@ void KeyValueSync::PopItems() {
 
             if (responsed_keys_.exists(item->key)) {
                 SHARDORA_DEBUG("responsed_keys_.exists(item->key): %s", item->key.c_str());
-                continue;
-            }
-
-            // A view request is dropped once the local chain already holds that
-            // view with a valid QC: it is immutable and local, so syncing it
-            // again only wastes a round-trip.  This runs here, on the timer
-            // thread, rather than at the enqueue site because the check reads
-            // cached_view_with_blocks_, which this thread owns.
-            if (item->tag == kBlockView &&
-                    ViewAlreadySettled(item->network_id, item->pool_idx, item->height)) {
-                SHARDORA_DEBUG("block view already settled, skip sync: %u_%u_%lu",
-                    item->network_id, item->pool_idx, item->height);
                 continue;
             }
 
