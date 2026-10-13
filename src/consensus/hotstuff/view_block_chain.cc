@@ -527,7 +527,12 @@ uint32_t ViewBlockChain::GetViewBlocksFrom(
     }
 
     uint32_t added = 0;
+    uint64_t max_added_view = 0;
     for (uint64_t view : views) {
+        if (added >= max_count) {
+            break;
+        }
+
         auto view_block = GetViewBlockWithView(network_id, view);
         if (view_block == nullptr) {
             // A view with no usable block.  Later views continue the same branch
@@ -537,6 +542,31 @@ uint32_t ViewBlockChain::GetViewBlocksFrom(
         }
 
         out->push_back(view_block);
+        if (view_block->qc().view() > max_added_view) {
+            max_added_view = view_block->qc().view();
+        }
+
+        ++added;
+    }
+
+    // The cache holds only a bounded window of the newest views, and the local
+    // tip is never placed in it at all (UpdateHighViewBlock only queues it, and
+    // the cache evicts from the bottom).  So the walk above can return blocks
+    // that all sit *below* what the caller asked for, or nothing at all.  The
+    // tip is then the one block that can still satisfy the request, and it is
+    // appended regardless of whether the walk found something -- returning early
+    // on `added > 0` would hand the caller a packet of stale views and leave the
+    // view it actually needs unanswered forever.
+    //
+    // Only a QC-bearing tip is sent: the requester discards a block without one.
+    auto tip = high_view_block_;
+    if (added < max_count &&
+            tip != nullptr &&
+            IsQcTcValid(tip->qc()) &&
+            tip->qc().network_id() == network_id &&
+            tip->qc().view() >= start_view &&
+            tip->qc().view() > max_added_view) {
+        out->push_back(tip);
         ++added;
     }
 

@@ -78,6 +78,13 @@ public:
     // answer a view request with the requested view plus as many later views as
     // fit in one packet, instead of one round trip per view.
     // Appends to `out` and returns how many were appended.
+    //
+    // The local tip is appended after the cache walk when it is newer than
+    // everything the walk returned and still covers `start_view`.  The tip is
+    // never placed in cached_view_with_blocks_ (the cache evicts from the bottom
+    // and UpdateHighViewBlock only queues it), so the walk alone can return a
+    // packet of views all below what the caller asked for.  Only a QC-bearing tip
+    // is appended: the requester discards a block without one.
     uint32_t GetViewBlocksFrom(
         uint32_t network_id,
         uint64_t start_view,
