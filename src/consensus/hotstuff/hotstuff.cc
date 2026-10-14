@@ -1965,22 +1965,27 @@ void Hotstuff::SyncLaterBlocks(
         uint32_t pool_index, 
         View view) {
     auto call_sync_later_func = [this, view_block_chain, network_id, pool_index, view]() {
-        static const uint32_t kSyncLaterViewCount = 16u;
-        for (View i = view + 1; i <= view + kSyncLaterViewCount; ++i) {
-            SHARDORA_DEBUG("now sync later block %u_%u_%lu",
-                network_id, pool_index, i);
-            if (view_block_chain->HighView() >= i) {
-                continue;
-            }
-            
-            SHARDORA_DEBUG("real now sync later block %u_%u_%lu",
-                network_id, pool_index, i);
-            kv_sync_->AddSyncView(
-                network_id,
-                pool_index,
-                i,
-                sync::kSyncHighest);
+        if (view_block_chain == nullptr) {
+            return;
         }
+
+        // One catch-up request covers the whole window.  A kBlockView request
+        // without single_view asks for `next_view` onward, and the responder
+        // answers with up to kMaxViewPerResponse (64) consecutive views.  Asking
+        // for each of the next 16 views separately sent 16 requests to receive
+        // what the first one already brings back.
+        const View next_view = view + 1;
+        if (view_block_chain->HighView() >= next_view) {
+            return;
+        }
+
+        SHARDORA_DEBUG("now sync later block %u_%u_%lu",
+            network_id, pool_index, next_view);
+        kv_sync_->AddSyncView(
+            network_id,
+            pool_index,
+            next_view,
+            sync::kSyncHighest);
     };
 
     layter_sync_tick_.CutOff(200000llu, call_sync_later_func);
@@ -2614,10 +2619,27 @@ void Hotstuff::TryRecoverFromStuck(
         SHARDORA_DEBUG("pool: %u, sync next view, local: %d, root: %d, cross: %d",
             pool_idx_, view_block_chain_->HighView(), root_view_block_chain_->HighView(),
             cross_shard_view_block_chain_.size());
-        auto sync_next_view = [this](std::shared_ptr<ViewBlockChain>& chain, bool is_local) {
+        // One sweep touches the local chain, the root congress chain and every
+        // cross shard chain.  They can name the same request — the root chain
+        // always uses kRootCongressNetworkId + kGlobalPoolIndex, and a cross
+        // chain for that same network would produce the identical pair, while
+        // the local chain can appear twice via view and via its QC-less view.
+        // Track what this sweep already asked for so the duplicate is dropped
+        // before it becomes a SyncItem and a packet slot.
+        std::set<std::tuple<uint32_t, uint32_t, uint64_t, bool>> sweep_requests;
+        auto sync_next_view = [this, &sweep_requests](
+                std::shared_ptr<ViewBlockChain>& chain, bool is_local) {
             if (chain == nullptr) {
                 return;
             }
+
+            // `single` distinguishes the two shapes: a catch-up asks for a view
+            // onward, a single-view probe asks for exactly one view.  Both can be
+            // requested for the same view number and both must still go out.
+            auto already_requested = [&sweep_requests](
+                    uint32_t net, uint32_t pool, uint64_t view, bool single) {
+                return !sweep_requests.emplace(net, pool, view, single).second;
+            };
 
             auto high_view_block = chain->HighViewBlock();
             if (high_view_block == nullptr) {
@@ -2659,19 +2681,27 @@ void Hotstuff::TryRecoverFromStuck(
             // Ask for that exact view instead, and only that one — the branch is
             // already known-named, so there is nothing to catch up to past it.
             const bool high_view_has_qc = IsQcTcValid(high_view_block->qc());
+            const uint32_t req_net = high_view_block->qc().network_id();
+            const uint32_t req_pool = chain->pool_index();
             if (!high_view_has_qc && high_view_block->qc().view() > 0) {
-                kv_sync_->AddSyncViewSingle(
-                    high_view_block->qc().network_id(),
-                    chain->pool_index(),
-                    high_view_block->qc().view(),
-                    high_view_block->block_info().height(),
-                    sync::kSyncHighest);
+                const uint64_t req_view = high_view_block->qc().view();
+                if (!already_requested(req_net, req_pool, req_view, true)) {
+                    kv_sync_->AddSyncViewSingle(
+                        req_net,
+                        req_pool,
+                        req_view,
+                        high_view_block->block_info().height(),
+                        sync::kSyncHighest);
+                }
             } else {
-                kv_sync_->AddSyncView(
-                    high_view_block->qc().network_id(),
-                    chain->pool_index(),
-                    high_view_block->qc().view() + 1,
-                    sync::kSyncHighest);
+                const uint64_t req_view = high_view_block->qc().view() + 1;
+                if (!already_requested(req_net, req_pool, req_view, false)) {
+                    kv_sync_->AddSyncView(
+                        req_net,
+                        req_pool,
+                        req_view,
+                        sync::kSyncHighest);
+                }
             }
 
             // Only the local chain can hold a block that never got an aggregated
@@ -2685,10 +2715,11 @@ void Hotstuff::TryRecoverFromStuck(
                 uint64_t no_qc_height = 0;
                 auto no_qc_view = chain->MinUncommittedViewWithoutQc(&no_qc_height);
                 if (no_qc_view > 0 &&
-                        (!high_view_has_qc || no_qc_view != high_view_block->qc().view() + 1)) {
+                        (!high_view_has_qc || no_qc_view != high_view_block->qc().view() + 1) &&
+                        !already_requested(req_net, req_pool, no_qc_view, true)) {
                     kv_sync_->AddSyncViewSingle(
-                        high_view_block->qc().network_id(),
-                        chain->pool_index(),
+                        req_net,
+                        req_pool,
                         no_qc_view,
                         no_qc_height,
                         sync::kSyncHighest);

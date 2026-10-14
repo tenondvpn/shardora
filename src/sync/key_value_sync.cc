@@ -833,8 +833,24 @@ void KeyValueSync::PopItems() {
             }
 
             if (synced_map_.get(item->key, &item)) {
-                if (item->sync_tm_us + kSyncTimeoutPeriodUs >= now_tm) {
-                    SHARDORA_DEBUG("item->sync_tm_us + kSyncTimeoutPeriodUs >= now_tm: %s", item->key.c_str());
+                // Resend backoff: the first retry still fires after the base
+                // timeout, so a dropped packet recovers as fast as before, but
+                // each further attempt doubles the wait.  A view that never gets
+                // answered (a peer that simply does not hold it) would otherwise
+                // be re-sent every kSyncTimeoutPeriodUs forever, which is what
+                // kept synced_map_ growing without bound.  The shift is capped so
+                // the period stays far below an overflow at any retry count.
+                // sync_times is already 1 on the first pass through here (it is
+                // incremented right after the initial send), so the first retry
+                // must shift by 0 to keep its 300ms period.
+                const uint32_t retries = item->sync_times > 0 ? item->sync_times - 1 : 0;
+                const uint32_t shift = retries < kSyncMaxBackoffShift ?
+                    retries : kSyncMaxBackoffShift;
+                const uint64_t backoff = kSyncTimeoutPeriodUs << shift;
+                if (item->sync_tm_us + backoff >= now_tm) {
+                    SHARDORA_DEBUG("item->sync_tm_us + backoff >= now_tm: %s, "
+                        "sync_times: %u, backoff: %lu",
+                        item->key.c_str(), item->sync_times, backoff);
                     continue;
                 }
 

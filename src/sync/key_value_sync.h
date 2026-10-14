@@ -474,6 +474,11 @@ private:
     // round-trip should complete in <200ms on a healthy network. 300ms gives
     // enough margin for network jitter while allowing ~3 retries per second.
     static const uint64_t kSyncTimeoutPeriodUs = 300000lu;
+    // Cap on the resend backoff exponent.  The retry period is
+    // kSyncTimeoutPeriodUs << min(sync_times, kSyncMaxBackoffShift), so six
+    // doublings take 300ms to ~19.2s.  Beyond that an unanswered item is almost
+    // certainly unanswerable, and waiting longer only delays a late recovery.
+    static const uint32_t kSyncMaxBackoffShift = 6u;
     static const uint32_t kEachTimerHandleCount = 64u;
     // [SYNC_OPT] Increased from 4096 to 8192: drain more ready-queue messages
     // per timer tick. With faster sync, more responses arrive per interval.

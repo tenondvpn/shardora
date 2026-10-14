@@ -3,6 +3,8 @@
 #include <atomic>
 #include <cstdlib>
 #include <mutex>
+#include <set>
+#include <tuple>
 #include <consensus/hotstuff/crypto.h>
 #include "consensus/consensus_utils.h"
 #include <consensus/hotstuff/block_acceptor.h>
