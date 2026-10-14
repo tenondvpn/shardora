@@ -309,6 +309,10 @@ private:
     uint64_t begin_run_timestamp_ms_ = 0;
     std::atomic<bool> should_check_thread_all_valid_ = true;
     std::unordered_map<int, uint8_t> valid_thread_index_;
+    // Assigns (and records) the index for a thread not seen before.  Caller
+    // must hold now_valid_thread_index_mutex_.
+    uint8_t NextThreadIndexLocked(uint32_t thread_id);
+    bool thread_index_overflow_warned_ = false;
     std::atomic<bool> global_stoped_ = false;
     std::atomic<bool> main_inited_success_ = false;
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 4u;

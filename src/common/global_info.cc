@@ -140,30 +140,53 @@ uint8_t GlobalInfo::get_thread_index() {
         std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto iter = thread_with_index_.find(now_thread_id);
         if (iter == thread_with_index_.end()) {
-            thread_idx = now_valid_thread_index_++;
-            thread_with_index_[now_thread_id] = thread_idx;
-            SHARDORA_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
+            thread_idx = NextThreadIndexLocked(now_thread_id);
         } else {
             thread_idx = iter->second;
         }
-        
+
         auto now_tm_ms = common::TimeUtils::TimestampMs();
         if (main_inited_success_ && begin_run_timestamp_ms_ <= now_tm_ms) {
             should_check_thread_all_valid_ = false;
         }
     } else {
+        std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto iter = thread_with_index_.find(now_thread_id);
         if (iter == thread_with_index_.end()) {
             // Thread started after the registration window; still assign a unique index
             // so it doesn't collide with index-0 and corrupt the SPSC send queue.
-            thread_idx = now_valid_thread_index_++;
-            thread_with_index_[now_thread_id] = thread_idx;
+            thread_idx = NextThreadIndexLocked(now_thread_id);
             SHARDORA_WARN("late thread registered: tid=%u -> idx=%u", now_thread_id, (uint32_t)thread_idx);
         } else {
             thread_idx = iter->second;
         }
     }
 
+    return thread_idx;
+}
+
+// Every caller indexes a fixed kMaxThreadCount-sized array with the result
+// (item_queues_, output_queues_, block_queues_, ...), so the value must stay
+// below that bound.  Registration is unbounded -- a process with more than
+// kMaxThreadCount threads keeps handing out fresh indexes -- which would index
+// past the end of those arrays.  Past the bound the threads share the last
+// slot: different threads on one SPSC queue is undesirable, but a mutex on the
+// producer side would cost far more than the rare overflow, and out-of-bounds
+// writes are not an option.
+uint8_t GlobalInfo::NextThreadIndexLocked(uint32_t thread_id) {
+    uint8_t thread_idx = now_valid_thread_index_;
+    if (thread_idx < common::kMaxThreadCount) {
+        ++now_valid_thread_index_;
+    } else {
+        thread_idx = common::kMaxThreadCount - 1;
+        if (!thread_index_overflow_warned_) {
+            thread_index_overflow_warned_ = true;
+            SHARDORA_WARN("thread index exceeded kMaxThreadCount[%u], sharing slot: tid=%u",
+                (uint32_t)common::kMaxThreadCount, thread_id);
+        }
+    }
+
+    thread_with_index_[thread_id] = thread_idx;
     return thread_idx;
 }
 

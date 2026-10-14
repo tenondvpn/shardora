@@ -104,6 +104,22 @@ int KeyValueSync::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
 }
 
+bool KeyValueSync::QueueSyncItem(uint8_t thread_idx, const SyncItemPtr& item) {
+    if (item_queues_[thread_idx].TryPush(item)) {
+        return true;
+    }
+
+    // Drop rather than grow.  The queue is a retry buffer: the request will be
+    // re-issued by whatever scheduled it (the consensus/backfill loop re-runs
+    // and re-queues heights it still lacks), so a dropped item costs a round
+    // trip, whereas allocating a block for it costs memory that is never
+    // returned for the life of the process.
+    SHARDORA_WARN("sync queue full, drop req key: %s, thread: %u, size: %u",
+        item->key.c_str(), (uint32_t)thread_idx,
+        (uint32_t)item_queues_[thread_idx].size());
+    return false;
+}
+
 void KeyValueSync::AddSyncHeight(
         uint32_t network_id,
         uint32_t pool_idx,
@@ -113,7 +129,10 @@ void KeyValueSync::AddSyncHeight(
     //assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority, kBlockHeight);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
+    if (!QueueSyncItem(thread_idx, item)) {
+        return;
+    }
+
     SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu",
         item->key.c_str(), item->priority, network_id, pool_idx, height);
 }
@@ -128,7 +147,10 @@ void KeyValueSync::AddSyncHeight(
     auto item = std::make_shared<SyncItem>(
         network_id, pool_idx, height, priority, kBlockHeight, in_view, in_block_hash);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
+    if (!QueueSyncItem(thread_idx, item)) {
+        return;
+    }
+
     SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu, view: %lu",
         item->key.c_str(), item->priority, network_id, pool_idx, height, in_view);
 }
@@ -171,7 +193,10 @@ void KeyValueSync::AddSyncView(
 
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority, kBlockView);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
+    if (!QueueSyncItem(thread_idx, item)) {
+        return;
+    }
+
     SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu",
         item->key.c_str(), item->priority, network_id, pool_idx, height);
 }
@@ -191,7 +216,10 @@ void KeyValueSync::AddSyncViewSingle(
     auto item = std::make_shared<SyncItem>(
         network_id, pool_idx, view, block_height, priority, kBlockView);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
+    if (!QueueSyncItem(thread_idx, item)) {
+        return;
+    }
+
     SHARDORA_DEBUG("block view add single sync item key: %s, priority: %u, %u_%u_%lu, "
         "height: %lu",
         item->key.c_str(), item->priority, network_id, pool_idx, view, block_height);
@@ -568,12 +596,15 @@ void KeyValueSync::AddSyncViewHash(
     auto item = std::make_shared<SyncItem>(
         network_id, key, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
+    if (!QueueSyncItem(thread_idx, item)) {
+        return;
+    }
+
     SHARDORA_DEBUG("block height add new sync item key: %s, %u_%u, priority: %u, item size: %u",
-        common::Encode::HexEncode(item->key).c_str(), 
+        common::Encode::HexEncode(item->key).c_str(),
         network_id,
         pool_idx,
-        item->priority, 
+        item->priority,
         item_queues_[thread_idx].size());
 }
 
@@ -926,14 +957,23 @@ void KeyValueSync::PopItems() {
             synced_map_.add(item->key, item);
             item->sync_tm_us = now_tm;
             if (++synced_count > kSyncMaxKeyCount) {
+                // Work budget for this round is spent.  Draining more queues
+                // would not send anything (the budget gates the sends below),
+                // so stop the whole round rather than spin over the rest.
                 stop = true;
                 break;
             }
 
             if (sended_neigbors.size() > kSyncNeighborCount) {
-                stop = true;
+                // Only the *sending* is out of peers: every neighbour has been
+                // contacted this round.  Draining must continue -- if this
+                // broke the outer loop, queues after this one would never be
+                // drained, and since each round stops at the first queue that
+                // hits this limit, their backlog would grow without bound.
+                // The items consumed here are recorded in synced_map_ and will
+                // be re-sent once a neighbour is available again.
                 break;
-            }     
+            }
         }
 
         if (stop) {
@@ -2297,12 +2337,15 @@ void KeyValueSync::QueueFollowupBlockSync(
             kSyncHighest,
             kBlockHeight);
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        if (!QueueSyncItem(thread_idx, item)) {
+            continue;
+        }
+
         SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu, "
             "next_height: %lu, kSyncHighest: %u",
             item->key.c_str(), item->priority, network_id, pool_idx,
             static_cast<uint32_t>(kBlockHeight), next_height,
             static_cast<uint32_t>(kSyncHighest));
-        item_queues_[thread_idx].push(item);
     }
 }
 

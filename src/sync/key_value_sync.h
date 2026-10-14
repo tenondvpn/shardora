@@ -338,6 +338,13 @@ public:
     }
 
 private:
+    // Enqueue a sync request on the caller's thread slot.  A full queue means
+    // the consumer has not drained the producer's batch yet; the request is
+    // dropped rather than buffered, because this queue is a retry buffer whose
+    // bound is the reserved capacity -- letting it allocate a new block per
+    // overflow leaks memory at the rate requests are produced.
+    bool QueueSyncItem(uint8_t thread_idx, const SyncItemPtr& item);
+
     struct VerifyBlockItem {
         ViewBlockPtr pb_vblock;
         std::string key;
