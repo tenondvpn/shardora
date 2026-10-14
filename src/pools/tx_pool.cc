@@ -174,6 +174,83 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
     return invalid_heights.size();
 }
 
+void TxPool::DrainAddedTxsToTxMap() {
+    // Empties added_txs_ into tx_map_ keyed the way tx_map_ expects: system txs by
+    // to(), user txs by the sender address.
+    TxItemPtr tx_ptr;
+    while (added_txs_.pop(&tx_ptr)) {
+        SHARDORA_DEBUG("pool: %d, pop success add system tx nonce addr: %s, "
+                "addr nonce: %lu, tx nonce: %lu, unique hash: %s",
+                pool_index_,
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                tx_ptr->address_info->nonce(),
+                tx_ptr->tx_info->nonce(),
+                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
+        if (!IsUserTransaction(tx_ptr->tx_info->step())) {
+            if (prefix_db_->ExistsOverUniqueHash(tx_ptr->tx_info->key())) {
+                SHARDORA_DEBUG("overed tx pool: %d, success add system tx nonce addr: %s, "
+                    "addr nonce: %lu, tx nonce: %lu, unique hash: %s, step: %u",
+                    pool_index_,
+                    common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                    tx_ptr->address_info->nonce(),
+                    tx_ptr->tx_info->nonce(),
+                    common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(),
+                    (uint32_t)tx_ptr->tx_info->step());
+                continue;
+            }
+
+            tx_map_[tx_ptr->tx_info->to()][tx_ptr->tx_info->nonce()] = tx_ptr;
+            SHARDORA_DEBUG("pool: %d, success add system tx nonce addr: %s, to: %s, "
+                "addr nonce: %lu, tx nonce: %lu, unique hash: %s, step: %u",
+                pool_index_,
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
+                tx_ptr->address_info->nonce(),
+                tx_ptr->tx_info->nonce(),
+                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(),
+                (uint32_t)tx_ptr->tx_info->step());
+            continue;
+        }
+
+        if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
+            SHARDORA_DEBUG("pool: %d, failed add tx nonce invalid addr: %s, addr nonce: %lu, tx nonce: %lu",
+                pool_index_,
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                tx_ptr->address_info->nonce(),
+                tx_ptr->tx_info->nonce());
+            if (tx_ptr->msg_ptr) {
+                SetTxStatus(pools_mgr_, tx_ptr->msg_ptr, transport::kTxUserNonceInvalid);
+            }
+            continue;
+        }
+
+        auto iter = consensus_tx_map_.find(tx_ptr->address_info->addr());
+        if (iter != consensus_tx_map_.end()) {
+            auto nonce_iter = iter->second.find(tx_ptr->tx_info->nonce());
+            if (nonce_iter != iter->second.end()) {
+                SHARDORA_DEBUG("pool: %d, exists failed add tx nonce invalid "
+                    "addr: %s, addr nonce: %lu, tx nonce: %lu",
+                    pool_index_,
+                    common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                    tx_ptr->address_info->nonce(),
+                    tx_ptr->tx_info->nonce());
+                if (tx_ptr->msg_ptr) {
+                    SetTxStatus(pools_mgr_, tx_ptr->msg_ptr, transport::kTxUserNonceInvalid);
+                }
+                continue;
+            }
+        }
+
+        tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
+        // consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
+        SHARDORA_DEBUG("pool: %d, success add tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu",
+            pool_index_,
+            common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+            tx_ptr->address_info->nonce(),
+            tx_ptr->tx_info->nonce());
+    }
+}
+
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
     if (tx_ptr->tx_info->step() == pools::protobuf::kContractExcute || 
             tx_ptr->tx_info->step() == pools::protobuf::kContractRefund) {
@@ -386,91 +463,7 @@ void TxPool::GetTxSyncToLeader(
         pools::CheckAddrNonceValidFunction tx_valid_func,
         const std::unordered_map<std::string, uint64_t>& leader_nonce_map) {
     // CheckThreadIdValid();
-    TxItemPtr tx_ptr;
-    while (added_txs_.pop(&tx_ptr)) {
-        SHARDORA_DEBUG("pool: %d, pop success add system tx nonce addr: %s, "
-                "addr nonce: %lu, tx nonce: %lu, unique hash: %s",
-                pool_index_,
-                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                tx_ptr->address_info->nonce(), 
-                tx_ptr->tx_info->nonce(),
-                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
-         if (!IsUserTransaction(tx_ptr->tx_info->step())) {
-            if (prefix_db_->ExistsOverUniqueHash(tx_ptr->tx_info->key())) {
-                SHARDORA_DEBUG("overed tx pool: %d, success add system tx nonce addr: %s, "
-                    "addr nonce: %lu, tx nonce: %lu, unique hash: %s, step: %u",
-                    pool_index_,
-                    common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                    tx_ptr->address_info->nonce(), 
-                    tx_ptr->tx_info->nonce(),
-                    common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(),
-                    (uint32_t)tx_ptr->tx_info->step());
-                continue;
-            }
-
-            if (tx_ptr->tx_info->to() != tx_ptr->address_info->addr()) {
-                SHARDORA_WARN("invalid address pool: %u, success add system tx nonce addr: %s, to: %s, "
-                    "addr nonce: %lu, tx nonce: %lu, unique hash: %s, step: %u",
-                    pool_index_,
-                    common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                    common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
-                    tx_ptr->address_info->nonce(), 
-                    tx_ptr->tx_info->nonce(),
-                    common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(),
-                    (int32_t)tx_ptr->tx_info->step());
-                continue;
-            }
-
-            tx_map_[tx_ptr->tx_info->to()][tx_ptr->tx_info->nonce()] = tx_ptr;
-            SHARDORA_DEBUG("pool: %u, success add system tx nonce addr: %s, to: %s, "
-                "addr nonce: %lu, tx nonce: %lu, unique hash: %s, step: %u",
-                pool_index_,
-                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
-                tx_ptr->address_info->nonce(), 
-                tx_ptr->tx_info->nonce(),
-                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(),
-                (int32_t)tx_ptr->tx_info->step());
-            continue;
-        }
-
-        if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
-            SHARDORA_DEBUG("pool: %d, failed get tx nonce invalid addr: %s, addr nonce: %lu, tx nonce: %lu",
-                pool_index_,
-                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                tx_ptr->address_info->nonce(), 
-                tx_ptr->tx_info->nonce());
-            if (tx_ptr->msg_ptr) {
-                SetTxStatus(pools_mgr_, tx_ptr->msg_ptr, transport::kTxUserNonceInvalid);
-            }
-            continue;
-        }
-
-        auto iter = consensus_tx_map_.find(tx_ptr->address_info->addr());
-        if (iter != consensus_tx_map_.end()) {
-            auto nonce_iter = iter->second.find(tx_ptr->tx_info->nonce());
-            if (nonce_iter != iter->second.end()) {
-                SHARDORA_DEBUG("pool: %d, exists failed add tx nonce invalid "
-                    "addr: %s, addr nonce: %lu, tx nonce: %lu",
-                    pool_index_,
-                    common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                    tx_ptr->address_info->nonce(), 
-                    tx_ptr->tx_info->nonce());
-                if (tx_ptr->msg_ptr) {
-                    SetTxStatus(pools_mgr_, tx_ptr->msg_ptr, transport::kTxUserNonceInvalid);
-                }
-                continue;
-            }
-        }
-
-        tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
-        // consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
-        SHARDORA_DEBUG("pool: %d, success add tx nonce invalid addr: %s, addr nonce: %lu, tx nonce: %lu",
-            pool_index_,
-            common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-            tx_ptr->address_info->nonce(), 
-            tx_ptr->tx_info->nonce());
-    }
+    DrainAddedTxsToTxMap();
 
     // SHARDORA_WARN("now tx size: %u", all_tx_size());
     // Budget: vote messages must fit within the network max packet size.
@@ -653,80 +646,9 @@ void TxPool::TempGetTxIdempotently(
         uint32_t count,
         pools::CheckAddrNonceValidFunction tx_valid_func) {
     // CheckThreadIdValid();
+    DrainAddedTxsToTxMap();
+
     TxItemPtr tx_ptr;
-    while (added_txs_.pop(&tx_ptr)) {
-        SHARDORA_DEBUG("pool: %d, pop success add system tx nonce addr: %s, "
-                "addr nonce: %lu, tx nonce: %lu, unique hash: %s",
-                pool_index_,
-                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                tx_ptr->address_info->nonce(), 
-                tx_ptr->tx_info->nonce(),
-                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
-        if (!IsUserTransaction(tx_ptr->tx_info->step())) {
-            if (prefix_db_->ExistsOverUniqueHash(tx_ptr->tx_info->key())) {
-                SHARDORA_DEBUG("overed tx pool: %d, success add system tx nonce addr: %s, "
-                    "addr nonce: %lu, tx nonce: %lu, unique hash: %s, step: %u",
-                    pool_index_,
-                    common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                    tx_ptr->address_info->nonce(), 
-                    tx_ptr->tx_info->nonce(),
-                    common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(),
-                    (uint32_t)tx_ptr->tx_info->step());
-                continue;
-            }
-
-            //assert(tx_ptr->tx_info->to() == tx_ptr->address_info->addr());
-            tx_map_[tx_ptr->tx_info->to()][tx_ptr->tx_info->nonce()] = tx_ptr;
-            SHARDORA_DEBUG("pool: %d, success add system tx nonce addr: %s, to: %s, "
-                "addr nonce: %lu, tx nonce: %lu, unique hash: %s, step: %u",
-                pool_index_,
-                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
-                tx_ptr->address_info->nonce(), 
-                tx_ptr->tx_info->nonce(),
-                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(),
-                (uint32_t)tx_ptr->tx_info->step());
-            continue;
-        }
-
-        if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
-            SHARDORA_DEBUG("pool: %d, failed get tx nonce invalid addr: %s, addr nonce: %lu, tx nonce: %lu",
-                pool_index_,
-                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                tx_ptr->address_info->nonce(), 
-                tx_ptr->tx_info->nonce());
-            if (tx_ptr->msg_ptr) {
-                SetTxStatus(pools_mgr_, tx_ptr->msg_ptr, transport::kTxUserNonceInvalid);
-            }
-            continue;
-        }
-
-        auto iter = consensus_tx_map_.find(tx_ptr->address_info->addr());
-        if (iter != consensus_tx_map_.end()) {
-            auto nonce_iter = iter->second.find(tx_ptr->tx_info->nonce());
-            if (nonce_iter != iter->second.end()) {
-                SHARDORA_DEBUG("pool: %d, exists failed get tx nonce invalid addr: %s, addr nonce: %lu, tx nonce: %lu",
-                    pool_index_,
-                    common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-                    tx_ptr->address_info->nonce(), 
-                    tx_ptr->tx_info->nonce());
-                if (tx_ptr->msg_ptr) {
-                    SetTxStatus(pools_mgr_, tx_ptr->msg_ptr, transport::kTxUserNonceInvalid);
-                }
-                continue;
-            }
-        }
-
-        tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
-        // consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
-        SHARDORA_DEBUG("pool: %d, success add tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, step: %d",
-            pool_index_,
-            common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-            tx_ptr->address_info->nonce(), 
-            tx_ptr->tx_info->nonce(),
-            (int32_t)tx_ptr->tx_info->step());
-    }
-
     while (consensus_added_txs_.pop(&tx_ptr)) {
         if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
             continue;
