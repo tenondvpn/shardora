@@ -92,12 +92,15 @@ bool Db::Init(const std::string& db_path) {
     //   memtables    : 64 MB x 2 = 128 MB  (was 512 MB x 4 = 2 GB)
     // The previous settings allowed ~2.5 GB per process just for RocksDB, which
     // is why RSS climbed from ~300 MB to ~2 GB and swap filled up.
+    //
+    // Compression is deliberately left at the library default.  The vendored
+    // librocksdb.a is built without Snappy, so asking for it explicitly makes
+    // DB::Open fail outright with "Compression type Snappy is not linked with
+    // the binary" — the default is resolved at build time and always matches.
     rocksdb::BlockBasedTableOptions table_option;
     table_option.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10, false));
     table_option.block_cache = rocksdb::NewLRUCache(128 * 1024 * 1024);
     options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_option));
-    options.compression = rocksdb::kSnappyCompression;
-    options.bottommost_compression = rocksdb::kZlibCompression;
     options.compaction_style = rocksdb::kCompactionStyleUniversal;
     options.compaction_options_universal.size_ratio = 20;
     options.level0_file_num_compaction_trigger = 8;
