@@ -844,6 +844,12 @@ void KeyValueSync::PopItems() {
                 // }
             }
 
+            if (item->tag == kBlockView &&
+                    ViewAlreadySettled(item->network_id, item->pool_idx, item->height)) {
+                synced_map_.erase(item->key);
+                continue;
+            }
+
             if (responsed_keys_.exists(item->key)) {
                 SHARDORA_DEBUG("responsed_keys_.exists(item->key): %s", item->key.c_str());
                 continue;

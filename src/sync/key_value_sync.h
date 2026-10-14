@@ -258,6 +258,13 @@ public:
         uint64_t view,
         uint64_t block_height,
         uint32_t priority);
+    // Remove the in-flight synced_map_ entry for a kBlockView request whose
+    // view has since been committed locally (e.g. via consensus rather than
+    // sync).  Called from CommitOneBlock so entries do not accumulate forever
+    // when blocks are produced faster than sync responses arrive.
+    void EraseSyncView(uint32_t net, uint32_t pool, uint64_t view) {
+        synced_map_.erase(SyncKeyOf(net, pool, view, kBlockView));
+    }
     // True when the local chain already holds `view` with a valid QC.  Both
     // AddSyncView and AddSyncViewSingle drop such a request instead of queuing
     // it: a view with a valid QC is immutable and already local, so syncing it
@@ -471,7 +478,7 @@ private:
     // [SYNC_OPT] Increased from 4096 to 8192: drain more ready-queue messages
     // per timer tick. With faster sync, more responses arrive per interval.
     static const uint32_t kMaxBatchDrainCount = 8192u;
-    static const uint32_t kCacheSyncKeyValueCount = 1024000u;
+    static const uint32_t kCacheSyncKeyValueCount = 50000u;
     static const uint32_t kSyncCount = 5u;
     static const uint32_t kMaxSyncLatestNotRootCount = 1024u;
     static const uint32_t kFollowupSyncHeightCount = 32u;

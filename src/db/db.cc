@@ -84,25 +84,31 @@ bool Db::Init(const std::string& db_path) {
     }
 
     rocksdb::Options options;
-    // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
     options.create_if_missing = true;
-    options.IncreaseParallelism();
-    options.OptimizeLevelStyleCompaction();
-    options.max_bytes_for_level_multiplier = 5;
-    options.level_compaction_dynamic_level_bytes = true;
+    // Memory budget.  These are per-process caps and every node runs many
+    // shardora processes on one host, so the defaults below are sized for tens
+    // of instances sharing the machine, not for one process owning it:
+    //   block cache  : 128 MB  (was 512 MB)
+    //   memtables    : 64 MB x 2 = 128 MB  (was 512 MB x 4 = 2 GB)
+    // The previous settings allowed ~2.5 GB per process just for RocksDB, which
+    // is why RSS climbed from ~300 MB to ~2 GB and swap filled up.
     rocksdb::BlockBasedTableOptions table_option;
     table_option.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10, false));
-    table_option.block_cache = rocksdb::NewLRUCache(512 * 1024 * 1024);
+    table_option.block_cache = rocksdb::NewLRUCache(128 * 1024 * 1024);
     options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_option));
     options.compression = rocksdb::kSnappyCompression;
     options.bottommost_compression = rocksdb::kZlibCompression;
     options.compaction_style = rocksdb::kCompactionStyleUniversal;
     options.compaction_options_universal.size_ratio = 20;
     options.level0_file_num_compaction_trigger = 8;
-    options.max_bytes_for_level_base = 512 * 1024 * 1024;
-    options.write_buffer_size = 512 * 1024 * 1024;
-    options.max_write_buffer_number = 4;
-    options.max_background_compactions  = 8;
+    options.max_bytes_for_level_base = 128 * 1024 * 1024;
+    options.write_buffer_size = 64 * 1024 * 1024;
+    options.max_write_buffer_number = 2;
+    options.max_background_compactions = 2;
+    options.max_background_flushes = 1;
+    // LevelStyleCompaction would rewrite the compaction knobs that were just
+    // set for universal compaction, and IncreaseParallelism() sizes the thread
+    // pools for a machine dedicated to one DB.  Both are deliberately not used.
     options.optimize_filters_for_hits = false;
 
     rocksdb::Status status = rocksdb::DB::Open(options, db_path, &db_);

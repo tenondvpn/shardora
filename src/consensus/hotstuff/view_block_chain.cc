@@ -1192,6 +1192,13 @@ void ViewBlockChain::CommitOneBlock(const std::shared_ptr<ViewBlockInfo>& info) 
         commited_max_view_ = tmp_block->qc().view();
     }
 
+    if (kv_sync_ != nullptr) {
+        kv_sync_->EraseSyncView(
+            tmp_block->qc().network_id(),
+            tmp_block->qc().pool_index(),
+            tmp_block->qc().view());
+    }
+
     AddNewBlock(tmp_block, db_batch);
     info->valid = true;
     // Always update the LRU from address_array in the committed block.
