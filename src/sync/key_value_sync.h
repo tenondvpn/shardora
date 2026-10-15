@@ -260,11 +260,9 @@ public:
         uint32_t priority);
     // Remove the in-flight synced_map_ entry for a kBlockView request whose
     // view has since been committed locally (e.g. via consensus rather than
-    // sync).  Called from CommitOneBlock so entries do not accumulate forever
-    // when blocks are produced faster than sync responses arrive.
-    void EraseSyncView(uint32_t net, uint32_t pool, uint64_t view) {
-        synced_map_.erase(SyncKeyOf(net, pool, view, kBlockView));
-    }
+    // sync).  Called from CommitOneBlock (hotstuff thread), so it must NOT
+    // touch synced_map_ directly — it enqueues for the timer thread to apply.
+    void EraseSyncView(uint32_t net, uint32_t pool, uint64_t view);
     // True when the local chain already holds `view` with a valid QC.  Both
     // AddSyncView and AddSyncViewSingle drop such a request instead of queuing
     // it: a view with a valid QC is immutable and already local, so syncing it
@@ -548,6 +546,16 @@ private:
     using SyncedPoolMap = std::map<uint32_t, SyncedHeightMap>;
     using SyncedNetworkMap = std::map<uint32_t, SyncedPoolMap>;
 
+    // A kBlockView entry to erase from synced_map_, queued by a hotstuff thread
+    // for the timer thread to apply.
+    struct EraseSyncViewItem {
+        uint32_t network_id = 0;
+        uint32_t pool_idx = 0;
+        uint64_t view = 0;
+    };
+    // Drain enqueued EraseSyncView requests.  Timer thread only.
+    void DrainEraseSyncViews();
+
     // A candidate consensus rejected, queued by a hotstuff thread for the timer
     // thread to drop.
     struct DropSyncedCandidateItem {
@@ -607,6 +615,7 @@ private:
     // One queue per hotstuff thread, same shape as item_queues_: the producer
     // indexes by its own thread, the timer thread drains every queue.
     common::ThreadSafeQueue<DropSyncedCandidateItem> drop_synced_candidate_queues_[common::kMaxThreadCount];
+    common::ThreadSafeQueue<EraseSyncViewItem> erase_sync_view_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<ViewBlockPtr> broadcast_global_blocks_queues_[common::kMaxThreadCount];
     common::UniqueMap<std::string, SyncItemPtr, kCacheSyncKeyValueCount> synced_map_;
     SyncedNetworkMap synced_res_map_;

@@ -654,6 +654,27 @@ void KeyValueSync::DrainDropSyncedCandidates() {
     }
 }
 
+void KeyValueSync::EraseSyncView(uint32_t net, uint32_t pool, uint64_t view) {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    EraseSyncViewItem item;
+    item.network_id = net;
+    item.pool_idx = pool;
+    item.view = view;
+    erase_sync_view_queues_[thread_idx].push(item);
+}
+
+void KeyValueSync::DrainEraseSyncViews() {
+    for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
+        while (true) {
+            EraseSyncViewItem item;
+            if (!erase_sync_view_queues_[thread_idx].pop(&item)) {
+                break;
+            }
+            synced_map_.erase(SyncKeyOf(item.network_id, item.pool_idx, item.view, kBlockView));
+        }
+    }
+}
+
 void KeyValueSync::DropSyncedCandidate(
         uint32_t network_id,
         uint32_t pool_idx,
@@ -723,6 +744,7 @@ void KeyValueSync::ConsensusTimerMessage() {
     // Drops requested by consensus run before PopItems: the rejected candidate
     // must be gone before this round decides the height is already answered.
     DrainDropSyncedCandidates();
+    DrainEraseSyncViews();
     PopItems();
     auto now_tm_ms2 = common::TimeUtils::TimestampMs();
     // Note: Do NOT call GetViewBlockWithHash("", true) here.
