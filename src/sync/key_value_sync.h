@@ -258,6 +258,11 @@ public:
         uint64_t view,
         uint64_t block_height,
         uint32_t priority);
+    // Remove the in-flight synced_map_ entry for a kBlockView request whose
+    // view has since been committed locally (e.g. via consensus rather than
+    // sync).  Called from CommitOneBlock (hotstuff thread), so it must NOT
+    // touch synced_map_ directly — it enqueues for the timer thread to apply.
+    void EraseSyncView(uint32_t net, uint32_t pool, uint64_t view);
     // True when the local chain already holds `view` with a valid QC.  Both
     // AddSyncView and AddSyncViewSingle drop such a request instead of queuing
     // it: a view with a valid QC is immutable and already local, so syncing it
@@ -331,6 +336,13 @@ public:
     }
 
 private:
+    // Enqueue a sync request on the caller's thread slot.  A full queue means
+    // the consumer has not drained the producer's batch yet; the request is
+    // dropped rather than buffered, because this queue is a retry buffer whose
+    // bound is the reserved capacity -- letting it allocate a new block per
+    // overflow leaks memory at the rate requests are produced.
+    bool QueueSyncItem(uint8_t thread_idx, const SyncItemPtr& item);
+
     struct VerifyBlockItem {
         ViewBlockPtr pb_vblock;
         std::string key;
@@ -467,11 +479,16 @@ private:
     // round-trip should complete in <200ms on a healthy network. 300ms gives
     // enough margin for network jitter while allowing ~3 retries per second.
     static const uint64_t kSyncTimeoutPeriodUs = 300000lu;
+    // Cap on the resend backoff exponent.  The retry period is
+    // kSyncTimeoutPeriodUs << min(sync_times, kSyncMaxBackoffShift), so six
+    // doublings take 300ms to ~19.2s.  Beyond that an unanswered item is almost
+    // certainly unanswerable, and waiting longer only delays a late recovery.
+    static const uint32_t kSyncMaxBackoffShift = 6u;
     static const uint32_t kEachTimerHandleCount = 64u;
     // [SYNC_OPT] Increased from 4096 to 8192: drain more ready-queue messages
     // per timer tick. With faster sync, more responses arrive per interval.
     static const uint32_t kMaxBatchDrainCount = 8192u;
-    static const uint32_t kCacheSyncKeyValueCount = 1024000u;
+    static const uint32_t kCacheSyncKeyValueCount = 50000u;
     static const uint32_t kSyncCount = 5u;
     static const uint32_t kMaxSyncLatestNotRootCount = 1024u;
     static const uint32_t kFollowupSyncHeightCount = 32u;
@@ -528,6 +545,16 @@ private:
     using SyncedHeightMap = std::map<uint64_t, std::map<std::string, SyncedHeightEntry>>;
     using SyncedPoolMap = std::map<uint32_t, SyncedHeightMap>;
     using SyncedNetworkMap = std::map<uint32_t, SyncedPoolMap>;
+
+    // A kBlockView entry to erase from synced_map_, queued by a hotstuff thread
+    // for the timer thread to apply.
+    struct EraseSyncViewItem {
+        uint32_t network_id = 0;
+        uint32_t pool_idx = 0;
+        uint64_t view = 0;
+    };
+    // Drain enqueued EraseSyncView requests.  Timer thread only.
+    void DrainEraseSyncViews();
 
     // A candidate consensus rejected, queued by a hotstuff thread for the timer
     // thread to drop.
@@ -588,6 +615,7 @@ private:
     // One queue per hotstuff thread, same shape as item_queues_: the producer
     // indexes by its own thread, the timer thread drains every queue.
     common::ThreadSafeQueue<DropSyncedCandidateItem> drop_synced_candidate_queues_[common::kMaxThreadCount];
+    common::ThreadSafeQueue<EraseSyncViewItem> erase_sync_view_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<ViewBlockPtr> broadcast_global_blocks_queues_[common::kMaxThreadCount];
     common::UniqueMap<std::string, SyncItemPtr, kCacheSyncKeyValueCount> synced_map_;
     SyncedNetworkMap synced_res_map_;

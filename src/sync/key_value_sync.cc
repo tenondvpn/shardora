@@ -104,6 +104,22 @@ int KeyValueSync::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
 }
 
+bool KeyValueSync::QueueSyncItem(uint8_t thread_idx, const SyncItemPtr& item) {
+    if (item_queues_[thread_idx].TryPush(item)) {
+        return true;
+    }
+
+    // Drop rather than grow.  The queue is a retry buffer: the request will be
+    // re-issued by whatever scheduled it (the consensus/backfill loop re-runs
+    // and re-queues heights it still lacks), so a dropped item costs a round
+    // trip, whereas allocating a block for it costs memory that is never
+    // returned for the life of the process.
+    SHARDORA_WARN("sync queue full, drop req key: %s, thread: %u, size: %u",
+        item->key.c_str(), (uint32_t)thread_idx,
+        (uint32_t)item_queues_[thread_idx].size());
+    return false;
+}
+
 void KeyValueSync::AddSyncHeight(
         uint32_t network_id,
         uint32_t pool_idx,
@@ -113,7 +129,10 @@ void KeyValueSync::AddSyncHeight(
     //assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority, kBlockHeight);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
+    if (!QueueSyncItem(thread_idx, item)) {
+        return;
+    }
+
     SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu",
         item->key.c_str(), item->priority, network_id, pool_idx, height);
 }
@@ -128,7 +147,10 @@ void KeyValueSync::AddSyncHeight(
     auto item = std::make_shared<SyncItem>(
         network_id, pool_idx, height, priority, kBlockHeight, in_view, in_block_hash);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
+    if (!QueueSyncItem(thread_idx, item)) {
+        return;
+    }
+
     SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu, view: %lu",
         item->key.c_str(), item->priority, network_id, pool_idx, height, in_view);
 }
@@ -171,7 +193,10 @@ void KeyValueSync::AddSyncView(
 
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority, kBlockView);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
+    if (!QueueSyncItem(thread_idx, item)) {
+        return;
+    }
+
     SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu",
         item->key.c_str(), item->priority, network_id, pool_idx, height);
 }
@@ -191,7 +216,10 @@ void KeyValueSync::AddSyncViewSingle(
     auto item = std::make_shared<SyncItem>(
         network_id, pool_idx, view, block_height, priority, kBlockView);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
+    if (!QueueSyncItem(thread_idx, item)) {
+        return;
+    }
+
     SHARDORA_DEBUG("block view add single sync item key: %s, priority: %u, %u_%u_%lu, "
         "height: %lu",
         item->key.c_str(), item->priority, network_id, pool_idx, view, block_height);
@@ -568,12 +596,15 @@ void KeyValueSync::AddSyncViewHash(
     auto item = std::make_shared<SyncItem>(
         network_id, key, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    item_queues_[thread_idx].push(item);
+    if (!QueueSyncItem(thread_idx, item)) {
+        return;
+    }
+
     SHARDORA_DEBUG("block height add new sync item key: %s, %u_%u, priority: %u, item size: %u",
-        common::Encode::HexEncode(item->key).c_str(), 
+        common::Encode::HexEncode(item->key).c_str(),
         network_id,
         pool_idx,
-        item->priority, 
+        item->priority,
         item_queues_[thread_idx].size());
 }
 
@@ -620,6 +651,27 @@ void KeyValueSync::DrainDropSyncedCandidates() {
 
     if (dropped > 0) {
         SHARDORA_DEBUG("drained drop synced candidates: %u", dropped);
+    }
+}
+
+void KeyValueSync::EraseSyncView(uint32_t net, uint32_t pool, uint64_t view) {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    EraseSyncViewItem item;
+    item.network_id = net;
+    item.pool_idx = pool;
+    item.view = view;
+    erase_sync_view_queues_[thread_idx].push(item);
+}
+
+void KeyValueSync::DrainEraseSyncViews() {
+    for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
+        while (true) {
+            EraseSyncViewItem item;
+            if (!erase_sync_view_queues_[thread_idx].pop(&item)) {
+                break;
+            }
+            synced_map_.erase(SyncKeyOf(item.network_id, item.pool_idx, item.view, kBlockView));
+        }
     }
 }
 
@@ -692,6 +744,7 @@ void KeyValueSync::ConsensusTimerMessage() {
     // Drops requested by consensus run before PopItems: the rejected candidate
     // must be gone before this round decides the height is already answered.
     DrainDropSyncedCandidates();
+    DrainEraseSyncViews();
     PopItems();
     auto now_tm_ms2 = common::TimeUtils::TimestampMs();
     // Note: Do NOT call GetViewBlockWithHash("", true) here.
@@ -833,8 +886,24 @@ void KeyValueSync::PopItems() {
             }
 
             if (synced_map_.get(item->key, &item)) {
-                if (item->sync_tm_us + kSyncTimeoutPeriodUs >= now_tm) {
-                    SHARDORA_DEBUG("item->sync_tm_us + kSyncTimeoutPeriodUs >= now_tm: %s", item->key.c_str());
+                // Resend backoff: the first retry still fires after the base
+                // timeout, so a dropped packet recovers as fast as before, but
+                // each further attempt doubles the wait.  A view that never gets
+                // answered (a peer that simply does not hold it) would otherwise
+                // be re-sent every kSyncTimeoutPeriodUs forever, which is what
+                // kept synced_map_ growing without bound.  The shift is capped so
+                // the period stays far below an overflow at any retry count.
+                // sync_times is already 1 on the first pass through here (it is
+                // incremented right after the initial send), so the first retry
+                // must shift by 0 to keep its 300ms period.
+                const uint32_t retries = item->sync_times > 0 ? item->sync_times - 1 : 0;
+                const uint32_t shift = retries < kSyncMaxBackoffShift ?
+                    retries : kSyncMaxBackoffShift;
+                const uint64_t backoff = kSyncTimeoutPeriodUs << shift;
+                if (item->sync_tm_us + backoff >= now_tm) {
+                    SHARDORA_DEBUG("item->sync_tm_us + backoff >= now_tm: %s, "
+                        "sync_times: %u, backoff: %lu",
+                        item->key.c_str(), item->sync_times, backoff);
                     continue;
                 }
 
@@ -842,6 +911,12 @@ void KeyValueSync::PopItems() {
                 //     SHARDORA_DEBUG("item->sync_times >= kSyncCount: %s", item->key.c_str());
                 //     continue;
                 // }
+            }
+
+            if (item->tag == kBlockView &&
+                    ViewAlreadySettled(item->network_id, item->pool_idx, item->height)) {
+                synced_map_.erase(item->key);
+                continue;
             }
 
             if (responsed_keys_.exists(item->key)) {
@@ -904,14 +979,23 @@ void KeyValueSync::PopItems() {
             synced_map_.add(item->key, item);
             item->sync_tm_us = now_tm;
             if (++synced_count > kSyncMaxKeyCount) {
+                // Work budget for this round is spent.  Draining more queues
+                // would not send anything (the budget gates the sends below),
+                // so stop the whole round rather than spin over the rest.
                 stop = true;
                 break;
             }
 
             if (sended_neigbors.size() > kSyncNeighborCount) {
-                stop = true;
+                // Only the *sending* is out of peers: every neighbour has been
+                // contacted this round.  Draining must continue -- if this
+                // broke the outer loop, queues after this one would never be
+                // drained, and since each round stops at the first queue that
+                // hits this limit, their backlog would grow without bound.
+                // The items consumed here are recorded in synced_map_ and will
+                // be re-sent once a neighbour is available again.
                 break;
-            }     
+            }
         }
 
         if (stop) {
@@ -2275,12 +2359,15 @@ void KeyValueSync::QueueFollowupBlockSync(
             kSyncHighest,
             kBlockHeight);
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        if (!QueueSyncItem(thread_idx, item)) {
+            continue;
+        }
+
         SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu, "
             "next_height: %lu, kSyncHighest: %u",
             item->key.c_str(), item->priority, network_id, pool_idx,
             static_cast<uint32_t>(kBlockHeight), next_height,
             static_cast<uint32_t>(kSyncHighest));
-        item_queues_[thread_idx].push(item);
     }
 }
 

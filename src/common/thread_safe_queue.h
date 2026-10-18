@@ -25,6 +25,17 @@ public:
         auto& tmp_item = *this;
     }
 
+    // Non-allocating enqueue.  The underlying push() maps to moodycamel's
+    // enqueue(), which appends a new block whenever the current one is full and
+    // never frees blocks again -- a queue used as a retry buffer therefore grows
+    // without bound.  Producers that can tolerate a dropped element should use
+    // this instead: it returns false once the reserved capacity is exhausted
+    // rather than allocating, so the caller decides what a drop means (for a
+    // sync request, the next round simply re-asks).
+    bool TryPush(T e) {
+        return rw_queue_.try_enqueue(e);
+    }
+
     bool pop(T* e) {
         bool res = rw_queue_.try_dequeue(*e);
         auto& tmp_item = *this;

@@ -113,8 +113,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         ${DEP_DIR}/lib64
         ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/lib/)
     set(LINK_UUID uuid)
-    # Prefer system OpenSSL (3.x) over third_party (1.x) so httplib's
-    # SSL_get1_peer_certificate resolves correctly on Ubuntu 22+.
+    # OPENSSL_ROOT_DIR is set by build.sh to third_party if bundled OpenSSL was built,
+    # otherwise CMake finds system OpenSSL (e.g. Ubuntu libssl-dev).
     find_package(OpenSSL REQUIRED)
     include_directories(${OPENSSL_INCLUDE_DIR})
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")

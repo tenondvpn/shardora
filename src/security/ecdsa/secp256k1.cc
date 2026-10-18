@@ -188,7 +188,7 @@ bool Secp256k1::Secp256k1Verify(
 }
 
 std::string Secp256k1::Recover(const std::string& sign, const std::string& hash, bool compressed) {
-    int v = sign[64];
+    int v = (uint8_t)sign[64];
     if (v > 3) {
         CRYPTO_ERROR("sign invalid: %u", v);
         return "";
