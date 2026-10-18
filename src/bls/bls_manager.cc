@@ -407,9 +407,9 @@ int BlsManager::Verify(
 }
 
 int BlsManager::VerifyFast(
-        const libff::alt_bn128_G1& sign,
-        const libff::alt_bn128_G1& g1_hash,
-        const libff::alt_bn128_G2& pkey) try {
+        libff::alt_bn128_G1 sign,
+        libff::alt_bn128_G1 g1_hash,
+        libff::alt_bn128_G2 pkey) try {
     if (pkey == libff::alt_bn128_G2::zero()) {
         return kBlsError;
     }

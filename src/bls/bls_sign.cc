@@ -109,9 +109,9 @@ std::string BlsSign::GetVerifyHash(const libff::alt_bn128_GT& res) {
 }
 
 int BlsSign::VerifyFast(
-        const libff::alt_bn128_G1& sign,
-        const libff::alt_bn128_G1& g1_hash,
-        const libff::alt_bn128_G2& pkey) try {
+        libff::alt_bn128_G1 sign,
+        libff::alt_bn128_G1 g1_hash,
+        libff::alt_bn128_G2 pkey) try {
 #ifdef MOCK_VERIFY
     return kBlsSuccess;
 #else
