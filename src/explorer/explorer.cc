@@ -824,13 +824,21 @@ std::string Explorer::SearchAddresses(const std::string& prefix, int limit) {
     // it would just be a table scan returning unrelated rows.
     if (p.size() < 40) return JsonList(json::array(), 0, false);
 
-    // One scan, both spellings. `exact` marks rows whose stored addr equals the
-    // normalized input in either form, which sorts first.
+    // UNION addresses + contracts so contracts registered via UpdateContract
+    // (which may not have an addresses row) are also discoverable.
+    // Columns: rowid, addr, addr_type, shard_id, pool_index, is_contract,
+    //          balance, nonce, first_seen, last_seen, tx_count
     const char* sql =
         "SELECT rowid,addr,addr_type,shard_id,pool_index,is_contract,"
-        "balance,nonce,first_seen,last_seen,tx_count"
+        "       balance,nonce,first_seen,last_seen,tx_count"
         " FROM addresses"
         " WHERE (addr LIKE ? OR addr LIKE ?)"
+        " UNION"
+        " SELECT rowid,addr,0,shard_id,pool_index,1,"
+        "        0,0,create_timestamp,create_timestamp,0"
+        " FROM contracts"
+        " WHERE (addr LIKE ? OR addr LIKE ?)"
+        "   AND addr NOT IN (SELECT addr FROM addresses WHERE addr LIKE ? OR addr LIKE ?)"
         " ORDER BY (addr=? OR addr=?) DESC, rowid"
         " LIMIT ?;";
 
@@ -839,11 +847,20 @@ std::string Explorer::SearchAddresses(const std::string& prefix, int limit) {
     if (sqlite3_prepare_v2(read_db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
         const std::string like_0x = with_0x + "%";
         const std::string like_b  = bare + "%";
-        sqlite3_bind_text(stmt, 1, like_0x.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt, 2, like_b.c_str(),  -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt, 3, with_0x.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt, 4, bare.c_str(),    -1, SQLITE_TRANSIENT);
-        sqlite3_bind_int (stmt, 5, limit);
+        // addresses WHERE (1,2)
+        sqlite3_bind_text(stmt, 1,  like_0x.c_str(),  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2,  like_b.c_str(),   -1, SQLITE_TRANSIENT);
+        // contracts WHERE (3,4)
+        sqlite3_bind_text(stmt, 3,  like_0x.c_str(),  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 4,  like_b.c_str(),   -1, SQLITE_TRANSIENT);
+        // NOT IN subquery (5,6)
+        sqlite3_bind_text(stmt, 5,  like_0x.c_str(),  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 6,  like_b.c_str(),   -1, SQLITE_TRANSIENT);
+        // ORDER BY exact (7,8)
+        sqlite3_bind_text(stmt, 7,  with_0x.c_str(),  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 8,  bare.c_str(),     -1, SQLITE_TRANSIENT);
+        // LIMIT (9)
+        sqlite3_bind_int (stmt, 9,  limit);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             auto ad = sqlite3_column_text(stmt, 1);
             const std::string addr = ad ? (const char*)ad : "";

@@ -130,8 +130,8 @@ void ExplorerContracts(const init::UWSRequest& req, init::UWSResponse& res) {
     int is_library = ParamInt(req, "is_library", -1);
     int is_clone   = ParamInt(req, "is_clone",   -1);
     int64_t before_id = ParamInt64(req, "before_id", 0);
-    int limit      = ParamInt(req, "limit", 20);
-    if (limit <= 0 || limit > 100) limit = 20;
+    int limit      = ParamInt(req, "limit", 1024);
+    if (limit <= 0 || limit > 1024) limit = 1024;
     res.set_content(
         g_explorer->QueryContracts(is_library, is_clone, before_id, limit),
         kJson);
@@ -182,7 +182,7 @@ void ExplorerSearch(const init::UWSRequest& req, init::UWSResponse& res) {
     std::string q = ParamStr(req, "q");
     if (q.empty()) q = ParamStr(req, "prefix");
     int limit = ParamInt(req, "limit", 50);
-    if (limit <= 0 || limit > 200) limit = 50;
+    if (limit <= 0 || limit > 1024) limit = 50;
     if (q.empty()) {
         res.set_content(R"({"code":-1,"msg":"q required"})", kJson);
         return;
