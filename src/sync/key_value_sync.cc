@@ -52,6 +52,7 @@ const uint64_t KeyValueSync::kSyncSendIntervalUs;
 const uint64_t KeyValueSync::kSyncTimeoutPeriodUs;
 const uint32_t KeyValueSync::kEachTimerHandleCount;
 const uint32_t KeyValueSync::kMaxBatchDrainCount;
+const uint32_t KeyValueSync::kMaxReadyQueueSize;
 const uint32_t KeyValueSync::kCacheSyncKeyValueCount;
 const uint32_t KeyValueSync::kSyncCount;
 const uint32_t KeyValueSync::kMaxSyncLatestNotRootCount;
@@ -1155,9 +1156,19 @@ void KeyValueSync::KvConsumerLoop() {
             }
             const bool is_res = msg_ptr->header.sync_proto().has_sync_value_res();
             if (is_res) {
-                kv_ready_res_queue_.push(msg_ptr);
+                if (kv_ready_res_queue_.size() < kMaxReadyQueueSize) {
+                    kv_ready_res_queue_.push(msg_ptr);
+                } else {
+                    SHARDORA_WARN("kv_ready_res_queue_ full (%zu), dropping sync res hash=%lu",
+                        kv_ready_res_queue_.size(), msg_ptr->header.hash64());
+                }
             } else {
-                kv_ready_req_queue_.push(msg_ptr);
+                if (kv_ready_req_queue_.size() < kMaxReadyQueueSize) {
+                    kv_ready_req_queue_.push(msg_ptr);
+                } else {
+                    SHARDORA_WARN("kv_ready_req_queue_ full (%zu), dropping sync req hash=%lu",
+                        kv_ready_req_queue_.size(), msg_ptr->header.hash64());
+                }
             }
             SHARDORA_DEBUG("KvConsumerLoop relayed message hash: %lu, kv_msg_queue_ size: %u, "
                 "ready_res size: %u, ready_req size: %u, is_res: %d",
@@ -1555,6 +1566,28 @@ void KeyValueSync::ApplyVerifiedBlockResult(const VerifyBlockResult& result) {
     synced_map_.erase(result.key);
 
     EnqueueVerifiedBlock(pb_vblock);
+
+    // DrainConsecutiveHeights re-enqueues any verified entry with pushed_to_consensus=false.
+    {
+        const auto net_id  = pb_vblock->qc().network_id();
+        const auto pool_idx = pb_vblock->qc().pool_index();
+        const auto height  = pb_vblock->block_info().height();
+        const auto& vhash  = pb_vblock->qc().view_block_hash();
+        auto net_it = synced_res_map_.find(net_id);
+        if (net_it != synced_res_map_.end()) {
+            auto pool_it = net_it->second.find(pool_idx);
+            if (pool_it != net_it->second.end()) {
+                auto h_it = pool_it->second.find(height);
+                if (h_it != pool_it->second.end()) {
+                    auto hash_it = h_it->second.find(vhash);
+                    if (hash_it != h_it->second.end()) {
+                        hash_it->second.pushed_to_consensus = true;
+                    }
+                }
+            }
+        }
+    }
+
     QueueFollowupBlockSync(
         pb_vblock->qc().network_id(),
         pb_vblock->qc().pool_index(),

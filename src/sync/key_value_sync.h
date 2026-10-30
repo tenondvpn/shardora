@@ -488,6 +488,7 @@ private:
     // [SYNC_OPT] Increased from 4096 to 8192: drain more ready-queue messages
     // per timer tick. With faster sync, more responses arrive per interval.
     static const uint32_t kMaxBatchDrainCount = 8192u;
+    static const uint32_t kMaxReadyQueueSize = 65536u;
     static const uint32_t kCacheSyncKeyValueCount = 50000u;
     static const uint32_t kSyncCount = 5u;
     static const uint32_t kMaxSyncLatestNotRootCount = 1024u;
