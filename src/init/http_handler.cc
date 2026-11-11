@@ -870,7 +870,7 @@ static void QueryContract(const UWSRequest& req, UWSResponse& http_res) {
             std::to_string(result.status_code) + 
             ", exec_res: " + std::to_string(exec_res);
         http_res.set_content(res, "text/plain");
-        SHARDORA_DEBUG("query contract error: %s.", res.c_str());
+        SHARDORA_DEBUG("query contract error res: %s.", res.c_str());
         return;
     }
 
