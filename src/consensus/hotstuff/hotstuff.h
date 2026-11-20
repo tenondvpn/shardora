@@ -3,6 +3,8 @@
 #include <atomic>
 #include <cstdlib>
 #include <mutex>
+#include <set>
+#include <tuple>
 #include <consensus/hotstuff/crypto.h>
 #include "consensus/consensus_utils.h"
 #include <consensus/hotstuff/block_acceptor.h>
@@ -116,13 +118,19 @@ public:
         latest_elect_height_ = elect_height;
         consecutive_failures_ = 0;
         update_latest_view_tm_ = true;
-        if (latest_qc_item_ptr_ == nullptr || latest_elect_height_ > latest_qc_item_ptr_->elect_height()) {
+        // One atomic snapshot drives both the ordering decision and the leader
+        // lookup.  latest_qc_item_ptr_ is reassigned by the hotstuff network
+        // thread and the sync timer thread, so two separate loads could observe
+        // different values (null then non-null), and a plain shared_ptr copy
+        // could race with that reassignment and corrupt the refcount block.
+        auto qc_ptr = latest_qc_item_ptr_.load(std::memory_order_acquire);
+        if (qc_ptr == nullptr || latest_elect_height_ > qc_ptr->elect_height()) {
             last_stable_leader_member_index_ = GetEpochLeaderIndex();
             SHARDORA_DEBUG("pool: %u, new elect block, elect height: %lu, last_stable_leader_member_index_: %u",
                 pool_idx_, latest_elect_height_, last_stable_leader_member_index_.load());
         }
 
-        if (latest_qc_item_ptr_ == nullptr) {
+        if (qc_ptr == nullptr) {
             SHARDORA_WARN("pool: %u, OnNewElectBlock skipping GetLeader: latest_qc_item_ptr_ is null, "
                 "elect_height: %lu", pool_idx_, elect_height);
             return;
@@ -131,8 +139,8 @@ public:
         View out_view = 0;
         auto leader_block_tm = GetLeaderBlockTimestamp();
         GetLeader(
-            last_stable_leader_member_index_, 
-            *latest_qc_item_ptr_, 
+            last_stable_leader_member_index_,
+            *qc_ptr,
             &out_view,
             leader_block_tm,
             true);
@@ -189,6 +197,32 @@ public:
 
     inline std::shared_ptr<ViewBlockChain> view_block_chain() const {
         return view_block_chain_;
+    }
+
+    // Resolve which chain holds the blocks for `network_id`.
+    //   - root congress shard   -> root_view_block_chain_
+    //   - this node's own shard -> view_block_chain_
+    //   - any other shard       -> the cross chain for that shard, which only
+    //                              exists on the Hotstuff instance whose pool
+    //                              index is network_id % kImmutablePoolSize
+    // Returns nullptr when this instance holds no chain for the network, so a
+    // caller can fall back to the instance that actually owns it.
+    inline std::shared_ptr<ViewBlockChain> ChainForNetwork(uint32_t network_id) const {
+        if (network::IsSameShardOrSameWaitingPool(
+                network_id, network::kRootCongressNetworkId)) {
+            return root_view_block_chain_;
+        }
+
+        if (network::IsSameToLocalShard(network_id)) {
+            return view_block_chain_;
+        }
+
+        auto iter = cross_shard_view_block_chain_.find(network_id);
+        if (iter == cross_shard_view_block_chain_.end()) {
+            return nullptr;
+        }
+
+        return iter->second;
     }
 
     inline std::shared_ptr<Pacemaker> pacemaker() const {
@@ -267,7 +301,7 @@ public:
     }
 
     std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr() const {
-        return latest_qc_item_ptr_;
+        return latest_qc_item_ptr_.load(std::memory_order_acquire);
     }
 
 private:
@@ -294,10 +328,10 @@ private:
                 pool_idx_, qc_ptr->elect_height(), last_stable_leader_member_index_.load(),
                 last_vote_view_,
                 qc_ptr->view());
-            laste_vote_prev_view_tm_.Put(qc_ptr->view(), common::TimeUtils::TimestampUs());
+            laste_vote_prev_view_tm_.Put(qc_ptr->view(), common::TimeUtils::TimestampMs());
         }
 
-        latest_qc_item_ptr_ = qc_ptr;
+        latest_qc_item_ptr_.store(qc_ptr, std::memory_order_release);
         auto high_view_block = view_block_chain_->HighViewBlock();
         if (latest_leader_propose_message_ && high_view_block != nullptr && 
                 high_view_block->qc().view() < qc_ptr->view() && 
@@ -679,6 +713,13 @@ private:
 
     static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 10000lu;
 
+    // Cap on how many absent heights one recovery round asks for.  The request
+    // is one probe per height rather than a range, so this bounds both the
+    // request size and the number of queue entries a single stuck chain can
+    // create; a chain with more holes than this closes the rest on later
+    // rounds, oldest first.
+    static const uint32_t kMaxSyncMissingHeightCount = 64u;
+
     std::shared_ptr<block::BlockManager> block_mgr_;
     uint32_t pool_idx_;
     std::shared_ptr<Crypto> crypto_;
@@ -696,7 +737,12 @@ private:
     SyncPoolFn sync_pool_fn_ = nullptr;
     std::unordered_map<uint32_t, std::map<View, transport::MessagePtr>> voted_msgs_;
     uint64_t latest_propose_msg_tm_ms_ = 0;
-    std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr_;
+    // Atomic: written by the hotstuff network thread and the sync timer thread
+    // without a lock while consensus, sync and the propose path copy it.  A
+    // plain shared_ptr copy racing with that reassignment corrupts the refcount
+    // block and crashes in the destructor.  Access via .load()/.store() only --
+    // never touch the member directly, since that bypasses the atomic.
+    std::atomic<std::shared_ptr<view_block::protobuf::QcItem>> latest_qc_item_ptr_;
     uint64_t propose_debug_index_ = 0;
     uint64_t recover_from_stuck_timeout_ = 0;
     bool has_user_tx_tag_ = false;

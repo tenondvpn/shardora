@@ -90,6 +90,13 @@ static const std::string kUserTxGidPrefix = "bd\x01";
 static const std::string kElectHeightWithElectBlock = "bd\x02";
 static const std::string kOverUniqueHash = "be\x02";
 static const std::string kLeaderLatestProposeMessage = "bf\x02";
+static const std::string kPoraChunkPrefix = "bg\x02";
+// kStatistic txs that were accepted into a tx pool but have not reached
+// consensus yet.  Without this they live only in memory, so a restart between
+// admission and commit loses the statistic for good.  Key is the tx's
+// unique_hash (sharding_id + statistic_height), written when the pool takes the
+// tx and erased in the same db batch that commits the block carrying it.
+static const std::string kPendingStatisticTxPrefix = "at\x02";
 
 class PrefixDb {
 public:
@@ -321,6 +328,31 @@ public:
         db_batch.Put(key, "1");
     }
 
+    // Persist a kStatistic tx that the pool accepted but consensus has not
+    // committed yet.  `<header>` is the serialized transport header, which is
+    // what AddPoolMessage needs to put the tx back through the normal dispatch
+    // path after a restart.
+    void SavePendingStatisticTx(
+            const std::string& unique_hash,
+            const std::string& serialized_header,
+            db::DbWriteBatch& db_batch) {
+        db_batch.Put(kPendingStatisticTxPrefix + unique_hash, serialized_header);
+    }
+
+    void RemovePendingStatisticTx(
+            const std::string& unique_hash,
+            db::DbWriteBatch& db_batch) {
+        db_batch.Delete(kPendingStatisticTxPrefix + unique_hash);
+    }
+
+    void RemovePendingStatisticTx(const std::string& unique_hash) {
+        db_->Delete(kPendingStatisticTxPrefix + unique_hash);
+    }
+
+    void GetAllPendingStatisticTxs(std::map<std::string, std::string>* res_map) {
+        db_->GetAllPrefix(kPendingStatisticTxPrefix, *res_map);
+    }
+
     void SaveLatestTimeBlock(const timeblock::protobuf::TimeBlock& tmblock, db::DbWriteBatch& db_batch) {
         std::string key(kLatestTimeBlockPrefix);
         db_batch.Put(key, tmblock.SerializeAsString());
@@ -431,6 +463,12 @@ public:
         std::string block_str;
         view_block.SerializeToString(&block_str);
         batch.Put(key, block_str);
+        // Store block in chunked format for efficient PoRA partial reads.
+        std::string chunk_base_key;
+        chunk_base_key.reserve(kPoraChunkPrefix.size() + view_block.qc().view_block_hash().size());
+        chunk_base_key.append(kPoraChunkPrefix);
+        chunk_base_key.append(view_block.qc().view_block_hash());
+        db_->PutChunked(chunk_base_key, block_str, batch);
         std::string view_key;
         view_key.reserve(48);
         view_key.append(kBlockVaildHeight);
@@ -533,6 +571,28 @@ public:
         }
 
         return GetBlockString(block_hash, block_str);
+    }
+
+    // Read bytes [offset, offset+length) from the serialized block at the given height.
+    // Uses chunked storage: only loads the 1-2 RocksDB entries covering the range.
+    // Offset and length are clamped; returns false only if the block does not exist.
+    bool GetBlockSubValue(
+            uint32_t sharding_id,
+            uint32_t pool_index,
+            uint64_t height,
+            size_t offset,
+            size_t length,
+            std::string* out) {
+        std::string block_hash;
+        if (!GetBlockHashWithBlockHeight(sharding_id, pool_index, height, &block_hash)) {
+            return false;
+        }
+        std::string chunk_base_key;
+        chunk_base_key.reserve(kPoraChunkPrefix.size() + block_hash.size());
+        chunk_base_key.append(kPoraChunkPrefix);
+        chunk_base_key.append(block_hash);
+        auto st = db_->GetSubValueChunked(chunk_base_key, offset, length, out);
+        return st.ok();
     }
 
     void SaveLatestToTxsHeights(

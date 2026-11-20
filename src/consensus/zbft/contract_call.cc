@@ -145,12 +145,19 @@ int ContractCall::HandleTx(
 
         if (from_balance > gas_used * block_tx.gas_price()) {
             from_balance -= gas_used * block_tx.gas_price();
-            gas_used += consensus::CalcKvStorageGas(
-                tx_info->key().size(), tx_info->value().size(), true);
-            if (gas_limit < gas_used) {
-                block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-                SHARDORA_DEBUG("1 balance error: %lu, %lu, %lu",
-                    from_balance, gas_limit, gas_used);
+            // Only account for KV-storage gas when EVM execution actually succeeded.
+            // On any EVM error (status != EVMC_SUCCESS), gas_left is 0 per EVMC spec,
+            // which means gas_used already equals the full gas_limit.  Adding KV-storage
+            // gas on top would push gas_used beyond gas_limit and incorrectly overwrite
+            // the real EVMC error status with kConsensusUserSetGasLimitError.
+            if (evmc_res.status_code == EVMC_SUCCESS) {
+                gas_used += consensus::CalcKvStorageGas(
+                    tx_info->key().size(), tx_info->value().size(), true);
+                if (gas_limit < gas_used) {
+                    block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
+                    SHARDORA_DEBUG("1 balance error: %lu, %lu, %lu",
+                        from_balance, gas_limit, gas_used);
+                }
             }
         } else {
             block_tx.set_status(consensus::kConsensusAccountBalanceError);
@@ -362,7 +369,7 @@ int ContractCall::HandleTx(
             if (!_tpx.empty()) _tpx += ",";
             _tpx += common::Encode::HexEncode(std::string((char*)_t.bytes, 32));
         }
-        SHARDORA_INFO("[TOKEN_TEST] contract=%s topics=[%s] data=%s",
+        SHARDORA_DEBUG("[TOKEN_TEST] contract=%s topics=[%s] data=%s",
             common::Encode::HexEncode(
                 std::string((char*)(*event_iter).creator.bytes, 20)).c_str(),
             _tpx.c_str(),
@@ -464,12 +471,12 @@ int ContractCall::HandleTx(
                         std::array<uint8_t, 20> _b; std::memcpy(_b.data(), action.base_root_address.data(), 20);
                         auto _s = shardoravm::DeriveShardAddress(_b, action.dest_shard_id, action.dest_pool_index);
                         std::string _ss(reinterpret_cast<const char*>(_s.data()), 20);
-                        SHARDORA_INFO("CrossShardBase cross-transfer queued: base=%s, user=%s, shadow=%s, nonce=%lu, dest_shard=%u pool=%u",
+                        SHARDORA_DEBUG("CrossShardBase cross-transfer queued: base=%s, user=%s, shadow=%s, nonce=%lu, dest_shard=%u pool=%u",
                             common::Encode::HexEncode(action.base_root_address).c_str(),
                             common::Encode::HexEncode(action.to).c_str(),
                             common::Encode::HexEncode(_ss).c_str(),
                             action.nonce, action.dest_shard_id, action.dest_pool_index);
-                        SHARDORA_WARN("XBAL_OUT base=%s user=%s shd=%s amt=%s nonce=%lu dshard=%u dpool=%u",
+                        SHARDORA_DEBUG("XBAL_OUT base=%s user=%s shd=%s amt=%s nonce=%lu dshard=%u dpool=%u",
                             common::Encode::HexEncode(action.base_root_address).c_str(),
                             common::Encode::HexEncode(action.to).c_str(),
                             common::Encode::HexEncode(_ss).c_str(),
@@ -479,10 +486,10 @@ int ContractCall::HandleTx(
                 } else {
                     it->second->set_amount(it->second->amount() + action.amount);
                     add_amount256(*it->second, action.amount_bytes);
-                    SHARDORA_INFO("CrossShardBase cross-transfer accumulated: user=%s dest_shard=%u pool=%u",
+                    SHARDORA_DEBUG("CrossShardBase cross-transfer accumulated: user=%s dest_shard=%u pool=%u",
                         common::Encode::HexEncode(action.to).c_str(),
                         action.dest_shard_id, action.dest_pool_index);
-                    SHARDORA_WARN("XBAL_OUT_ACC base=%s user=%s amt_add=%s nonce=%lu dshard=%u dpool=%u",
+                    SHARDORA_DEBUG("XBAL_OUT_ACC base=%s user=%s amt_add=%s nonce=%lu dshard=%u dpool=%u",
                         common::Encode::HexEncode(action.base_root_address).c_str(),
                         common::Encode::HexEncode(action.to).c_str(),
                         common::Encode::HexEncode(action.amount_bytes).c_str(),
@@ -510,7 +517,7 @@ int ContractCall::HandleTx(
                     kv->set_key(action.storage_key);
                     kv->set_value(action.storage_val);
                     cross_to_map_[shadow_des] = item;
-                    SHARDORA_INFO("CrossShardBase cross-storage queued: base=%s, key_len=%zu, nonce=%lu, dest_shard=%u pool=%u",
+                    SHARDORA_DEBUG("CrossShardBase cross-storage queued: base=%s, key_len=%zu, nonce=%lu, dest_shard=%u pool=%u",
                         common::Encode::HexEncode(action.base_root_address).c_str(),
                         action.storage_key.size(), action.nonce,
                         action.dest_shard_id, action.dest_pool_index);
@@ -518,7 +525,7 @@ int ContractCall::HandleTx(
                     auto* kv = it->second->add_cross_storage_kv();
                     kv->set_key(action.storage_key);
                     kv->set_value(action.storage_val);
-                    SHARDORA_INFO("CrossShardBase cross-storage appended: base=%s, key_len=%zu",
+                    SHARDORA_DEBUG("CrossShardBase cross-storage appended: base=%s, key_len=%zu",
                         common::Encode::HexEncode(action.base_root_address).c_str(),
                         action.storage_key.size());
                 }

@@ -28,9 +28,9 @@ public:
         std::string* verify_hash);
     // Fast path: single final exponentiation via double Miller loop.
     static int VerifyFast(
-        const libff::alt_bn128_G1& sign,
-        const libff::alt_bn128_G1& g1_hash,
-        const libff::alt_bn128_G2& pkey);
+        libff::alt_bn128_G1 sign,
+        libff::alt_bn128_G1 g1_hash,
+        libff::alt_bn128_G2 pkey);
     // Fast path for multi-message aggregate verify: one final exponentiation.
     static bool AggregateVerifyFast(
         const std::vector<std::string>& str_hashes,

@@ -46,6 +46,17 @@ public:
         return iter != item_map_.end();
     }
 
+    bool erase(const T& key) {
+        auto iter = item_map_.find(key);
+        if (iter == item_map_.end()) {
+            return false;
+        }
+
+        item_list_.erase(iter->second);
+        item_map_.erase(iter);
+        return true;
+    }
+
 private:
     std::list<T> item_list_;
     std::unordered_map<T, typename std::list<T>::iterator> item_map_;

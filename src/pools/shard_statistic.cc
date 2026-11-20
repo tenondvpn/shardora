@@ -161,12 +161,13 @@ void ShardStatistic::ThreadToStatistic(
     
     auto& pool_blocks_info = pools_consensus_blocks_[view_block_ptr->qc().pool_index()];
     pool_blocks_info->blocks[block_ptr->height()] = view_block_ptr;
-    SHARDORA_DEBUG("pool latest height not continus: %u_%u_%lu, view: %lu, %lu,",
+    SHARDORA_DEBUG("pool latest height not continus: %u_%u_%lu, view: %lu, %lu, now size: %lu",
         view_block_ptr->qc().network_id(),
         view_block_ptr->qc().pool_index(),
         block_ptr->height(),
         view_block_ptr->qc().view(),
-        pool_blocks_info->latest_consensus_height_);
+        pool_blocks_info->latest_consensus_height_,
+        pool_blocks_info->blocks.size());
 
     do {
         auto iter = pool_blocks_info->blocks.find(pool_blocks_info->latest_consensus_height_ + 1);

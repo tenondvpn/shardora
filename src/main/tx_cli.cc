@@ -7,6 +7,8 @@
 #include <set>
 #include <vector>
 #include <future>
+#include <iterator>
+#include <map>
 #include <mutex>
 #include <semaphore>
 #include <condition_variable>
@@ -5507,10 +5509,10 @@ contract Exchange {
         // Per-shard verification endpoints (ip:http_port)
         struct ShardEndpoint { std::string ip; uint16_t http_port; };
         std::map<uint32_t, ShardEndpoint> shard_endpoints = {
-    {3, {"192.168.27.111", 23001}},  // shard 3 查询端口
-    {4, {"192.168.27.132", 24001}},  // shard 4 查询端口
-    {5, {"192.168.27.122", 25001}},  // shard 5 查询端口
-    {6, {"192.168.27.119", 26001}},  // shard 6 查询端口
+    {3, {"10.61.1.50", 23001}},  // shard 3 查询端口
+    {4, {"10.61.1.50", 24001}},  // shard 4 查询端口
+    {5, {"10.61.1.50", 25001}},  // shard 5 查询端口
+    {6, {"10.61.1.50", 26001}},  // shard 6 查询端口
 	};
         // Override from argv[9..12] if provided: format "ip:port"
         for (int i = 9; i < std::min(argc, 13); ++i) {
@@ -5646,6 +5648,30 @@ contract Exchange {
             }
         };
 
+        // ── Tx receipt tracking (shared by all phases) ───────────────────────
+        // A tx is "accepted" once any node reports kTxAccept (pooled locally) or
+        // a chain-side terminal status. kNotExists means the node has no record:
+        // either it never arrived (queue enqueued but the socket send failed) or
+        // it was evicted from tx_msg_map before its execution result landed.
+        // Both cases are treated as "resend".
+        struct TxTrack7 {
+            std::string hash_hex;
+            transport::MessagePtr msg;
+            std::string dest_ip;
+            uint16_t dest_port;
+            int resends = 0;
+        };
+
+        auto tx_is_confirmed7 = [](int32_t status) -> bool {
+            return status != transport::kNotExists &&
+                   status != transport::kUnkonwn &&
+                   status != transport::kRequestInvalid;
+        };
+
+        auto tx_hash_of7 = [](const transport::MessagePtr& msg) -> std::string {
+            return common::Encode::HexEncode(pools::GetTxMessageHash(msg->header.tx_proto()));
+        };
+
         // Phase 1: Generate addresses routed to each shard
         std::cout << "\n[Phase 1] Generating " << accounts_per_shard << " addresses per shard..." << std::endl;
         std::map<uint32_t, std::vector<std::string>> shard_addrs;
@@ -5732,8 +5758,11 @@ contract Exchange {
                     shard_addrs[s][i], "", "",
                     2000000000ULL, 210000, 1, funder_shard);
 
-                if (tx_msg_ptr && transport::TcpTransport::Instance()->Send(
-                        global_chain_node_ip, node_port, tx_msg_ptr->header) == 0) {
+                // Must go through the dedicated sender thread's queue: calling
+                // TcpTransport::Send directly from here makes this thread a second
+                // producer on a single-producer queue shared with tcp_sender7, which
+                // silently drops entries.
+                if (tx_msg_ptr && tcp_enq7(tx_msg_ptr, global_chain_node_ip, node_port)) {
                     ++sent_ok;
                 } else {
                     ++sent_fail;
@@ -5744,6 +5773,7 @@ contract Exchange {
                       << sent_ok.load() << " fail=" << sent_fail.load() << ")" << std::endl;
         }
 
+        tcp_drain7();
         auto send_secs = std::chrono::duration_cast<std::chrono::seconds>(
             std::chrono::steady_clock::now() - send_start).count();
         std::cout << "Sending: " << send_secs << "s, OK=" << sent_ok.load()
@@ -6535,6 +6565,79 @@ contract Exchange {
             tcp_drain7();
             std::cout << "\n[Phase 5 Result] Total prefunds confirmed: "
                       << total_pf_confirmed.load() << "/" << total_pf_need.load() << std::endl;
+
+            // Phase 6a reads each prepay shadow account to derive its nonce baseline.
+            // A prefund tx is "confirmed" above as soon as the pool accepts it, but the
+            // shadow account only becomes readable via prefix_db once the cross-shard
+            // record lands and commits.  Observed lag is ~20s, so starting 6a straight
+            // after the last prefund send makes the baseline read 0 for accounts that
+            // are still in flight, and every subsequent resend then carries a nonce the
+            // chain rejects.  Poll the shadow accounts until they are readable.
+            if (total_pf_need.load() > 0) {
+                std::cout << "  Waiting for prepay shadow accounts to land (max 180s, concurrent)..."
+                          << std::endl;
+                std::vector<std::thread> pw_threads;
+                for (uint32_t s = kConsensusBegin; s <= kMaxShardId; ++s) {
+                    pw_threads.emplace_back([&, s]() {
+                        if (global_stop) return;
+                        auto& ep = shard_endpoints[s];
+                        std::vector<std::string> valid_contracts_pw;
+                        for (uint32_t i = 0; i < kContractsPerShard7; ++i)
+                            if (contracts_confirmed7[s][i] && !contract_addrs7[s][i].empty())
+                                valid_contracts_pw.push_back(contract_addrs7[s][i]);
+                        if (valid_contracts_pw.empty()) return;
+
+                        uint32_t nc_pw = (uint32_t)valid_contracts_pw.size();
+                        uint32_t kCPU_pw = std::min(10u, nc_pw);
+
+                        // Same (user, contract) pairs Phase 6a will read: user uidx
+                        // takes contracts (uidx + ci) % nc for ci in [0, kCPU).
+                        std::vector<std::string> keys_pw;
+                        uint32_t uidx_pw = 0;
+                        for (uint32_t idx = 0; idx < shard_addrs[s].size(); ++idx) {
+                            if (!checked_addrs[s].count(shard_addrs[s][idx])) continue;
+                            std::string user_hex = common::Encode::HexEncode(shard_addrs[s][idx]);
+                            for (uint32_t ci = 0; ci < kCPU_pw; ++ci)
+                                keys_pw.push_back(valid_contracts_pw[(uidx_pw + ci) % nc_pw] + user_hex);
+                            ++uidx_pw;
+                        }
+                        if (keys_pw.empty()) return;
+
+                        ShardoraSDK pwsdk(ep.ip, ep.http_port);
+                        const uint32_t kPwBatch = 50;
+                        auto pw_t0 = std::chrono::steady_clock::now();
+                        for (int w = 0; w < 1800 && !global_stop; ++w) {
+                            uint32_t found_pw = 0;
+                            for (uint32_t off = 0; off < keys_pw.size() && !global_stop; off += kPwBatch) {
+                                uint32_t end = std::min(off + kPwBatch, (uint32_t)keys_pw.size());
+                                std::vector<std::string> batch(keys_pw.begin() + off, keys_pw.begin() + end);
+                                auto r = pwsdk.batchQueryAccounts(batch);
+                                for (auto& k : batch)
+                                    if (r.contains("accounts") && r["accounts"].contains(k)) ++found_pw;
+                                usleep(10000);
+                            }
+                            auto el_s = std::chrono::duration_cast<std::chrono::seconds>(
+                                std::chrono::steady_clock::now() - pw_t0).count();
+                            if (found_pw == keys_pw.size()) {
+                                std::lock_guard<std::mutex> lk(pf_log_mtx7);
+                                std::cout << "  Shard " << s << ": " << found_pw << "/" << keys_pw.size()
+                                          << " prepay accounts landed after " << el_s << "s" << std::endl;
+                                return;
+                            }
+                            if (w % 20 == 19) {
+                                std::lock_guard<std::mutex> lk(pf_log_mtx7);
+                                std::cout << "  Shard " << s << ": " << found_pw << "/" << keys_pw.size()
+                                          << " prepay accounts landed (" << el_s << "s)" << std::endl;
+                            }
+                            usleep(100000);
+                        }
+                        std::lock_guard<std::mutex> lk(pf_log_mtx7);
+                        std::cerr << "  Shard " << s << ": WARNING prepay accounts incomplete after 180s"
+                                  << std::endl;
+                    });
+                }
+                for (auto& t : pw_threads) t.join();
+            }
             // ── Phase 6: CreateNewItem + PurchaseItem stress test ─────────────
             std::cout << "\n[Phase 6] Contract calls: CreateNewItem x" << kCallRounds7
                       << " then PurchaseItem x" << kPurchaseRounds7
@@ -6665,6 +6768,11 @@ contract Exchange {
 
                         // First pass: fetch pool_index per contract via shard endpoint
                         std::unordered_map<std::string, int64_t> prepay_nonces;
+                        // Pre-send baseline per key, captured before the send loop runs.
+                        // prepay_nonces itself is advanced by the sends, so it cannot
+                        // serve as the baseline for the expected post-send nonce.
+                        std::unordered_map<std::string, int64_t> prepay_base7;
+                        uint32_t base_missing7 = 0;   // keys absent from the baseline read
                         std::unordered_map<std::string, uint32_t> contract_pool7;  // contract_hex → pool_index
                         {
                             std::vector<std::string> keys;
@@ -6722,8 +6830,11 @@ contract Exchange {
                                                     std::from_chars(ns.data(), ns.data() + ns.size(), n);
                                                 } catch (...) {}
                                             }
+                                        } else {
+                                            ++base_missing7;
                                         }
                                         prepay_nonces[k] = n;
+                                        prepay_base7[k] = n;   // pre-send baseline
                                     }
                                     usleep(10000);
                                 }
@@ -6732,7 +6843,10 @@ contract Exchange {
                         {
                             std::lock_guard<std::mutex> lk(call_log_mtx7);
                             std::cout << "  Shard " << s << ": fetched "
-                                      << prepay_nonces.size() << " prepay nonces for CreateNewItem" << std::endl;
+                                      << prepay_nonces.size() << " prepay nonces for CreateNewItem"
+                                      << (base_missing7 ? " (" + std::to_string(base_missing7) +
+                                                          " NOT_FOUND, baseline=0)" : "")
+                                      << std::endl;
                         }
 
                         // Build contract→dest cache using on-chain pool_index
@@ -6763,9 +6877,106 @@ contract Exchange {
                             std::chrono::system_clock::now().time_since_epoch()).count();
 
                         constexpr uint32_t kCreateTps7 = 30000;
+                        constexpr uint32_t kReceiptBatch7 = 10000;  // verify every N sends
                         uint64_t create_sent7 = 0;
                         auto create_t0_7 = std::chrono::steady_clock::now();
                         auto create_tps_print7 = create_t0_7;
+                        std::vector<TxTrack7> track7;   // hashes awaiting receipt confirmation
+                        track7.reserve(200);
+                        uint32_t create_since_flush7 = 0;
+
+                        // A tx is accepted only on the node that received it: kTxAccept
+                        // lives in that node's in-memory tx_msg_map. The seeds/leaders
+                        // used for account queries never hold it, so the receipt query
+                        // must go to each tx's own destination node. Hashes are grouped
+                        // by destination first, then sent as one batch per node.
+                        //
+                        // Takes the batch by value and returns the survivors, so the
+                        // send thread holds no state this task could touch while it runs.
+                        // Returning only what needs another round also keeps the copy
+                        // back across the future small.
+                        auto create_flush7_do =
+                            [&](std::vector<TxTrack7> batch,
+                                bool& partial) -> std::vector<TxTrack7> {
+                            std::map<std::pair<std::string, uint16_t>, std::vector<std::string>> by_dest;
+                            for (auto& e : batch)
+                                by_dest[{e.dest_ip, (uint16_t)(e.dest_port + 10000)}].push_back(e.hash_hex);
+
+                            std::unordered_map<std::string, int32_t> qstatus;
+                            partial = false;
+                            for (auto& [endpoint, hashes] : by_dest) {
+                                std::unordered_set<std::string> answered;
+                                {
+                                    ShardoraSDK rsdk(endpoint.first, endpoint.second);
+                                    auto r = rsdk.batchTransactionReceipts(hashes);
+                                    if (r.value("status", 1) == 0) {
+                                        if (r.contains("results")) {
+                                            for (auto& [h, v] : r["results"].items()) {
+                                                qstatus[h] = v.value("status", (int32_t)transport::kNotExists);
+                                                answered.insert(h);
+                                            }
+                                        }
+                                        if (r.contains("missing")) {
+                                            for (auto& h : r["missing"]) {
+                                                qstatus[h] = transport::kNotExists;
+                                                answered.insert(h);
+                                            }
+                                        }
+                                    }
+                                }
+                                // No response from this node: leave its hashes unanswered
+                                // rather than calling them missing, so they are retried
+                                // without consuming a resend.
+                                for (auto& h : hashes)
+                                    if (!answered.count(h)) partial = true;
+                            }
+
+                            std::vector<TxTrack7> retry;
+                            retry.reserve(batch.size());
+                            for (auto& e : batch) {
+                                auto it = qstatus.find(e.hash_hex);
+                                if (it == qstatus.end()) { retry.push_back(std::move(e)); continue; }
+                                if (tx_is_confirmed7(it->second)) continue;
+                                // Re-queue the same signed message: re-signing would produce a
+                                // different ECDSA signature and the node rejects it by key.
+                                if (e.resends < 8 && e.msg) {
+                                    if (tcp_enq7(e.msg, e.dest_ip, e.dest_port)) ++e.resends;
+                                }
+                                retry.push_back(std::move(e));
+                            }
+                            return retry;
+                        };
+
+                        // Query off the send thread so a slow node cannot stall the
+                        // send loop. The in-flight batch is owned by the task until it
+                        // is joined; new sends accumulate in track7 meanwhile.
+                        bool create_querying7 = false;
+                        bool create_flush_partial7 = false;
+                        std::future<std::vector<TxTrack7>> create_fut7;
+                        auto create_join7 = [&]() {
+                            if (!create_querying7) return;
+                            auto kept = create_fut7.get();
+                            create_querying7 = false;
+                            if (!kept.empty()) {
+                                track7.insert(track7.end(),
+                                    std::make_move_iterator(kept.begin()),
+                                    std::make_move_iterator(kept.end()));
+                            }
+                        };
+                        auto create_flush7 = [&]() -> uint64_t {
+                            create_join7();
+                            if (track7.empty()) return 0;
+                            uint64_t sent = track7.size();
+                            std::vector<TxTrack7> batch;
+                            batch.swap(track7);
+                            create_querying7 = true;
+                            create_fut7 = std::async(std::launch::async,
+                                [&, batch = std::move(batch)]() mutable {
+                                    return create_flush7_do(std::move(batch), create_flush_partial7);
+                                });
+                            return sent;
+                        };
+
                         for (uint32_t ui = 0; ui < nu && !global_stop; ++ui) {
                             auto& u = users[ui];
                             std::shared_ptr<security::Security> sec = std::make_shared<security::Ecdsa>();
@@ -6781,9 +6992,22 @@ contract Exchange {
                                         common::Encode::HexEncode(u.prikey_raw),
                                         common::Encode::HexDecode(u.contract_addrs[ci]),
                                         "call", input, 0, 5000000, 1, (int32_t)s);
-                                    if (tcp_enq7(tx, dest7.first, dest7.second)) ++create_ok7;
-                                    else { ++create_fail7; --n; }
-                                    if (++create_sent7 % 200 == 0) {
+                                    if (tcp_enq7(tx, dest7.first, dest7.second)) {
+                                        ++create_ok7;
+                                        track7.push_back({tx_hash_of7(tx), tx, dest7.first, dest7.second, 0});
+                                    } else { ++create_fail7; --n; }
+                                    ++create_sent7;
+                                    ++create_since_flush7;
+                                    if (create_since_flush7 >= kReceiptBatch7) {
+                                        create_since_flush7 = 0;
+                                        uint64_t checked = create_flush7();
+                                        std::lock_guard<std::mutex> lk(call_log_mtx7);
+                                        std::cout << "  [CreateNewItem shard" << s << "] receipt batch "
+                                                  << create_sent7 << " checked, "
+                                                  << checked << " queried, "
+                                                  << track7.size() << " pending prev round" << std::endl;
+                                    }
+                                    if (create_sent7 % 200 == 0) {
                                         auto now7 = std::chrono::steady_clock::now();
                                         double elapsed = std::chrono::duration<double>(now7 - create_t0_7).count();
                                         double expected = (double)create_sent7 / kCreateTps7;
@@ -6800,6 +7024,28 @@ contract Exchange {
                                     }
                                 }
                             }
+                        }
+                        tcp_drain7();
+                        {
+                            create_join7();                    // drain the in-flight query first
+                            uint64_t pending_before_final = track7.size();
+                            uint64_t queried_final = create_flush7();   // query whatever is left
+                            if (create_querying7) {            // ...and wait for it
+                                auto kept = create_fut7.get();
+                                create_querying7 = false;
+                                if (!kept.empty()) {
+                                    track7.insert(track7.end(),
+                                        std::make_move_iterator(kept.begin()),
+                                        std::make_move_iterator(kept.end()));
+                                }
+                            }
+                            std::lock_guard<std::mutex> lk(call_log_mtx7);
+                            std::cout << "  [CreateNewItem shard" << s << "] final receipt batch "
+                                      << create_sent7 << " sent, "
+                                      << queried_final << " queried, "
+                                      << pending_before_final << " carryover, "
+                                      << track7.size() << " unconfirmed"
+                                      << (create_flush_partial7 ? " (node unreachable)" : "") << std::endl;
                         }
                         {
                             std::lock_guard<std::mutex> lk(call_log_mtx7);
@@ -6819,13 +7065,15 @@ contract Exchange {
                             uint32_t ci;           // contract index in u.contract_addrs
                         };
                         std::vector<VerEntry7> ver_list;
-                        // base_nonce was prepay_nonces[key] at send time (before ++n)
-                        // After kCallRounds7 sends the expected nonce = base_nonce + kCallRounds7
+                        // base_nonce is the nonce read from chain before any send.  It must
+                        // come from prepay_base7, not prepay_nonces, because the send loop
+                        // advanced prepay_nonces by kCallRounds7 for every key it issued.
                         for (uint32_t ui = 0; ui < nu; ++ui) {
                             auto& u = users[ui];
                             for (uint32_t ci = 0; ci < (uint32_t)u.contract_addrs.size(); ++ci) {
                                 std::string pkey = u.contract_addrs[ci] + u.addr_hex;
-                                ver_list.push_back({pkey, prepay_nonces[pkey] - (int64_t)kCallRounds7, ui, ci});
+                                int64_t base = prepay_base7.count(pkey) ? prepay_base7[pkey] : 0;
+                                ver_list.push_back({pkey, base, ui, ci});
                             }
                         }
                         create_need7.fetch_add(ver_list.size());
@@ -6833,6 +7081,8 @@ contract Exchange {
                         std::vector<uint32_t> pending;
                         for (uint32_t i = 0; i < ver_list.size(); ++i) pending.push_back(i);
                         uint32_t confirmed_cnt = 0;
+                        size_t prev_missing7 = 0;   // NOT_FOUND count from the previous round
+                        size_t prev_failed7 = 0;    // query-failed count from the previous round
                         auto ver_t0 = std::chrono::steady_clock::now();
                         const uint32_t kBN = 300;
 
@@ -6845,9 +7095,31 @@ contract Exchange {
                                           << confirmed_cnt << "/" << ver_list.size() << std::endl;
                                 break;
                             }
+                            // Grace window: if a whole shard's worth of accounts reads
+                            // NOT_FOUND it is almost always the cross-shard landing lag
+                            // rather than lost txs, so wait one poll interval before
+                            // interpreting anything.  Keyed off the previous round's
+                            // miss count, which is computed below.
+                            if (rd > 0 && (prev_missing7 + prev_failed7) == pending.size()) {
+                                std::lock_guard<std::mutex> lk(call_log_mtx7);
+                                if (prev_failed7 == pending.size()) {
+                                    std::cout << "    [shard" << s << " r" << (rd+1)
+                                              << "] all " << pending.size()
+                                              << " account queries FAILED (node unreachable), retrying"
+                                              << std::endl;
+                                } else {
+                                    std::cout << "    [shard" << s << " r" << (rd+1)
+                                              << "] all " << pending.size()
+                                              << " accounts NOT_FOUND, waiting for landing"
+                                              << std::endl;
+                                }
+                                for (int w = 0; w < 30 && !global_stop; ++w) usleep(100000);
+                            }
 
                             // Query current nonces via each contract's leader node
                             std::unordered_map<std::string, int64_t> cur_nonces;
+                            std::unordered_set<std::string> q_missing;  // accounts absent from query response
+                            std::unordered_set<std::string> q_failed;   // query never reached the node
                             {
                                 // Group pending keys by leader HTTP endpoint
                                 std::map<std::pair<std::string,uint16_t>, std::vector<std::string>> ep_keys;
@@ -6873,18 +7145,32 @@ contract Exchange {
                                         uint32_t end = std::min(off + kBN, (uint32_t)qkeys.size());
                                         std::vector<std::string> batch(qkeys.begin() + off, qkeys.begin() + end);
                                         auto r = qsdk.batchQueryAccounts(batch);
+                                        // Addresses whose batch never reached the node.
+                                        // These must NOT be reported as NOT_FOUND.
+                                        std::unordered_set<std::string> fail_set;
+                                        if (r.contains("query_failed")) {
+                                            for (auto& a : r["query_failed"]) {
+                                                try { fail_set.insert(a.get<std::string>()); } catch (...) {}
+                                            }
+                                        }
                                         for (auto& k : batch) {
                                             int64_t n = 0;
+                                            bool got = false;
                                             if (r.contains("accounts") && r["accounts"].contains(k)) {
                                                 auto& acc = r["accounts"][k];
+                                                got = true;
                                                 if (acc.contains("nonce")) {
                                                     try {
                                                         auto ns = acc["nonce"].get<std::string>();
                                                         std::from_chars(ns.data(), ns.data() + ns.size(), n);
                                                     } catch (...) {}
                                                 }
+                                            } else if (fail_set.count(k) > 0) {
+                                                q_failed.insert(k);
+                                            } else {
+                                                q_missing.insert(k);
                                             }
-                                            cur_nonces[k] = n;
+                                            cur_nonces[k] = got ? n : -1;
                                         }
                                         usleep(10000);
                                     }
@@ -6893,6 +7179,8 @@ contract Exchange {
 
                             // Check confirmed; resend missing txs for those still pending
                             std::vector<uint32_t> next_pend;
+                            uint32_t stuck_printed = 0;  // diagnose: print first 3 unconfirmed
+                            uint32_t resent_cnt = 0;
                             for (uint32_t p : pending) {
                                 auto& ve = ver_list[p];
                                 int64_t cur = cur_nonces[ve.key];
@@ -6903,13 +7191,46 @@ contract Exchange {
                                 }
                                 next_pend.push_back(p);
 
-                                // Resend missing rounds: from cur to target
+                                // Diagnose: first 3 stuck prepay accounts this round.
+                                // missing = account absent from a successful query response
+                                // (never landed on chain); failed = the query itself never
+                                // reached the node, so we simply do not know the nonce.
+                                if (stuck_printed < 3) {
+                                    ++stuck_printed;
+                                    auto& du = users[ve.ui];
+                                    bool missing = q_missing.count(ve.key) > 0;
+                                    bool qfail = q_failed.count(ve.key) > 0;
+                                    auto& ddest = contract_dest7[du.contract_addrs[ve.ci]];
+                                    std::lock_guard<std::mutex> lk(call_log_mtx7);
+                                    std::cout << "    [stuck shard" << s << " r" << (rd+1)
+                                              << " #" << stuck_printed << "]"
+                                              << " user=" << ve.ui
+                                              << " addr=" << du.addr_hex.substr(0, 16)
+                                              << " contract=" << du.contract_addrs[ve.ci].substr(0, 16)
+                                              << " cur=" << ((missing || qfail) ? -1 : cur)
+                                              << " base=" << ve.base_nonce
+                                              << " target=" << target
+                                              << " gap=" << (target - cur)
+                                              << (qfail ? " [QUERY_FAIL]" : (missing ? " [NOT_FOUND]" : ""))
+                                              << " pool=" << (contract_pool7.count(du.contract_addrs[ve.ci])
+                                                              ? (int)contract_pool7[du.contract_addrs[ve.ci]] : -1)
+                                              << " dest=" << ddest.first << ":" << ddest.second
+                                              << std::endl;
+                                }
+
+                                // Resend missing rounds: from cur to target.
+                                // cur < 0 means the account is absent from the query, so
+                                // there is no valid nonce to build on.  Resending anything
+                                // here would start at base_nonce and collide with rounds
+                                // that may still be in flight; just wait for the account
+                                // to appear and let the next round compute a real range.
+                                if (cur < 0) {
+                                    continue;
+                                }
                                 auto& u = users[ve.ui];
                                 auto& dest7 = contract_dest7[u.contract_addrs[ve.ci]];
                                 std::shared_ptr<security::Security> sec = std::make_shared<security::Ecdsa>();
                                 sec->SetPrivateKey(u.prikey_raw);
-                                uint64_t now_ms2 = (uint64_t)std::chrono::duration_cast<std::chrono::milliseconds>(
-                                    std::chrono::system_clock::now().time_since_epoch()).count();
                                 int64_t n = cur;
                                 for (int64_t r = cur - ve.base_nonce; r < (int64_t)kCallRounds7 && !global_stop; ++r) {
                                     std::string hash_raw = make_hash7(s, ve.ui * (uint32_t)u.contract_addrs.size() + ve.ci, (uint64_t)r);
@@ -6919,6 +7240,7 @@ contract Exchange {
                                         common::Encode::HexDecode(u.contract_addrs[ve.ci]),
                                         "call", input, 0, 5000000, 1, (int32_t)s);
                                     tcp_enq7(tx, dest7.first, dest7.second);
+                                    ++resent_cnt;
                                 }
                             }
                             {
@@ -6927,9 +7249,10 @@ contract Exchange {
                                           << ", " << elapsed_s << "s] "
                                           << confirmed_cnt << "/" << ver_list.size()
                                           << " (" << next_pend.size() << " pending, resent "
-                                          << (pending.size() - (ver_list.size() - confirmed_cnt - next_pend.size() > 0 ? 0 : 0))
-                                          << ")" << std::endl;
+                                          << resent_cnt << ")" << std::endl;
                             }
+                            prev_missing7 = q_missing.size();
+                            prev_failed7 = q_failed.size();
                             pending = std::move(next_pend);
                             if (!pending.empty())
                                 for (int w = 0; w < 100 && !global_stop; ++w) usleep(100000);
@@ -7068,9 +7391,90 @@ contract Exchange {
                             std::chrono::system_clock::now().time_since_epoch()).count();
 
                         constexpr uint32_t kPurchaseTps7 = 30000;
+                        constexpr uint32_t kReceiptBatch7 = 10000;
                         uint64_t purchase_sent7 = 0;
                         auto purchase_t0_7 = std::chrono::steady_clock::now();
                         auto purchase_tps_print7 = purchase_t0_7;
+                        std::vector<TxTrack7> ptrack7;
+                        ptrack7.reserve(200);
+                        uint32_t purchase_since_flush7 = 0;
+
+                        // Same as CreateNewItem: query each tx's own destination node,
+                        // since kTxAccept only exists in that node's tx_msg_map.
+                        auto purchase_flush7_do =
+                            [&](std::vector<TxTrack7> batch,
+                                bool& partial) -> std::vector<TxTrack7> {
+                            std::map<std::pair<std::string, uint16_t>, std::vector<std::string>> by_dest;
+                            for (auto& e : batch)
+                                by_dest[{e.dest_ip, (uint16_t)(e.dest_port + 10000)}].push_back(e.hash_hex);
+
+                            std::unordered_map<std::string, int32_t> qstatus;
+                            partial = false;
+                            for (auto& [endpoint, hashes] : by_dest) {
+                                std::unordered_set<std::string> answered;
+                                {
+                                    ShardoraSDK rsdk(endpoint.first, endpoint.second);
+                                    auto r = rsdk.batchTransactionReceipts(hashes);
+                                    if (r.value("status", 1) == 0) {
+                                        if (r.contains("results")) {
+                                            for (auto& [h, v] : r["results"].items()) {
+                                                qstatus[h] = v.value("status", (int32_t)transport::kNotExists);
+                                                answered.insert(h);
+                                            }
+                                        }
+                                        if (r.contains("missing")) {
+                                            for (auto& h : r["missing"]) {
+                                                qstatus[h] = transport::kNotExists;
+                                                answered.insert(h);
+                                            }
+                                        }
+                                    }
+                                }
+                                for (auto& h : hashes)
+                                    if (!answered.count(h)) partial = true;
+                            }
+
+                            std::vector<TxTrack7> retry;
+                            retry.reserve(batch.size());
+                            for (auto& e : batch) {
+                                auto it = qstatus.find(e.hash_hex);
+                                if (it == qstatus.end()) { retry.push_back(std::move(e)); continue; }
+                                if (tx_is_confirmed7(it->second)) continue;
+                                if (e.resends < 8 && e.msg) {
+                                    if (tcp_enq7(e.msg, e.dest_ip, e.dest_port)) ++e.resends;
+                                }
+                                retry.push_back(std::move(e));
+                            }
+                            return retry;
+                        };
+
+                        bool purchase_querying7 = false;
+                        bool purchase_flush_partial7 = false;
+                        std::future<std::vector<TxTrack7>> purchase_fut7;
+                        auto purchase_join7 = [&]() {
+                            if (!purchase_querying7) return;
+                            auto kept = purchase_fut7.get();
+                            purchase_querying7 = false;
+                            if (!kept.empty()) {
+                                ptrack7.insert(ptrack7.end(),
+                                    std::make_move_iterator(kept.begin()),
+                                    std::make_move_iterator(kept.end()));
+                            }
+                        };
+                        auto purchase_flush7 = [&]() -> uint64_t {
+                            purchase_join7();
+                            if (ptrack7.empty()) return 0;
+                            uint64_t sent = ptrack7.size();
+                            std::vector<TxTrack7> batch;
+                            batch.swap(ptrack7);
+                            purchase_querying7 = true;
+                            purchase_fut7 = std::async(std::launch::async,
+                                [&, batch = std::move(batch)]() mutable {
+                                    return purchase_flush7_do(std::move(batch), purchase_flush_partial7);
+                                });
+                            return sent;
+                        };
+
                         for (uint32_t ui = 0; ui < nu && !global_stop; ++ui) {
                             auto& u = users[ui];
                             std::shared_ptr<security::Security> sec = std::make_shared<security::Ecdsa>();
@@ -7086,9 +7490,22 @@ contract Exchange {
                                         common::Encode::HexEncode(u.prikey_raw),
                                         common::Encode::HexDecode(u.contract_addrs[ci]),
                                         "call", input, 1, 5000000, 1, (int32_t)s);
-                                    if (tcp_enq7(tx, pdest7.first, pdest7.second)) ++purchase_ok7;
-                                    else { ++purchase_fail7; --n; }
-                                    if (++purchase_sent7 % 200 == 0) {
+                                    if (tcp_enq7(tx, pdest7.first, pdest7.second)) {
+                                        ++purchase_ok7;
+                                        ptrack7.push_back({tx_hash_of7(tx), tx, pdest7.first, pdest7.second, 0});
+                                    } else { ++purchase_fail7; --n; }
+                                    ++purchase_sent7;
+                                    ++purchase_since_flush7;
+                                    if (purchase_since_flush7 >= kReceiptBatch7) {
+                                        purchase_since_flush7 = 0;
+                                        uint64_t checked = purchase_flush7();
+                                        std::lock_guard<std::mutex> lk(call_log_mtx7);
+                                        std::cout << "  [PurchaseItem shard" << s << "] receipt batch "
+                                                  << purchase_sent7 << " checked, "
+                                                  << checked << " queried, "
+                                                  << ptrack7.size() << " pending prev round" << std::endl;
+                                    }
+                                    if (purchase_sent7 % 200 == 0) {
                                         auto now7 = std::chrono::steady_clock::now();
                                         double elapsed = std::chrono::duration<double>(now7 - purchase_t0_7).count();
                                         double expected = (double)purchase_sent7 / kPurchaseTps7;
@@ -7105,6 +7522,28 @@ contract Exchange {
                                     }
                                 }
                             }
+                        }
+                        tcp_drain7();
+                        {
+                            purchase_join7();                  // drain the in-flight query first
+                            uint64_t pending_before_final = ptrack7.size();
+                            uint64_t queried_final = purchase_flush7();
+                            if (purchase_querying7) {
+                                auto kept = purchase_fut7.get();
+                                purchase_querying7 = false;
+                                if (!kept.empty()) {
+                                    ptrack7.insert(ptrack7.end(),
+                                        std::make_move_iterator(kept.begin()),
+                                        std::make_move_iterator(kept.end()));
+                                }
+                            }
+                            std::lock_guard<std::mutex> lk(call_log_mtx7);
+                            std::cout << "  [PurchaseItem shard" << s << "] final receipt batch "
+                                      << purchase_sent7 << " sent, "
+                                      << queried_final << " queried, "
+                                      << pending_before_final << " carryover, "
+                                      << ptrack7.size() << " unconfirmed"
+                                      << (purchase_flush_partial7 ? " (node unreachable)" : "") << std::endl;
                         }
                         {
                             std::lock_guard<std::mutex> lk(call_log_mtx7);
@@ -7127,7 +7566,11 @@ contract Exchange {
                             auto& u = users[ui];
                             for (uint32_t ci = 0; ci < (uint32_t)u.contract_addrs.size(); ++ci) {
                                 std::string pkey = u.contract_addrs[ci] + u.addr_hex;
-                                // base = nonce before PurchaseItem sends = prepay_nonces[pkey] - kPurchaseRounds7
+                                // base = the nonce this phase started from.  prepay_nonces
+                                // was advanced by kPurchaseRounds7 during the send loop
+                                // above, so the pre-send value is exactly that much lower.
+                                // Deriving it this way (rather than re-reading chain)
+                                // keeps the expected value aligned with what was sent.
                                 pver_list.push_back({pkey,
                                     prepay_nonces[pkey] - (int64_t)kPurchaseRounds7,
                                     ui, ci});
@@ -7182,8 +7625,10 @@ contract Exchange {
                                         auto r = qsdk.batchQueryAccounts(batch);
                                         for (auto& k : batch) {
                                             int64_t n = 0;
+                                            bool got = false;
                                             if (r.contains("accounts") && r["accounts"].contains(k)) {
                                                 auto& acc = r["accounts"][k];
+                                                got = true;
                                                 if (acc.contains("nonce")) {
                                                     try {
                                                         auto ns = acc["nonce"].get<std::string>();
@@ -7191,7 +7636,10 @@ contract Exchange {
                                                     } catch (...) {}
                                                 }
                                             }
-                                            pcur_nonces[k] = n;
+                                            // -1 marks "nonce unknown" (query failed or account
+                                            // absent), so the resend logic below skips it instead
+                                            // of resending from a bogus nonce of 0.
+                                            pcur_nonces[k] = got ? n : -1;
                                         }
                                         usleep(10000);
                                     }
@@ -7209,6 +7657,12 @@ contract Exchange {
                                 }
                                 pnext_pend.push_back(p);
 
+                                // cur < 0 == account absent from the query; there is no
+                                // nonce to build a resend range from, so skip this round
+                                // and re-evaluate once the account is readable.
+                                if (cur < 0) {
+                                    continue;
+                                }
                                 // Resend missing rounds: from cur to target
                                 auto& u = users[ve.ui];
                                 auto& pdest7 = pcontract_dest7[u.contract_addrs[ve.ci]];
@@ -8064,19 +8518,15 @@ contract AMMPool {
                         if (!pending.empty()) usleep(1000000);
                     }
 
-                    std::lock_guard<std::mutex> lk(bal_mu);
-                    if (pending.empty()) {
-                        std::cout << "  Shard " << s << ": all " << addrs.size()
-                                  << " accounts funded OK\n";
-                    } else {
-                        // Re-query each stuck address individually to separate
-                        // batch-query truncation from genuine funding failures.
-                        std::vector<std::string> truly_unfunded;
+                    // Re-query each stuck address individually (outside lock — fetchBalance may take time).
+                    std::vector<std::string> truly_unfunded;
+                    if (!pending.empty()) {
                         for (auto& a : pending) {
-                            int64_t bal = ssdk.fetchBalance(a);
-                            if (bal > 0) {
+                            int64_t ibal = ssdk.fetchBalance(a);
+                            std::lock_guard<std::mutex> plk(bal_mu);
+                            if (ibal > 0) {
                                 std::cout << "  Shard " << s << ": " << a
-                                          << " balance=" << bal
+                                          << " balance=" << ibal
                                           << " (batch missed, individually OK)\n";
                             } else {
                                 truly_unfunded.push_back(a);
@@ -8084,15 +8534,108 @@ contract AMMPool {
                                           << " balance=0 (genuinely unfunded)\n";
                             }
                         }
-                        if (!truly_unfunded.empty()) {
-                            std::cout << "  Shard " << s << ": FAILED "
-                                      << truly_unfunded.size() << "/"
-                                      << addrs.size() << " genuinely unfunded after 300s\n";
-                            total_unfunded.fetch_add((uint32_t)truly_unfunded.size());
-                        } else {
-                            std::cout << "  Shard " << s << ": all " << addrs.size()
-                                      << " accounts funded OK (batch had false misses)\n";
+                    }
+
+                    // Retry: resend funding TXs for relay-lost accounts, then wait 120s.
+                    if (!truly_unfunded.empty()) {
+                        {
+                            std::lock_guard<std::mutex> lk(bal_mu);
+                            std::cout << "  Shard " << s << ": retrying "
+                                      << truly_unfunded.size() << " unfunded accounts...\n";
                         }
+                        int rfd = ::socket(AF_INET, SOCK_STREAM, 0);
+                        if (rfd >= 0) {
+                            int rone = 1;
+                            ::setsockopt(rfd, IPPROTO_TCP, TCP_NODELAY, &rone, sizeof(rone));
+                            sockaddr_in rsa{};
+                            rsa.sin_family = AF_INET;
+                            rsa.sin_port   = htons(ftcp8);
+                            ::inet_pton(AF_INET, fip8.c_str(), &rsa.sin_addr);
+                            if (::connect(rfd, (sockaddr*)&rsa, sizeof(rsa)) == 0) {
+                                for (size_t ri = 0; ri < truly_unfunded.size(); ++ri) {
+                                    uint32_t rfi;
+                                    int64_t rnonce;
+                                    {
+                                        std::lock_guard<std::mutex> lk(bal_mu);
+                                        rfi = (uint32_t)(ri % nf8);
+                                        rnonce = ++fstates8[rfi].nonce_sent;
+                                    }
+                                    auto& rfs = fstates8[rfi];
+                                    auto rtx = CreateTransactionWithAttr(
+                                        rfs.sec, (uint64_t)rnonce, rfs.prikey,
+                                        common::Encode::HexDecode(truly_unfunded[ri]),
+                                        "", "", kFundAmt8, 210000, 1, (int32_t)funder_shard);
+                                    if (!rtx) continue;
+                                    rtx->header.set_from_public_port(
+                                        common::GlobalInfo::Instance()->config_public_port());
+                                    if (!rtx->header.has_hash64() || rtx->header.hash64() == 0) {
+                                        std::string rhs = rtx->header.SerializeAsString();
+                                        rtx->header.set_hash64(common::Hash::Hash64(rhs));
+                                    }
+                                    std::string rpayload = rtx->header.SerializeAsString();
+                                    uint32_t rplen = (uint32_t)rpayload.size();
+                                    uint8_t rhdr[4] = {
+                                        (uint8_t)(rplen & 0xFF),
+                                        (uint8_t)((rplen >> 8) & 0xFF),
+                                        (uint8_t)((rplen >> 16) & 0xFF), 0
+                                    };
+                                    bool rok = (::send(rfd, rhdr, 4, MSG_NOSIGNAL) == 4);
+                                    if (rok) {
+                                        uint32_t roff = 0;
+                                        while (roff < rplen) {
+                                            ssize_t rn = ::send(rfd, rpayload.data() + roff,
+                                                                rplen - roff, MSG_NOSIGNAL);
+                                            if (rn <= 0) { rok = false; break; }
+                                            roff += (uint32_t)rn;
+                                        }
+                                    }
+                                    if (!rok) { ::close(rfd); rfd = -1; break; }
+                                }
+                            }
+                            if (rfd >= 0) ::close(rfd);
+                        }
+                        // Wait up to 120s for retry TXs to settle
+                        pending = truly_unfunded;
+                        for (int rrd = 0; rrd < 120 && !pending.empty() && !global_stop; ++rrd) {
+                            auto rr = ssdk.batchQueryAccounts(pending);
+                            std::vector<std::string> rstill;
+                            if (rr.contains("accounts")) {
+                                for (auto& a : pending) {
+                                    uint64_t rbal = 0;
+                                    if (rr["accounts"].contains(a))
+                                        rbal = parseBalance8(rr["accounts"][a]["balance"]);
+                                    if (rbal == 0) rstill.push_back(a);
+                                }
+                            } else { rstill = pending; }
+                            pending = rstill;
+                            if (!pending.empty() && rrd % 20 == 0) {
+                                std::lock_guard<std::mutex> lk(bal_mu);
+                                std::cout << "  Shard " << s << " [retry " << rrd << "s]: "
+                                          << (truly_unfunded.size() - pending.size()) << "/"
+                                          << truly_unfunded.size() << " retry accounts funded\n";
+                            }
+                            if (!pending.empty()) usleep(1000000);
+                        }
+                        // Final individual confirmation for retry accounts
+                        truly_unfunded.clear();
+                        for (auto& a : pending) {
+                            int64_t fbal = ssdk.fetchBalance(a);
+                            if (fbal == 0) truly_unfunded.push_back(a);
+                        }
+                    }
+
+                    std::lock_guard<std::mutex> lk(bal_mu);
+                    if (truly_unfunded.empty() && pending.empty()) {
+                        std::cout << "  Shard " << s << ": all " << addrs.size()
+                                  << " accounts funded OK\n";
+                    } else if (!truly_unfunded.empty()) {
+                        std::cout << "  Shard " << s << ": FAILED "
+                                  << truly_unfunded.size() << "/"
+                                  << addrs.size() << " genuinely unfunded after retry\n";
+                        total_unfunded.fetch_add((uint32_t)truly_unfunded.size());
+                    } else {
+                        std::cout << "  Shard " << s << ": all " << addrs.size()
+                                  << " accounts funded OK (batch had false misses)\n";
                     }
                 });
             }
@@ -8128,9 +8671,14 @@ contract AMMPool {
             const uint64_t kTokenDeployPrefund = 5000000000ULL;
             std::vector<std::thread> tth3;
             std::atomic<uint32_t> tok_ok{0}, tok_fail{0};
+            // Throttle concurrent fetchNonce+deploy to avoid flooding shard HTTP servers.
+            const int kP3MaxConcurrent = 20;
+            std::counting_semaphore<1024> p3_sem(kP3MaxConcurrent);
 
             for (uint32_t i = 0; i < kTokens; ++i) {
                 tth3.emplace_back([&, i]() {
+                    p3_sem.acquire();
+                    defer(p3_sem.release());
                     auto& td = tdeps8[i];
                     // constructor arg: only sys (baseRootAddress auto-set to address(this))
                     std::string ctor_args = encodeAddr32(kSysExec);
@@ -8177,7 +8725,7 @@ contract AMMPool {
                 vth3.emplace_back([&, s, addrs]() {
                     ShardoraSDK vsdk(eps8[s].ip, eps8[s].http);
                     std::vector<std::string> pending = addrs;
-                    for (int rd = 0; rd < 60 && !pending.empty() && !global_stop; ++rd) {
+                    for (int rd = 0; rd < 120 && !pending.empty() && !global_stop; ++rd) {
                         auto r = vsdk.batchQueryAccounts(pending);
                         std::vector<std::string> still;
                         if (r.contains("accounts")) {
@@ -8203,7 +8751,7 @@ contract AMMPool {
                                   << " token contracts confirmed OK\n";
                     } else {
                         std::cout << "  Shard " << s << ": FAILED " << pending.size()
-                                  << "/" << addrs.size() << " token contracts not found after 60s:\n";
+                                  << "/" << addrs.size() << " token contracts not found after 120s:\n";
                         for (auto& a : pending) std::cout << "    " << a << "\n";
                         failed_tokens.fetch_add((uint32_t)pending.size());
                     }
@@ -8232,9 +8780,13 @@ contract AMMPool {
             const uint64_t kAmmDeployPrefund = 5000000000ULL;
             std::vector<std::thread> tth4;
             std::atomic<uint32_t> amm_ok{0}, amm_fail{0};
+            const int kP4MaxConcurrent = 20;
+            std::counting_semaphore<1024> p4_sem(kP4MaxConcurrent);
 
             for (uint32_t k = 0; k < kAmmPairs; ++k) {
                 tth4.emplace_back([&, k]() {
+                    p4_sem.acquire();
+                    defer(p4_sem.release());
                     auto& ad = adeps8[k];
                     // constructor(address tokenA, address tokenB)
                     // Pass mirror addresses so the AMMPool EVM calls land on the same
@@ -8350,7 +8902,7 @@ contract AMMPool {
                     ShardoraSDK vsdk(eps8[s].ip, eps8[s].http);
                     std::vector<std::string> pending = addrs;
 
-                    for (int rd = 0; rd < 60 && !pending.empty() && !global_stop; ++rd) {
+                    for (int rd = 0; rd < 120 && !pending.empty() && !global_stop; ++rd) {
                         auto r = vsdk.batchQueryAccounts(pending);
                         std::vector<std::string> still;
                         if (r.contains("accounts")) {
@@ -8373,7 +8925,7 @@ contract AMMPool {
                                   << " AMM contracts confirmed OK\n";
                     } else {
                         std::cout << "  Shard " << s << ": FAILED " << pending.size()
-                                  << "/" << addrs.size() << " AMM contracts not found after 60s:\n";
+                                  << "/" << addrs.size() << " AMM contracts not found after 120s:\n";
                         for (auto& a : pending) std::cout << "    " << a << "\n";
                         failed_amm.fetch_add((uint32_t)pending.size());
                     }
@@ -8521,6 +9073,14 @@ contract AMMPool {
         std::atomic<uint32_t> xok5{0}, xfail5{0};
         {
             std::vector<std::thread> xth5;
+            // Per-shard semaphore: token distribution is skewed (some shards hold 40+ tokens).
+            // A global semaphore is insufficient — we need to bound HTTP concurrency per shard
+            // to avoid overwhelming any single shard's HTTP server.
+            // Covers: setGasPrefund, ppnonce polling, and each callContractWithNonce.
+            const int kP5MaxPerShard = 5;
+            std::unordered_map<uint32_t, std::shared_ptr<std::counting_semaphore<100>>> shard_sem5;
+            for (auto& [sh, ep] : eps8)
+                shard_sem5[sh] = std::make_shared<std::counting_semaphore<100>>(kP5MaxPerShard);
             for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
                 xth5.emplace_back([&, ti]() {
                     auto& td = tdeps8[ti];
@@ -8528,10 +9088,13 @@ contract AMMPool {
 
                     ShardoraSDK dsdk(eps8[td.signer_shard].ip,
                                      eps8[td.signer_shard].http);
+                    auto& sem5 = *shard_sem5[td.signer_shard];
 
-                    // step=7: create prepayment account (contract_addr+deployer_addr)
+                    // step=7: create prepayment account (throttled per shard)
+                    sem5.acquire();
                     auto pfres = dsdk.setGasPrefund(
                         pk_hex, td.contract_addr_hex, kGasPrefund5);
+                    sem5.release();
                     if (!pfres.contains("status") || pfres["status"] != 0) {
                         std::cerr << "  [token" << ti << "] setGasPrefund failed: "
                                   << pfres.value("msg", "?") << "\n";
@@ -8539,12 +9102,14 @@ contract AMMPool {
                         return;
                     }
 
-                    // Wait up to 60s for prepayment account to confirm
+                    // Wait up to 60s for prepayment account to confirm (throttled per shard)
                     std::string ppkey = td.contract_addr_hex + td.addr_hex;
                     int64_t ppnonce = -1;
                     for (int pw = 0; pw < 60 && !global_stop; ++pw) {
                         usleep(1000000);
+                        sem5.acquire();
                         ppnonce = dsdk.fetchNonce(ppkey);
+                        sem5.release();
                         if (ppnonce >= 0) break;
                     }
                     if (ppnonce < 0) {
@@ -8565,7 +9130,7 @@ contract AMMPool {
                     // one shadow contract per token.
                     {
                         int64_t amm_nonce = ppnonce;
-                        // AMM deployer liquidity transfers
+                        // AMM deployer liquidity transfers (throttled per shard)
                         for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
                             if (adeps8[k].token_a != ti && adeps8[k].token_b != ti) continue;
                             const auto& ad = adeps8[k];
@@ -8574,8 +9139,10 @@ contract AMMPool {
                                 + encodeUint256u128((__uint128_t)kLiqAmt7)
                                 + encodeUint32ABI(ad.signer_shard)
                                 + encodeUint32ABI(ad.deployer_pool);
+                            sem5.acquire();
                             auto ra = dsdk.callContractWithNonce(
                                 pk_hex, td.contract_addr_hex, cd, amm_nonce);
+                            sem5.release();
                             if (ra.contains("status") && ra["status"] == 0) {
                                 xok5.fetch_add(1); ++amm_nonce;
                             } else {
@@ -8602,8 +9169,10 @@ contract AMMPool {
                                     + encodeUint256u128((__uint128_t)kSwapXferAmt)
                                     + encodeUint32ABI(u.shard_id)    // user's own shard (== amm.shard for co-located users)
                                     + encodeUint32ABI(u.pool_idx);   // user's own pool  (== amm.pool for co-located users)
+                                sem5.acquire();
                                 auto ra = dsdk.callContractWithNonce(
                                     pk_hex, td.contract_addr_hex, cd, amm_nonce);
+                                sem5.release();
                                 if (ra.contains("status") && ra["status"] == 0) {
                                     xok5.fetch_add(1); ++amm_nonce;
                                 } else {

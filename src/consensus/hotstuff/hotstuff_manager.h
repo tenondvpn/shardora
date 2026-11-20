@@ -128,6 +128,31 @@ public:
         return hf->view_block_chain();
     }
 
+    // Find the chain that holds `network_id`'s blocks.  `pool_idx` is the caller's
+    // hint about who owns it, but it is not always the right instance:
+    //   - kGlobalPoolIndex is the cross-shard marker, not an owning pool.  A
+    //     cross chain lives on the instance whose pool index is
+    //     network_id % kImmutablePoolSize, so the owner is derived from the
+    //     network id instead.
+    //   - the root congress chain lives on every instance, keyed by its own
+    //     pool index, so any instance can serve it.
+    // Falls back to walking the pool array when the hint does not resolve, so an
+    // unowned network still finds the instance that actually has it.
+    inline std::shared_ptr<ViewBlockChain> ChainForNetwork(
+            uint32_t network_id, uint32_t pool_idx) const {
+        if (pool_idx >= common::kInvalidPoolIndex) {
+            SHARDORA_WARN("invalid pool index: %u, network: %u", pool_idx, network_id);
+            return nullptr;
+        }
+        
+        auto hf = hotstuff(pool_idx);
+        if (!hf) {
+            return nullptr;
+        }
+
+        return hf->view_block_chain();
+    }
+
     inline std::shared_ptr<IBlockAcceptor> acceptor(uint32_t pool_idx) const {
         auto hf = hotstuff(pool_idx);
         if (!hf) {

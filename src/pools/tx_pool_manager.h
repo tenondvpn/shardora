@@ -77,6 +77,10 @@ public:
         const pools::TxItemPtr& valid_tx);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
     void PoolTimerMessage();
+    // Put kStatistic txs that were accepted but never committed back into the
+    // pool after a restart.  Records whose unique hash is already on chain are
+    // erased instead, so nothing committed is ever re-admitted.
+    void RecoverPendingStatisticTxs();
     void OnTxPoolAddTx(
         int32_t step,
         const std::string& to,
@@ -92,6 +96,11 @@ public:
     using TxStatusCallback = std::function<void(const std::string&, transport::MessageHandleStatus)>;
     void SetTxStatusCallback(TxStatusCallback cb) { tx_status_cb_ = std::move(cb); }
     const TxStatusCallback& GetTxStatusCallback() const { return tx_status_cb_; }
+
+    // Invoked once per user tx as soon as msg_hash is known, so the node that
+    // received it over raw TCP can be made resolvable by receipt queries.
+    using TxRegisterCallback = std::function<void(const transport::MessagePtr&)>;
+    void SetTxRegisterCallback(TxRegisterCallback cb) { tx_register_cb_ = std::move(cb); }
 
 #ifdef SHARDORA_UNITTEST
     // pools_test: mock HotstuffManager::is_other_leader without linking consensus.
@@ -318,6 +327,7 @@ private:
 
     static const uint32_t kPopMessageCountEachTime = 64000u;
     TxStatusCallback tx_status_cb_;
+    TxRegisterCallback tx_register_cb_;
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
@@ -354,6 +364,7 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
     uint64_t prev_elect_height_ = common::kInvalidUint64;
     std::atomic<bool> destroy_ = false;
+    bool pending_statistic_recovered_ = false;
     common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
     ToConfirmLatencyTracker to_confirm_latency_tracker_;
     uint32_t min_valid_tx_count_ = 1;

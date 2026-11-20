@@ -56,7 +56,7 @@ int ElectTxItem::HandleTx(
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     view_block_chain_ = pre_shardora_host.view_block_chain_;
-    g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
+    g2_ = std::make_shared<common::CsprngU64>(vss_mgr_->EpochRandom());
     shardoravm::ShardorahainHost shardora_host;
     shardora_host.view_block_chain_ = pre_shardora_host.view_block_chain_;
     shardora_host.tx_context_ = pre_shardora_host.tx_context_;

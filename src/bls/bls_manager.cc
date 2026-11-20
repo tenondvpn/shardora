@@ -87,6 +87,9 @@ void BlsManager::OnNewElectBlock(
         uint64_t elect_height,
         uint64_t prev_elect_height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
+#ifdef NDEBUG
+    return;
+#endif
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
         finish_networks_map_.erase(iter);
@@ -404,9 +407,9 @@ int BlsManager::Verify(
 }
 
 int BlsManager::VerifyFast(
-        const libff::alt_bn128_G1& sign,
-        const libff::alt_bn128_G1& g1_hash,
-        const libff::alt_bn128_G2& pkey) try {
+        libff::alt_bn128_G1 sign,
+        libff::alt_bn128_G1 g1_hash,
+        libff::alt_bn128_G2 pkey) try {
     if (pkey == libff::alt_bn128_G2::zero()) {
         return kBlsError;
     }

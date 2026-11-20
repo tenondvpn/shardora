@@ -1,6 +1,7 @@
 #include "explorer/explorer.h"
 #include "explorer/schema.h"
 
+#include <cctype>
 #include <sstream>
 #include <set>
 
@@ -102,6 +103,30 @@ bool Explorer::Init() {
 
     // Create tables
     if (!ExecSQL(write_db_, kCreateTablesSQL)) return false;
+    // Migrate existing DB: add balance/nonce columns to addresses (ignore errors if already present)
+    {
+        char* errmsg = nullptr;
+        // Split on ';' and exec each ALTER TABLE individually so one failure doesn't block the other
+        sqlite3_exec(write_db_, "ALTER TABLE addresses ADD COLUMN balance INTEGER NOT NULL DEFAULT 0;",
+                     nullptr, nullptr, &errmsg);
+        sqlite3_free(errmsg); errmsg = nullptr;
+        sqlite3_exec(write_db_, "ALTER TABLE addresses ADD COLUMN nonce INTEGER NOT NULL DEFAULT 0;",
+                     nullptr, nullptr, &errmsg);
+        sqlite3_free(errmsg);
+    }
+    // Migrate contracts table: add bytecode/source_code/abi columns (ignore errors if already present)
+    {
+        char* errmsg = nullptr;
+        sqlite3_exec(write_db_, "ALTER TABLE contracts ADD COLUMN bytecode    TEXT;",
+                     nullptr, nullptr, &errmsg);
+        sqlite3_free(errmsg); errmsg = nullptr;
+        sqlite3_exec(write_db_, "ALTER TABLE contracts ADD COLUMN source_code TEXT;",
+                     nullptr, nullptr, &errmsg);
+        sqlite3_free(errmsg); errmsg = nullptr;
+        sqlite3_exec(write_db_, "ALTER TABLE contracts ADD COLUMN abi         TEXT;",
+                     nullptr, nullptr, &errmsg);
+        sqlite3_free(errmsg);
+    }
     // Seed gas presets
     if (!ExecSQL(write_db_, kSeedGasPresetsSQL)) return false;
 
@@ -270,23 +295,100 @@ void Explorer::WriteBlock(sqlite3* db, const std::shared_ptr<hotstuff::ViewBlock
         if ((step == 6 || step == 13 || step == 19) && !to_hex.empty()) {
             int is_lib   = (step == 13) ? 1 : 0;
             int is_clone = (step == 19) ? 1 : 0;
+
+            // Extract bytecode hex from contract_code field
+            std::string bytecode_hex = tx.contract_code().empty() ? "" : HexStr(tx.contract_code());
+
+            // Try to decode contract_input as source code JSON for step=6
+            std::string src_code, abi_json;
+            if (step == 6 && !input_hex.empty()) {
+                std::string decoded;
+                decoded.reserve(input_hex.size() / 2);
+                for (size_t k = 0; k + 1 < input_hex.size(); k += 2) {
+                    char buf[3] = { input_hex[k], input_hex[k+1], '\0' };
+                    decoded += static_cast<char>(static_cast<uint8_t>(strtol(buf, nullptr, 16)));
+                }
+                if (decoded.find("\"__type\":\"SHRDORA_CONTRACT_SRC\"") != std::string::npos) {
+                    // extract "source" string value
+                    auto s0 = decoded.find("\"source\":\"");
+                    if (s0 != std::string::npos) {
+                        s0 += 10;
+                        // find closing quote, skipping escaped quotes
+                        size_t s1 = s0;
+                        while (s1 < decoded.size()) {
+                            if (decoded[s1] == '\\') { s1 += 2; continue; }
+                            if (decoded[s1] == '"') break;
+                            ++s1;
+                        }
+                        if (s1 < decoded.size()) {
+                            src_code = decoded.substr(s0, s1 - s0);
+                            // unescape escape sequences in source string
+                            for (size_t p = 0; p + 1 < src_code.size(); ++p) {
+                                if (src_code[p] == '\\' && src_code[p+1] == 'n') {
+                                    src_code.replace(p, 2, "\n"); continue;
+                                }
+                                if (src_code[p] == '\\' && src_code[p+1] == '\\') {
+                                    src_code.replace(p, 2, "\\"); continue;
+                                }
+                                if (src_code[p] == '\\' && src_code[p+1] == '"') {
+                                    src_code.replace(p, 2, "\""); continue;
+                                }
+                            }
+                        }
+                    }
+                    // extract "abi" string value
+                    auto a0 = decoded.find("\"abi\":\"");
+                    if (a0 != std::string::npos) {
+                        a0 += 7;
+                        size_t a1 = a0;
+                        while (a1 < decoded.size()) {
+                            if (decoded[a1] == '\\') { a1 += 2; continue; }
+                            if (decoded[a1] == '"') break;
+                            ++a1;
+                        }
+                        if (a1 < decoded.size()) {
+                            abi_json = decoded.substr(a0, a1 - a0);
+                            for (size_t p = 0; p + 1 < abi_json.size(); ++p) {
+                                if (abi_json[p] == '\\' && abi_json[p+1] == '"') {
+                                    abi_json.replace(p, 2, "\""); continue;
+                                }
+                                if (abi_json[p] == '\\' && abi_json[p+1] == '\\') {
+                                    abi_json.replace(p, 2, "\\"); continue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ON CONFLICT rather than OR IGNORE: the upsert path above can create
+            // a row before sync reaches the deploy block, and it does so without a
+            // shard. Ignoring the conflict would leave such a row at shard_id 0
+            // forever, which no shard query can reach. Repair only the shard so a
+            // sync never clobbers source_code/abi that the upsert may have stored.
             const char* sql =
-                "INSERT OR IGNORE INTO contracts"
+                "INSERT INTO contracts"
                 "(addr,creator_addr,create_tx_hash,create_height,create_timestamp,"
-                " shard_id,pool_index,is_library,is_clone,updated_at)"
-                " VALUES(?,?,?,?,?,?,?,?,?,?);";
+                " shard_id,pool_index,is_library,is_clone,bytecode,source_code,abi,updated_at)"
+                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                " ON CONFLICT(addr) DO UPDATE SET"
+                "  shard_id=CASE WHEN contracts.shard_id=0 AND excluded.shard_id!=0"
+                "                THEN excluded.shard_id ELSE contracts.shard_id END;";
             sqlite3_stmt* stmt = nullptr;
             if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
-                sqlite3_bind_text (stmt, 1,  to_hex.c_str(),       -1, SQLITE_TRANSIENT);
-                sqlite3_bind_text (stmt, 2,  from_hex.c_str(),     -1, SQLITE_TRANSIENT);
-                sqlite3_bind_text (stmt, 3,  tx_hash_hex.c_str(),  -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text (stmt, 1,  to_hex.c_str(),         -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text (stmt, 2,  from_hex.c_str(),       -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text (stmt, 3,  tx_hash_hex.c_str(),    -1, SQLITE_TRANSIENT);
                 sqlite3_bind_int64(stmt, 4,  static_cast<int64_t>(height));
                 sqlite3_bind_int64(stmt, 5,  ts);
                 sqlite3_bind_int  (stmt, 6,  static_cast<int>(shard_id));
                 sqlite3_bind_int  (stmt, 7,  static_cast<int>(pool_idx));
                 sqlite3_bind_int  (stmt, 8,  is_lib);
                 sqlite3_bind_int  (stmt, 9,  is_clone);
-                sqlite3_bind_int64(stmt, 10, now_ms);
+                sqlite3_bind_text (stmt, 10, bytecode_hex.c_str(),   -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text (stmt, 11, src_code.c_str(),       -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text (stmt, 12, abi_json.c_str(),       -1, SQLITE_TRANSIENT);
+                sqlite3_bind_int64(stmt, 13, now_ms);
                 sqlite3_step(stmt);
                 sqlite3_finalize(stmt);
             }
@@ -316,6 +418,47 @@ void Explorer::WriteBlock(sqlite3* db, const std::shared_ptr<hotstuff::ViewBlock
                 sqlite3_bind_text(stmt, 6, t2.c_str(), -1, SQLITE_TRANSIENT);
                 sqlite3_bind_text(stmt, 7, t3.c_str(), -1, SQLITE_TRANSIENT);
                 sqlite3_bind_text(stmt, 8, data_hex.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_step(stmt);
+                sqlite3_finalize(stmt);
+            }
+        }
+    }
+
+    // Upsert address post-states from address_array (balance/nonce after each tx)
+    {
+        int64_t now_ms = static_cast<int64_t>(common::TimeUtils::TimestampMs());
+        const char* sql =
+            "INSERT INTO addresses(addr,addr_type,shard_id,pool_index,is_contract,"
+            " balance,nonce,first_seen,last_seen,tx_count,updated_at)"
+            " VALUES(?,?,?,?,?,?,?,?,?,0,?)"
+            " ON CONFLICT(addr) DO UPDATE SET"
+            " addr_type=excluded.addr_type,"
+            " shard_id=excluded.shard_id,"
+            " pool_index=excluded.pool_index,"
+            " is_contract=MAX(is_contract,excluded.is_contract),"
+            " balance=excluded.balance,"
+            " nonce=excluded.nonce,"
+            " last_seen=excluded.last_seen,"
+            " updated_at=excluded.updated_at;";
+        for (int ai = 0; ai < block.address_array_size(); ++ai) {
+            const auto& ai_info = block.address_array(ai);
+            if (ai_info.addr().empty()) continue;
+            std::string addr_hex = HexStr(ai_info.addr());
+            if (addr_hex == "0x") continue;
+            int addr_type   = static_cast<int>(ai_info.type());
+            int is_contract = ai_info.has_bytes_code() ? 1 : 0;
+            sqlite3_stmt* stmt = nullptr;
+            if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+                sqlite3_bind_text (stmt, 1, addr_hex.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_int  (stmt, 2, addr_type);
+                sqlite3_bind_int  (stmt, 3, static_cast<int>(ai_info.sharding_id()));
+                sqlite3_bind_int  (stmt, 4, static_cast<int>(ai_info.pool_index()));
+                sqlite3_bind_int  (stmt, 5, is_contract);
+                sqlite3_bind_int64(stmt, 6, static_cast<int64_t>(ai_info.balance()));
+                sqlite3_bind_int64(stmt, 7, static_cast<int64_t>(ai_info.nonce()));
+                sqlite3_bind_int64(stmt, 8, ts);
+                sqlite3_bind_int64(stmt, 9, ts);
+                sqlite3_bind_int64(stmt, 10, now_ms);
                 sqlite3_step(stmt);
                 sqlite3_finalize(stmt);
             }
@@ -467,7 +610,8 @@ std::string Explorer::QueryBlock(const std::string& hash) {
 }
 
 std::string Explorer::QueryTransactions(const std::string& block_hash,
-                                        uint32_t shard_id, int step_type,
+                                        uint32_t shard_id, int pool_index,
+                                        int step_type,
                                         int is_system,
                                         int64_t before_id, int limit) {
     int fetch = limit + 1;
@@ -479,6 +623,7 @@ std::string Explorer::QueryTransactions(const std::string& block_hash,
     if (before_id > 0)         ss << " AND id<" << before_id;
     if (!block_hash.empty())   ss << " AND block_hash='" << block_hash << "'";
     if (shard_id > 0)          ss << " AND shard_id=" << shard_id;
+    if (pool_index >= 0)       ss << " AND pool_index=" << pool_index;
     if (step_type >= 0)        ss << " AND step_type=" << step_type;
     if (is_system == 0)        ss << " AND is_system_tx=0";
     else if (is_system == 1)   ss << " AND is_system_tx=1";
@@ -615,12 +760,138 @@ std::string Explorer::QueryAddressTxs(const std::string& addr,
     return JsonList(arr, next_cursor, has_more);
 }
 
+std::string Explorer::QueryAddresses(uint32_t shard_id, int pool_index,
+                                     int64_t before_id, int limit) {
+    int fetch = limit + 1;
+    std::ostringstream ss;
+    ss << "SELECT rowid,addr,addr_type,shard_id,pool_index,is_contract,"
+          "balance,nonce,first_seen,last_seen,tx_count"
+          " FROM addresses WHERE 1=1";
+    if (before_id > 0)   ss << " AND rowid<" << before_id;
+    if (shard_id > 0)    ss << " AND shard_id=" << shard_id;
+    if (pool_index >= 0) ss << " AND pool_index=" << pool_index;
+    ss << " ORDER BY rowid DESC LIMIT " << fetch;
+
+    json arr = json::array();
+    sqlite3_stmt* stmt = nullptr;
+    std::string sql = ss.str();
+    if (sqlite3_prepare_v2(read_db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        int count = 0;
+        while (sqlite3_step(stmt) == SQLITE_ROW && count < fetch) {
+            json obj;
+            obj["id"]          = sqlite3_column_int64(stmt, 0);
+            auto ad = sqlite3_column_text(stmt, 1);
+            obj["addr"]        = ad ? (const char*)ad : "";
+            obj["addr_type"]   = sqlite3_column_int(stmt, 2);
+            obj["shard_id"]    = sqlite3_column_int(stmt, 3);
+            obj["pool_index"]  = sqlite3_column_int(stmt, 4);
+            obj["is_contract"] = sqlite3_column_int(stmt, 5);
+            obj["balance"]     = sqlite3_column_int64(stmt, 6);
+            obj["nonce"]       = sqlite3_column_int64(stmt, 7);
+            obj["first_seen"]  = sqlite3_column_int64(stmt, 8);
+            obj["last_seen"]   = sqlite3_column_int64(stmt, 9);
+            obj["tx_count"]    = sqlite3_column_int64(stmt, 10);
+            arr.push_back(obj);
+            ++count;
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    bool has_more = (static_cast<int>(arr.size()) > limit);
+    int64_t next_cursor = 0;
+    if (has_more) {
+        arr.erase(arr.begin() + limit, arr.end());
+        next_cursor = arr.back()["id"].get<int64_t>();
+    }
+    return JsonList(arr, next_cursor, has_more);
+}
+
+std::string Explorer::SearchAddresses(const std::string& prefix, int limit) {
+    std::string p = prefix;
+    // Normalize: lowercase, strip 0x, keep hex only
+    if (p.size() >= 2 && p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) p = p.substr(2);
+    for (auto& c : p) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    if (p.empty()) return JsonErr("prefix required");
+
+    // Stored rows are written by HexStr(), which prefixes "0x", so an account is
+    // 42 chars and a prefund address 82. Rows written by other paths (and some
+    // contracts rows) have no prefix. Match both spellings, since the caller's
+    // 0x is stripped above.
+    const std::string with_0x  = "0x" + p;
+    const std::string bare     = p;
+
+    // A prefix shorter than a full address cannot select anything meaningful —
+    // it would just be a table scan returning unrelated rows.
+    if (p.size() < 40) return JsonList(json::array(), 0, false);
+
+    // UNION addresses + contracts so contracts registered via UpdateContract
+    // (which may not have an addresses row) are also discoverable.
+    // Columns: rowid, addr, addr_type, shard_id, pool_index, is_contract,
+    //          balance, nonce, first_seen, last_seen, tx_count
+    const char* sql =
+        "SELECT rowid,addr,addr_type,shard_id,pool_index,is_contract,"
+        "       balance,nonce,first_seen,last_seen,tx_count"
+        " FROM addresses"
+        " WHERE (addr LIKE ? OR addr LIKE ?)"
+        " UNION"
+        " SELECT rowid,addr,0,shard_id,pool_index,1,"
+        "        0,0,create_timestamp,create_timestamp,0"
+        " FROM contracts"
+        " WHERE (addr LIKE ? OR addr LIKE ?)"
+        "   AND addr NOT IN (SELECT addr FROM addresses WHERE addr LIKE ? OR addr LIKE ?)"
+        " ORDER BY (addr=? OR addr=?) DESC, rowid"
+        " LIMIT ?;";
+
+    json arr = json::array();
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(read_db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        const std::string like_0x = with_0x + "%";
+        const std::string like_b  = bare + "%";
+        // addresses WHERE (1,2)
+        sqlite3_bind_text(stmt, 1,  like_0x.c_str(),  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2,  like_b.c_str(),   -1, SQLITE_TRANSIENT);
+        // contracts WHERE (3,4)
+        sqlite3_bind_text(stmt, 3,  like_0x.c_str(),  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 4,  like_b.c_str(),   -1, SQLITE_TRANSIENT);
+        // NOT IN subquery (5,6)
+        sqlite3_bind_text(stmt, 5,  like_0x.c_str(),  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 6,  like_b.c_str(),   -1, SQLITE_TRANSIENT);
+        // ORDER BY exact (7,8)
+        sqlite3_bind_text(stmt, 7,  with_0x.c_str(),  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 8,  bare.c_str(),     -1, SQLITE_TRANSIENT);
+        // LIMIT (9)
+        sqlite3_bind_int (stmt, 9,  limit);
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            auto ad = sqlite3_column_text(stmt, 1);
+            const std::string addr = ad ? (const char*)ad : "";
+            json obj;
+            obj["id"]          = sqlite3_column_int64(stmt, 0);
+            obj["addr"]        = addr;
+            obj["addr_type"]   = sqlite3_column_int(stmt, 2);
+            obj["shard_id"]    = sqlite3_column_int(stmt, 3);
+            obj["pool_index"]  = sqlite3_column_int(stmt, 4);
+            obj["is_contract"] = sqlite3_column_int(stmt, 5);
+            obj["balance"]     = sqlite3_column_int64(stmt, 6);
+            obj["nonce"]       = sqlite3_column_int64(stmt, 7);
+            obj["first_seen"]  = sqlite3_column_int64(stmt, 8);
+            obj["last_seen"]   = sqlite3_column_int64(stmt, 9);
+            obj["tx_count"]    = sqlite3_column_int64(stmt, 10);
+            obj["exact"]       = (addr == with_0x || addr == bare);
+            arr.push_back(obj);
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    return JsonList(arr, 0, false);
+}
+
 std::string Explorer::QueryContracts(int is_library, int is_clone,
                                      int64_t before_id, int limit) {
     int fetch = limit + 1;
     std::ostringstream ss;
     ss << "SELECT rowid,addr,creator_addr,create_tx_hash,create_height,"
-          "create_timestamp,shard_id,pool_index,is_library,is_clone"
+          "create_timestamp,shard_id,pool_index,is_library,is_clone,"
+          "bytecode,source_code,abi"
           " FROM contracts WHERE 1=1";
     if (before_id > 0)  ss << " AND rowid<" << before_id;
     if (is_library >= 0) ss << " AND is_library=" << is_library;
@@ -647,6 +918,12 @@ std::string Explorer::QueryContracts(int is_library, int is_clone,
             obj["pool_index"]       = sqlite3_column_int(stmt, 7);
             obj["is_library"]       = sqlite3_column_int(stmt, 8);
             obj["is_clone"]         = sqlite3_column_int(stmt, 9);
+            auto bc = sqlite3_column_text(stmt, 10);
+            obj["bytecode"]         = bc ? (const char*)bc : "";
+            auto sc = sqlite3_column_text(stmt, 11);
+            obj["source_code"]      = sc ? (const char*)sc : "";
+            auto ab = sqlite3_column_text(stmt, 12);
+            obj["abi"]              = ab ? (const char*)ab : "";
             arr.push_back(obj);
             ++count;
         }
@@ -665,7 +942,8 @@ std::string Explorer::QueryContracts(int is_library, int is_clone,
 std::string Explorer::QueryContract(const std::string& addr) {
     const char* sql =
         "SELECT rowid,addr,creator_addr,create_tx_hash,create_height,"
-        "create_timestamp,shard_id,pool_index,is_library,is_clone"
+        "create_timestamp,shard_id,pool_index,is_library,is_clone,"
+        "bytecode,source_code,abi"
         " FROM contracts WHERE addr=? LIMIT 1;";
     sqlite3_stmt* stmt = nullptr;
     if (sqlite3_prepare_v2(read_db_, sql, -1, &stmt, nullptr) != SQLITE_OK)
@@ -686,6 +964,12 @@ std::string Explorer::QueryContract(const std::string& addr) {
         obj["pool_index"]       = sqlite3_column_int(stmt, 7);
         obj["is_library"]       = sqlite3_column_int(stmt, 8);
         obj["is_clone"]         = sqlite3_column_int(stmt, 9);
+        auto bc = sqlite3_column_text(stmt, 10);
+        obj["bytecode"]         = bc ? (const char*)bc : "";
+        auto sc = sqlite3_column_text(stmt, 11);
+        obj["source_code"]      = sc ? (const char*)sc : "";
+        auto ab = sqlite3_column_text(stmt, 12);
+        obj["abi"]              = ab ? (const char*)ab : "";
         sqlite3_finalize(stmt);
         return JsonOk(obj);
     }
@@ -759,6 +1043,57 @@ std::string Explorer::QueryChainInfo() {
     result["shard_count"]  = static_cast<int>(shards.size());
     result["shards"]       = shards;
     return JsonOk(result);
+}
+
+std::string Explorer::UpdateContract(const std::string& addr,
+                                     const std::string& source_code,
+                                     const std::string& abi,
+                                     const std::string& bytecode,
+                                     int shard_id) {
+    // UPSERT: insert if not exists, update source_code/abi/bytecode if it does.
+    //
+    // shard_id is written on insert only when the caller knows it (> 0). On
+    // conflict the stored shard is kept unless the row still holds the column
+    // default of 0 and the caller can now supply the real one — that repairs
+    // rows written before the shard was threaded through, without letting a
+    // stale or defaulted value overwrite a shard that sync already resolved.
+    const char* sql =
+        "INSERT INTO contracts(addr,shard_id,source_code,abi,bytecode,updated_at)"
+        " VALUES(?,?,?,?,?,?)"
+        " ON CONFLICT(addr) DO UPDATE SET"
+        "  shard_id=CASE WHEN contracts.shard_id=0 AND excluded.shard_id!=0"
+        "                THEN excluded.shard_id ELSE contracts.shard_id END,"
+        "  source_code=excluded.source_code,"
+        "  abi=excluded.abi,"
+        "  bytecode=CASE WHEN excluded.bytecode!='' THEN excluded.bytecode ELSE bytecode END,"
+        "  updated_at=excluded.updated_at;";
+    int64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(write_db_, sql, -1, &stmt, nullptr) != SQLITE_OK)
+        return JsonErr("prepare failed");
+    sqlite3_bind_text (stmt, 1, addr.c_str(),        -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int  (stmt, 2, shard_id);
+    sqlite3_bind_text (stmt, 3, source_code.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 4, abi.c_str(),         -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 5, bytecode.c_str(),    -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(stmt, 6, now_ms);
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    if (rc != SQLITE_DONE) return JsonErr(std::string("update failed: ") + sqlite3_errmsg(write_db_));
+    return JsonOk(json::object());
+}
+
+std::string Explorer::DeleteContract(const std::string& addr) {
+    const char* sql = "DELETE FROM contracts WHERE addr=?;";
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(write_db_, sql, -1, &stmt, nullptr) != SQLITE_OK)
+        return JsonErr("prepare failed");
+    sqlite3_bind_text(stmt, 1, addr.c_str(), -1, SQLITE_TRANSIENT);
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    if (rc != SQLITE_DONE) return JsonErr(std::string("delete failed: ") + sqlite3_errmsg(write_db_));
+    return JsonOk(json::object());
 }
 
 }  // namespace explorer

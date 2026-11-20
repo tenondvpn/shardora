@@ -91,6 +91,14 @@ public:
     }
 
     bool TxKeyExists(const std::string& addr, uint64_t nonce, const std::string& key) {
+        // A tx stays in added_txs_ until a propose or a vote drains the queue, so
+        // a tx this node created itself is invisible to tx_map_ for that whole
+        // window.  A follower validating the leader's proposal hits exactly that
+        // window, rejects the proposal because the tx "isn't in the pool", and
+        // the vote that would have drained the queue never gets built, so the
+        // rejection repeats forever.  Drain before looking, so the queue cannot
+        // hide a tx that has already been admitted.
+        DrainAddedTxsToTxMap();
         auto iter = tx_map_.find(addr);
         if (iter != tx_map_.end()) {
             auto nonce_iter = iter->second.find(nonce);
@@ -224,6 +232,11 @@ private:
         pools::CheckAddrNonceValidFunction tx_valid_func);
     void RecordNormalToDelay(uint64_t now_tm_us, const TxItemPtr& tx_ptr);
     void MaybeReportNormalToDelay(uint64_t now_tm_us);
+    // Empties added_txs_ into tx_map_.  Called by the propose and vote paths, and
+    // by TxKeyExists, which must see what the queue is holding before it can
+    // answer: a tx this node just created sits in the queue until one of those
+    // paths drains it.
+    void DrainAddedTxsToTxMap();
 
     static const uint64_t kSyncBlockPeriodMs = 1000lu;
     static const uint64_t kUserPopedTxTimeoutSec = 10lu;

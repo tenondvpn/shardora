@@ -406,6 +406,10 @@ ValidationStatus IsContractBytescodeValid(const std::string& bytecode) {
     // execution validity.
     const size_t metadata_start = FindSolidityMetadataStart(bytecode);
     const size_t scan_limit = metadata_start == std::string::npos ? bytecode.size() : metadata_start;
+    SHARDORA_INFO("IsContractBytescodeValid: bytecode_len=%zu metadata_start=%zu scan_limit=%zu",
+        bytecode.size(),
+        metadata_start == std::string::npos ? (size_t)-1 : metadata_start,
+        scan_limit);
 
     for (size_t i = 0; i < scan_limit; ++i) {
         const auto op = static_cast<unsigned char>(bytecode[i]);
@@ -418,7 +422,8 @@ ValidationStatus IsContractBytescodeValid(const std::string& bytecode) {
             if (metadata_start != std::string::npos && bytecode.size() - i - 1 >= push_size) {
                 break;
             }
-
+            SHARDORA_INFO("IsContractBytescodeValid: INCOMPLETE_PUSH at i=%zu op=0x%02x push_size=%zu remaining=%zu",
+                i, op, push_size, bytecode.size() - i - 1);
             return ValidationStatus::INCOMPLETE_PUSH;
         }
 

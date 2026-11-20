@@ -505,17 +505,21 @@ public:
             return {{"status", 1}, {"msg", "empty addresses"}};
         }
 
-        // Adaptive batch size: 80-char prepayment addresses need smaller batches
-        // to stay under uWebSockets ~16KB body limit.
-        // Normal (40-char): 500 × 41 = ~20KB → use 300
-        // Prepayment (80-char): 50 × 81 = ~4KB → safe
+        // Server-side BatchQueryAccounts enforces a hard 500-address limit
+        // (http_handler.cc:1149).  Split<2048> is the template limit so
+        // prepayment (80-char) batches use a smaller sub-limit to stay under
+        // the uWebSockets body ceiling.
         size_t avg_addr_len = addresses.empty() ? 40 : addresses[0].size();
-        const size_t kBatchSize = (avg_addr_len > 50) ? 10000 : 30000;
+        const size_t kBatchSize = (avg_addr_len > 50) ? 50 : 500;
         json merged;
         merged["status"] = 0;
         merged["msg"] = "ok";
         merged["accounts"] = json::object();
         merged["not_found"] = json::array();
+        // Addresses whose batch never reached the node (connection refused, non-200
+        // or unparsable body).  These are NOT the same as not_found: the server
+        // never answered for them, so the caller must not treat them as absent.
+        merged["query_failed"] = json::array();
         merged["partial"] = false;
         uint32_t batch_ok = 0;
         uint32_t batch_fail = 0;
@@ -535,7 +539,129 @@ public:
             cli.set_read_timeout(30);
             httplib::Params params;
             params.emplace("addresses", addr_list);
+            auto mark_failed = [&]() {
+                for (size_t i = offset; i < end; ++i) {
+                    merged["query_failed"].push_back(addresses[i]);
+                }
+            };
+
+            auto trunc = [](const std::string& s, size_t n) {
+                return s.size() <= n ? s : (s.substr(0, n) + "...(" + std::to_string(s.size()) + "B)");
+            };
+            // Only the failure paths below print, so the log stays readable and a
+            // run shows exactly which endpoint/body the client could not reach.
+            auto log_req = [&]() {
+                std::cerr << "[HTTP-REQ] POST https://" << client.node_host_ << ":"
+                          << client.node_port_ << "/batch_query_accounts"
+                          << " n=" << (end - offset)
+                          << " body=addresses=" << trunc(addr_list, 200) << std::endl;
+            };
+
             auto res = cli.Post("/batch_query_accounts", params);
+            if (!res) {
+                log_req();
+                std::cerr << "[HTTP-RESP] NO RESPONSE (connect/timeout), host="
+                          << client.node_host_ << ":" << client.node_port_
+                          << " err=" << httplib::to_string(res.error()) << std::endl;
+                ++batch_fail;
+                mark_failed();
+                batch_errors.push_back("connection failed (no response) offset=" + std::to_string(offset));
+                continue;
+            }
+            if (res->status != 200) {
+                log_req();
+                std::cerr << "[HTTP-RESP] HTTP " << res->status
+                          << " body=" << trunc(res->body, 400) << std::endl;
+                ++batch_fail;
+                mark_failed();
+                batch_errors.push_back("HTTP " + std::to_string(res->status) + " offset=" + std::to_string(offset));
+                continue;
+            }
+
+            try {
+                json batch_res = json::parse(res->body);
+                if (!batch_res.contains("status") || batch_res["status"] != 0) {
+                    log_req();
+                    std::cerr << "[HTTP-RESP] status!=0 body=" << trunc(res->body, 400) << std::endl;
+                    ++batch_fail;
+                    mark_failed();
+                    batch_errors.push_back(batch_res.value("msg", "unknown error"));
+                    continue;
+                }
+
+                ++batch_ok;
+                if (batch_res.contains("accounts")) {
+                    for (auto& [k, v] : batch_res["accounts"].items()) {
+                        merged["accounts"][k] = v;
+                    }
+                }
+                if (batch_res.contains("not_found")) {
+                    for (auto& addr : batch_res["not_found"]) {
+                        merged["not_found"].push_back(addr);
+                    }
+                }
+            } catch (std::exception& e) {
+                log_req();
+                std::cerr << "[HTTP-RESP] parse error: " << e.what()
+                          << " body=" << trunc(res->body, 400) << std::endl;
+                ++batch_fail;
+                mark_failed();
+                batch_errors.push_back(std::string("parse error: ") + e.what());
+            }
+        }
+
+        if (batch_ok == 0) {
+            merged["status"] = 1;
+            merged["msg"] = batch_errors.empty() ? "batch query failed" : batch_errors[0].get<std::string>();
+            return merged;
+        }
+
+        if (batch_fail > 0) {
+            merged["partial"] = true;
+            merged["batch_errors"] = batch_errors;
+        }
+        return merged;
+    }
+
+    // Batch query tx status via /batch_transaction_receipt.
+    // Input : vector of hex tx hashes (64 chars each).
+    // Output: { "status":0, "results": { hash: {status,msg,output,...} },
+    //           "missing": [...], "partial": bool, "batch_errors": [...] }
+    // "missing" means the node has no record of that hash yet — either the tx
+    // never arrived (delivery loss) or it was already evicted from tx_msg_map
+    // before its execution result was written. Callers treat it as unconfirmed.
+    json batchTransactionReceipts(const std::vector<std::string>& tx_hashes) {
+        json merged;
+        merged["status"] = 0;
+        merged["msg"] = "ok";
+        merged["results"] = json::object();
+        merged["missing"] = json::array();
+        merged["partial"] = false;
+        if (tx_hashes.empty()) {
+            return merged;
+        }
+
+        // Server caps at 500 hashes per call (http_handler.cc BatchTransactionReceipt).
+        const size_t kBatchSize = 500;
+        uint32_t batch_ok = 0;
+        uint32_t batch_fail = 0;
+        json batch_errors = json::array();
+
+        for (size_t offset = 0; offset < tx_hashes.size(); offset += kBatchSize) {
+            size_t end = std::min(offset + kBatchSize, tx_hashes.size());
+            std::string hash_list;
+            for (size_t i = offset; i < end; ++i) {
+                if (!hash_list.empty()) hash_list += ",";
+                hash_list += tx_hashes[i];
+            }
+
+            httplib::SSLClient cli(client.node_host_, client.node_port_);
+            cli.enable_server_certificate_verification(false);
+            cli.set_connection_timeout(10);
+            cli.set_read_timeout(30);
+            httplib::Params params;
+            params.emplace("tx_hashes", hash_list);
+            auto res = cli.Post("/batch_transaction_receipt", params);
             if (!res) {
                 ++batch_fail;
                 batch_errors.push_back("connection failed (no response) offset=" + std::to_string(offset));
@@ -554,20 +680,15 @@ public:
                     batch_errors.push_back(batch_res.value("msg", "unknown error"));
                     continue;
                 }
-
                 ++batch_ok;
-                if (batch_res.contains("accounts")) {
-                    for (auto& [k, v] : batch_res["accounts"].items()) {
-                        merged["accounts"][k] = v;
+                if (batch_res.contains("results")) {
+                    for (auto& [k, v] : batch_res["results"].items()) {
+                        merged["results"][k] = v;
                     }
                 }
-                if (batch_res.contains("not_found")) {
-                    for (auto& addr : batch_res["not_found"]) {
-                        merged["not_found"].push_back(addr);
-                    }
-
-                    if (!batch_res["not_found"].empty()) {
-                        break;
+                if (batch_res.contains("missing")) {
+                    for (auto& h : batch_res["missing"]) {
+                        merged["missing"].push_back(h);
                     }
                 }
             } catch (std::exception& e) {
@@ -578,10 +699,9 @@ public:
 
         if (batch_ok == 0) {
             merged["status"] = 1;
-            merged["msg"] = batch_errors.empty() ? "batch query failed" : batch_errors[0].get<std::string>();
+            merged["msg"] = batch_errors.empty() ? "batch receipt query failed" : batch_errors[0].get<std::string>();
             return merged;
         }
-
         if (batch_fail > 0) {
             merged["partial"] = true;
             merged["batch_errors"] = batch_errors;
@@ -595,6 +715,7 @@ public:
     struct LeaderInfo {
         std::string ip;
         uint16_t port;
+        int32_t index{ -1 };
     };
 
     bool fetchLeaders(
@@ -623,8 +744,18 @@ public:
                 LeaderInfo li;
                 li.ip = val["ip"].get<std::string>();
                 li.port = val["port"].get<uint16_t>();
+                if (val.contains("index")) {
+                    li.index = val["index"].get<int32_t>();
+                }
                 if (li.ip == "0.0.0.0" || li.port == 0) {
                     continue;  // Skip invalid entries
+                }
+                // index == -1 marks a pool the server has no leader for: it fills
+                // in its own address, which is not a routable destination for the
+                // leader's pool.  Drop the entry so callers fall back to the
+                // shard's configured endpoint instead of forwarding there.
+                if (li.index < 0) {
+                    continue;
                 }
                 leaders[pool_idx] = li;
             }

@@ -102,6 +102,7 @@ message Block {
     repeated bytes unique_hashs = 25;
     optional uint64 chain_id = 26;
     repeated CrossShardCloneInfo clone_deploy_array = 27;  // CrossShardBase derived contracts to deploy on destination shards
+    optional bytes pora_proof = 28;
 }
 
 message GetTxBlockRequest {

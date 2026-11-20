@@ -69,12 +69,13 @@ void ExplorerBlock(const init::UWSRequest& req, init::UWSResponse& res) {
 }
 
 // GET /explorer/transactions
-// Params: block_hash, shard_id, step_type, is_system (0=user,1=system,-1=all), before_id, limit
+// Params: block_hash, shard_id, pool_index, step_type, is_system (0=user,1=system,-1=all), before_id, limit
 void ExplorerTxList(const init::UWSRequest& req, init::UWSResponse& res) {
     if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
 
     std::string block_hash = ParamStr(req, "block_hash");
     uint32_t shard_id  = static_cast<uint32_t>(ParamInt(req, "shard_id", 0));
+    int pool_index     = ParamInt(req, "pool_index", -1);
     int step_type      = ParamInt(req, "step_type", -1);
     int is_system      = ParamInt(req, "is_system", -1);
     int64_t before_id  = ParamInt64(req, "before_id", 0);
@@ -82,7 +83,7 @@ void ExplorerTxList(const init::UWSRequest& req, init::UWSResponse& res) {
     if (limit <= 0 || limit > 100) limit = 20;
 
     res.set_content(
-        g_explorer->QueryTransactions(block_hash, shard_id, step_type,
+        g_explorer->QueryTransactions(block_hash, shard_id, pool_index, step_type,
                                       is_system, before_id, limit),
         kJson);
 }
@@ -129,8 +130,8 @@ void ExplorerContracts(const init::UWSRequest& req, init::UWSResponse& res) {
     int is_library = ParamInt(req, "is_library", -1);
     int is_clone   = ParamInt(req, "is_clone",   -1);
     int64_t before_id = ParamInt64(req, "before_id", 0);
-    int limit      = ParamInt(req, "limit", 20);
-    if (limit <= 0 || limit > 100) limit = 20;
+    int limit      = ParamInt(req, "limit", 1024);
+    if (limit <= 0 || limit > 1024) limit = 1024;
     res.set_content(
         g_explorer->QueryContracts(is_library, is_clone, before_id, limit),
         kJson);
@@ -157,6 +158,87 @@ void ExplorerGasPresets(const init::UWSRequest& req, init::UWSResponse& res) {
 void ExplorerChainInfo(const init::UWSRequest& req, init::UWSResponse& res) {
     if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
     res.set_content(g_explorer->QueryChainInfo(), kJson);
+}
+
+// GET /explorer/addresses?shard_id=3&pool_index=-1&before_id=0&limit=50
+void ExplorerAddresses(const init::UWSRequest& req, init::UWSResponse& res) {
+    if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
+    uint32_t shard_id  = static_cast<uint32_t>(ParamInt(req, "shard_id", 0));
+    int pool_index     = ParamInt(req, "pool_index", -1);
+    int64_t before_id  = ParamInt64(req, "before_id", 0);
+    int limit          = ParamInt(req, "limit", 50);
+    if (limit <= 0 || limit > 200) limit = 50;
+    res.set_content(
+        g_explorer->QueryAddresses(shard_id, pool_index, before_id, limit),
+        kJson);
+}
+
+// GET /explorer/search?q=<hex>&limit=50
+// q is a hex address prefix (0x optional, case-insensitive). Exact match (full
+// 40-hex account/contract or 80-hex prefund address) is returned first, then
+// prefix matches once q reaches 40 hex chars.
+void ExplorerSearch(const init::UWSRequest& req, init::UWSResponse& res) {
+    if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
+    std::string q = ParamStr(req, "q");
+    if (q.empty()) q = ParamStr(req, "prefix");
+    int limit = ParamInt(req, "limit", 50);
+    if (limit <= 0 || limit > 1024) limit = 50;
+    if (q.empty()) {
+        res.set_content(R"({"code":-1,"msg":"q required"})", kJson);
+        return;
+    }
+    res.set_content(g_explorer->SearchAddresses(q, limit), kJson);
+}
+
+// POST /explorer/contract/update
+// Body (JSON): {"addr":"...","shard_id":3,"source_code":"...","abi":"...","bytecode":"..."}
+void ExplorerUpdateContract(const init::UWSRequest& req, init::UWSResponse& res) {
+    if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
+
+    std::string addr, source_code, abi, bytecode;
+    int shard_id = 0;
+    if (!req.body.empty()) {
+        try {
+            auto j = nlohmann::json::parse(req.body);
+            addr        = j.value("addr", "");
+            source_code = j.value("source_code", "");
+            abi         = j.value("abi", "");
+            bytecode    = j.value("bytecode", "");
+            shard_id    = j.value("shard_id", 0);
+        } catch (...) {}
+    }
+    if (addr.empty())        addr        = ParamStr(req, "addr");
+    if (source_code.empty()) source_code = ParamStr(req, "source_code");
+    if (abi.empty())         abi         = ParamStr(req, "abi");
+    if (bytecode.empty())    bytecode    = ParamStr(req, "bytecode");
+    if (shard_id == 0)       shard_id    = ParamInt(req, "shard_id", 0);
+
+    if (addr.empty()) {
+        res.set_content(R"({"code":-1,"msg":"addr required"})", kJson);
+        return;
+    }
+    res.set_content(g_explorer->UpdateContract(addr, source_code, abi, bytecode, shard_id), kJson);
+}
+
+// POST /explorer/contract/delete
+// Body (JSON): {"addr":"..."}
+void ExplorerDeleteContract(const init::UWSRequest& req, init::UWSResponse& res) {
+    if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
+
+    std::string addr;
+    if (!req.body.empty()) {
+        try {
+            auto j = nlohmann::json::parse(req.body);
+            addr = j.value("addr", "");
+        } catch (...) {}
+    }
+    if (addr.empty()) addr = ParamStr(req, "addr");
+
+    if (addr.empty()) {
+        res.set_content(R"({"code":-1,"msg":"addr required"})", kJson);
+        return;
+    }
+    res.set_content(g_explorer->DeleteContract(addr), kJson);
 }
 
 }  // namespace explorer

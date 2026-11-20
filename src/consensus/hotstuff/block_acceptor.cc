@@ -14,6 +14,7 @@
 #include "common/utils.h"
 #include "consensus/consensus_utils.h"
 #include "consensus/hotstuff/block_executor.h"
+#include "consensus/hotstuff/pora_proof.h"
 #include "consensus/hotstuff/types.h"
 #include "consensus/hotstuff/view_block_chain.h"
 #include "consensus/zbft/contract_call.h"
@@ -199,9 +200,12 @@ NormalToItemMap FlattenNormalToItems(const pools::protobuf::AllToTxMessage& all_
 }
 
 // Backup follower: compare local ToTxMessageItem with leader proposal.
-// If the leader classifies an uncertain destination address into the root shard,
-// root is authoritative: a local non-root classification is treated as the same
-// destination as long as the receiver and amount match.
+// If the leader classifies an uncertain destination address into the root shard or
+// the universal shard, the leader's block is authoritative: a differing local
+// classification is treated as the same destination as long as receiver and amount
+// match.  Both root and universal are placeholder classifications arising from the
+// leader failing to resolve the destination shard from its own account state; the
+// committed block settles the shard, so the proposal must not be rejected over it.
 bool ToTxMessageItemFieldsMatchForBackup(
         const pools::protobuf::ToTxMessageItem& leader,
         const pools::protobuf::ToTxMessageItem& local) {
@@ -212,14 +216,16 @@ bool ToTxMessageItemFieldsMatchForBackup(
         return false;
     }
 
-    const bool leader_des_is_root =
+    const bool leader_des_is_uncertain =
         leader.has_des_sharding_id() &&
-        leader.des_sharding_id() == network::kRootCongressNetworkId;
-    if (leader_des_is_root) {
-        if (local.des_sharding_id() != network::kRootCongressNetworkId) {
-            SHARDORA_DEBUG("kNormalTo backup: leader root classification accepted, des=%s, "
-                "local_des_sharding_id=%u, amount=%lu",
+        (leader.des_sharding_id() == network::kRootCongressNetworkId ||
+         leader.des_sharding_id() == network::kUniversalNetworkId);
+    if (leader_des_is_uncertain) {
+        if (local.des_sharding_id() != leader.des_sharding_id()) {
+            SHARDORA_DEBUG("kNormalTo backup: leader uncertain classification accepted, des=%s, "
+                "leader_des_sharding_id=%u, local_des_sharding_id=%u, amount=%lu",
                 common::Encode::HexEncode(leader.des()).c_str(),
+                leader.des_sharding_id(),
                 local.des_sharding_id(),
                 leader.amount());
         }
@@ -378,6 +384,7 @@ Status BlockAcceptor::Accept(
         bool directly_user_leader_txs,
         BalanceAndNonceMap& balance_and_nonce_map,
         shardoravm::ShardorahainHost& shardora_host,
+        std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr,
         std::unordered_map<std::string, uint64_t>* out_leader_nonce_map) {
     auto accept_begin_ms = common::TimeUtils::TimestampMs();
     auto& msg_ptr = pro_msg_wrap->msg_ptr;
@@ -463,6 +470,22 @@ Status BlockAcceptor::Accept(
             (get_txs_end_ms - get_txs_begin_ms),
             (txs_ptr ? txs_ptr->txs.size() : 0));
         return s;
+    }
+
+    // PoRA: compute proof using parent block's BLS aggregate signature as seed.
+    auto pora = ComputePoraProof(
+        latest_qc_item_ptr->sign_x(), latest_qc_item_ptr->sign_y(),
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        view_block.block_info().height(),
+        prefix_db_.get());
+    if (!pora.empty()) {
+        view_block.mutable_block_info()->set_pora_proof(pora);
+        SHARDORA_DEBUG("PoRA proof generated pool=%u h_block=%lu proof_len=%zu",
+            pool_idx_, view_block.block_info().height(), pora.size());
+    } else {
+        SHARDORA_DEBUG("PoRA proof generated pool=%u h_block=%lu proof_len=%zu",
+            pool_idx_, view_block.block_info().height(), pora.size());
     }
 
     // 3. Do txs and create block_tx.

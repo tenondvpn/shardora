@@ -81,10 +81,16 @@ rm -rf ../third_party/lib/lib*.so*
 rm -rf ../third_party/lib64/lib*.so*
 
 # ---- 4. CMake configure ----------------------------------------------------
+# Use bundled OpenSSL if already built; otherwise let CMake find system OpenSSL.
+OPENSSL_ARG=()
+if [[ -f "${SHARDORA_ROOT}/third_party/include/openssl/ssl.h" ]]; then
+    OPENSSL_ARG=("-DOPENSSL_ROOT_DIR=${SHARDORA_ROOT}/third_party")
+fi
+
 if [[ "$ENABLE_COVERAGE" -eq 1 ]]; then
     cmake .. \
         -DCMAKE_BUILD_TYPE="$TARGET" \
-        -DOPENSSL_ROOT_DIR=./third_party/depends/include/ \
+        "${OPENSSL_ARG[@]}" \
         -DCMAKE_INSTALL_PREFIX=~/shardora \
         -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
         -DREPLACE_WHITEBOX_PK="$PK_ARRAY" \
@@ -99,7 +105,7 @@ if [[ "$ENABLE_COVERAGE" -eq 1 ]]; then
 else
     cmake .. \
         -DCMAKE_BUILD_TYPE="$TARGET" \
-        -DOPENSSL_ROOT_DIR=./third_party/depends/include/ \
+        "${OPENSSL_ARG[@]}" \
         -DCMAKE_INSTALL_PREFIX=~/shardora \
         -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
         -DREPLACE_WHITEBOX_PK="$PK_ARRAY" \

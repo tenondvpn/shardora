@@ -332,6 +332,8 @@ public:
     uint64_t hash64;
     uint32_t type;
     bool is_retry = false;
+    // Number of times this message has been re-queued after a send failure.
+    uint32_t retry_count = 0;
     std::shared_ptr<tnet::TcpInterface> conn;
 };
 

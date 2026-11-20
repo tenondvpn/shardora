@@ -36,18 +36,35 @@ public:
                             int64_t before_id, int limit);
     std::string QueryBlock(const std::string& hash);
     std::string QueryTransactions(const std::string& block_hash,
-                                  uint32_t shard_id, int step_type,
+                                  uint32_t shard_id, int pool_index,
+                                  int step_type,
                                   int is_system,
                                   int64_t before_id, int limit);
     std::string QueryTransaction(const std::string& tx_hash);
     std::string QueryAddress(const std::string& addr);
     std::string QueryAddressTxs(const std::string& addr,
                                 int64_t before_id, int limit);
+    // List all addresses, optionally filtered by shard/pool. Cursor-based pagination.
+    std::string QueryAddresses(uint32_t shard_id, int pool_index,
+                               int64_t before_id, int limit);
+    // Prefix search on addresses.addr (hex, no 0x). Returns exact hit first if
+    // the prefix is a full 40/80-hex address, then prefix matches.
+    std::string SearchAddresses(const std::string& prefix, int limit);
     std::string QueryContracts(int is_library, int is_clone,
                                int64_t before_id, int limit);
     std::string QueryContract(const std::string& addr);
     std::string QueryGasPresets();
     std::string QueryChainInfo();
+    // shard_id is supplied by the caller because the upsert can create the row
+    // before block sync has seen the deploy. The column defaults to 0, which is
+    // not a live shard, so an insert that omits it leaves a contract that no
+    // shard will answer a query for. 0 here means "unknown" and is not written.
+    std::string UpdateContract(const std::string& addr,
+                               const std::string& source_code,
+                               const std::string& abi,
+                               const std::string& bytecode,
+                               int shard_id = 0);
+    std::string DeleteContract(const std::string& addr);
 
 private:
     void FlushLoop();

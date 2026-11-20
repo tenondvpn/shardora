@@ -2,8 +2,10 @@
 
 #include <atomic>
 #include <limits>
+#include <memory>
 #include <mutex>
 #include <queue>
+#include <vector>
 
 #include "block/account_manager.h"
 #include "block/account_lru_map.h"
@@ -54,6 +56,14 @@ public:
     std::shared_ptr<ViewBlockInfo> GetViewBlockWithHash(const HashStr& hash, bool remove);
     std::shared_ptr<ViewBlock> GetViewBlockWithView(uint32_t network_id, uint64_t height);
     std::shared_ptr<ViewBlock> GetViewBlockWithHeight(uint32_t network_id, uint64_t height);
+    // Height alone does not identify a block: two forks can share one height.
+    // This returns the block at `height` produced by `view`, or nullptr if this
+    // chain never saw that branch.  Sync uses it so a request naming a view
+    // cannot be answered with the competing fork at the same height.
+    std::shared_ptr<ViewBlock> GetViewBlockWithHeightAndView(
+        uint32_t network_id,
+        uint64_t height,
+        uint64_t view);
     // Drain cached_block_queue_ into cached_block_map_/LRU maps.
     // Must be called from a single thread (the sync timer thread) before
     // calling GetViewBlockWithHeight/GetViewBlockWithView, because the
@@ -62,6 +72,35 @@ public:
     void DrainCachedBlockQueue();
     // Lightweight height lookup: cached_view_with_blocks_ + DB, no queue drain.
     std::shared_ptr<ViewBlock> GetWithHeight(uint32_t network_id, uint64_t height);
+    // Collect up to `max_count` blocks for `network_id` whose view is >=
+    // `start_view`, walking views in ascending order and skipping views that hold
+    // no usable block (a view can be empty after a timeout/TC).  Used by sync to
+    // answer a view request with the requested view plus as many later views as
+    // fit in one packet, instead of one round trip per view.
+    // Appends to `out` and returns how many were appended.
+    //
+    // The local tip is appended after the cache walk when it is newer than
+    // everything the walk returned and still covers `start_view`.  The tip is
+    // never placed in cached_view_with_blocks_ (the cache evicts from the bottom
+    // and UpdateHighViewBlock only queues it), so the walk alone can return a
+    // packet of views all below what the caller asked for.  Only a QC-bearing tip
+    // is appended: the requester discards a block without one.
+    uint32_t GetViewBlocksFrom(
+        uint32_t network_id,
+        uint64_t start_view,
+        uint32_t max_count,
+        std::vector<std::shared_ptr<ViewBlock>>* out);
+    // Oldest uncommitted view this chain holds a block for but never received
+    // an aggregated QC for (sign_x/sign_y empty).  Such a view can never commit
+    // and every later view is stuck behind it, yet it sits below the high view,
+    // so a "request the next view" sync never names it and the gap is never
+    // repaired.  Returns the smallest such view, or 0 when there is none;
+    // callers hand the result to sync so the gap is actually requested.
+    //
+    // When `out_height` is non-null it receives that block's height, which the
+    // caller passes along with the view so the responder can still reach the
+    // block by height if its by-view caches have already dropped it.
+    uint64_t MinUncommittedViewWithoutQc(uint64_t* out_height = nullptr) const;
     // std::shared_ptr<ViewBlock> Get(uint64_t view);
     // If has block
     bool Has(const HashStr& hash);
@@ -106,15 +145,63 @@ public:
         uint64_t timeblock_addr_nonce);
     void HandleTimerMessage();
     std::shared_ptr<ViewBlockInfo> CheckCommit(const QC& qc);
+    // A block was just committed, which settles its branch.  Every in-memory
+    // block at the committed block's parent height whose hash is not the
+    // committed block's parent is a fork sibling that can never be committed on
+    // this chain, so it is erased instead of lingering as a zombie.  The
+    // committed parent hash is handed to key-value sync so the valid branch is
+    // (re-)requested.
+    void EraseIllegalForkSiblings(
+        const std::shared_ptr<ViewBlock>& committed_block);
+    // Erase one block from cached_view_with_blocks_ and the whole view entry
+    // once it empties.  Only the key-value sync timer thread may call this:
+    // the container is owned there, and consensus runs on the hotstuff
+    // threads.  A hotstuff thread that wants a block gone queues it with
+    // QueueEraseCachedViewBlock instead.
+    void EraseCachedViewBlock(uint64_t view, const std::string& block_hash);
+    // Hand a removal to the timer thread.  Safe from any thread.
+    void QueueEraseCachedViewBlock(uint64_t view, const std::string& block_hash);
+    // Apply the queued removals.  Timer thread only.
+    void DrainPendingEraseCachedViewBlocks();
+    // A block that just committed must have its parent already committed.
+    // When it does not and the parent is not in memory either, the chain cannot
+    // close the gap by itself: it records the parent hash in tracked_parents_ so
+    // the parent keeps being requested every round until it is committed.
+    void TrackParentIfMissing(
+        const std::shared_ptr<ViewBlock>& committed_block);
+    // Re-issue a sync request for every tracked parent that is still not
+    // committed and not in memory.  Called from HandleTimerMessage so a lost or
+    // rejected request is retried indefinitely, and the entry is dropped as soon
+    // as its height commits.
+    void RetryTrackedParents();
     
     uint64_t GetMaxHeight() {
         auto latest_committed_block = LatestCommittedBlock();
         if (latest_committed_block && latest_committed_block->has_block_info()) {
+            SHARDORA_DEBUG("pool: %d, get max height: %lu, %u_%u_%lu", 
+                pool_index_, 
+                latest_committed_block->block_info().height(),
+                latest_committed_block->qc().network_id(),
+                latest_committed_block->qc().pool_index(),
+                latest_committed_block->qc().view());
             return latest_committed_block->block_info().height();
         }
 
         return 0;
     }
+
+    // Every height between the committed tip and the high block that is not
+    // walkable on the committed branch, ascending, and at most max_count of
+    // them.  A height whose block is absent is missing; so is a height whose
+    // block is present but is a fork sibling, which is why the walk follows
+    // parent_hash instead of asking "is there some block at height H".  The
+    // latter would answer yes for a sibling and hide the gap: the block above
+    // it points at a parent the chain never had, so nothing past it can commit,
+    // and only the parent link shows it.
+    void CollectMissingHeights(
+        uint32_t network_id,
+        uint32_t max_count,
+        std::vector<uint64_t>* out_heights);
 
     inline void Clear() {
         view_blocks_info_.clear();
@@ -151,32 +238,59 @@ public:
     }
 
     inline std::shared_ptr<ViewBlock> LatestCommittedBlock() const {
-        std::lock_guard<std::mutex> lock(latest_committed_block_mutex_);
-        return latest_committed_block_;
+        return latest_committed_block_.load(std::memory_order_acquire);
     }
-    // Set the latest committed block
+
+    // True when the latest committed block is the block itself or one of its
+    // ancestors.  Two blocks at the same height can both carry a valid QC when
+    // the leader changes mid-view, and every view-based comparison prefers the
+    // higher one, so without this anchor a fork branch takes over as the parent
+    // the leader proposes on and as the high block backups are willing to vote
+    // on.  Both roles call it so only the branch that extends the committed
+    // chain is ever built on or voted for.
+    bool ExtendsCommittedTip(const ViewBlock& view_block) const;
+
+    // True when the block's parent height is already committed and the parent the
+    // block points at is not the block that was committed at that height.  Once a
+    // height is committed the competition at its parent level is over: a sibling
+    // at the parent height can still gather a QC, but nothing built on it can
+    // ever commit, so it must not be proposed on and must not receive votes.
+    bool ParentHeightCommittedOnOtherBranch(const ViewBlock& view_block) const;
+    // Set the latest committed block.  Only ever moves the pointer forward in
+    // view for the same network: a stale commit arriving late must not roll the
+    // chain back.  The whole read-decide-write runs in one compare_exchange loop
+    // rather than as load-then-store, because two threads committing sibling
+    // branches would otherwise both pass the check and the loser would overwrite
+    // a higher view with a lower one.
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
-        auto view_block = view_block_info->view_block;
-        auto latest_committed_block = LatestCommittedBlock();
-        if (latest_committed_block &&
-                (view_block->qc().network_id() !=
-                latest_committed_block->qc().network_id() ||
-                latest_committed_block->qc().view() >= 
-                view_block->qc().view())) {
+        if (view_block_info == nullptr || view_block_info->view_block == nullptr) {
             return;
         }
 
-        // Allow setting old view blocks
-        SHARDORA_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu, sign x: %s",
-            view_block->qc().network_id(), 
-            view_block->qc().pool_index(), 
-            view_block->block_info().height(),
-            view_block->qc().view(),
-            common::Encode::HexEncode(view_block->qc().sign_x()).c_str());
-        //assert(!view_block->qc().sign_x().empty());
-        {
-            std::lock_guard<std::mutex> lock(latest_committed_block_mutex_);
-            latest_committed_block_ = view_block;
+        auto view_block = view_block_info->view_block;
+        auto old_ptr = latest_committed_block_.load(std::memory_order_acquire);
+        while (true) {
+            if (old_ptr != nullptr &&
+                    (view_block->qc().network_id() != old_ptr->qc().network_id() ||
+                    old_ptr->qc().view() >= view_block->qc().view())) {
+                return;
+            }
+
+            // Allow setting old view blocks
+            SHARDORA_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu, sign x: %s",
+                view_block->qc().network_id(),
+                view_block->qc().pool_index(),
+                view_block->block_info().height(),
+                view_block->qc().view(),
+                common::Encode::HexEncode(view_block->qc().sign_x()).c_str());
+            //assert(!view_block->qc().sign_x().empty());
+            if (latest_committed_block_.compare_exchange_weak(
+                    old_ptr, view_block,
+                    std::memory_order_acq_rel, std::memory_order_acquire)) {
+                return;
+            }
+            // old_ptr now holds the value another thread published, so the loop
+            // re-checks the view order against it instead of blindly retrying.
         }
     }
 
@@ -300,15 +414,30 @@ private:
     void AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch);
-        
+    // Direct child of `parent`: the block whose parent_hash matches and whose
+    // height is exactly one above.  view_with_blocks_ is view-ordered, so the
+    // scan starts above the parent's view and returns the first match.
+    std::shared_ptr<ViewBlockInfo> FindChildBlock(
+        const std::shared_ptr<ViewBlock>& parent) const;
+    // Durable commit of one block: writes it to db, refreshes the account LRU
+    // from the block's address_array, persists pool_latest_info, hands the txs
+    // back to the pool, registers the block with the block manager, and prunes
+    // fork siblings / tracked parents.  Called by Commit once per block walked
+    // forward, in ascending height order.
+    void CommitOneBlock(const std::shared_ptr<ViewBlockInfo>& info);
+
     static const uint32_t kCachedViewBlockCount = 16u;
 
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
     std::atomic<View> high_view_block_view_ = 0llu;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
-    std::shared_ptr<ViewBlock> latest_committed_block_; // latest committed block
-    mutable std::mutex latest_committed_block_mutex_;
+    // Latest committed block.  Atomic because consensus commits on its own
+    // thread while sync and the EVM read it: a plain shared_ptr is not safe to
+    // copy concurrently with assignment.  Access through
+    // LatestCommittedBlock()/SetLatestCommittedBlock() only -- a direct read
+    // would race, and a direct write would break the view-order invariant.
+    std::atomic<std::shared_ptr<ViewBlock>> latest_committed_block_; // latest committed block
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
@@ -359,6 +488,23 @@ private:
     uint64_t prev_check_timeout_blocks_ms_ = 0;
     ChainType chain_type_ = kInvalidChain;
     std::map<uint64_t, std::shared_ptr<ViewBlockInfo>> view_with_blocks_;
+    // Parent blocks that a committed block depends on but that are neither
+    // committed nor held in memory.  Keyed by parent hash; each entry is
+    // re-requested every HandleTimerMessage round until its height commits.
+    struct TrackedParent {
+        uint32_t network_id = 0;
+        uint32_t pool_index = 0;
+        uint64_t height = 0;
+    };
+    std::unordered_map<HashStr, TrackedParent> tracked_parents_;
+    // Removals from cached_view_with_blocks_ that consensus asked for.  One
+    // queue per hotstuff thread, all drained by the key-value sync timer
+    // thread, which is the only writer of that container.
+    struct PendingViewBlockErase {
+        uint64_t view = 0;
+        std::string block_hash;
+    };
+    common::ThreadSafeQueue<PendingViewBlockErase> pending_erase_cached_view_queues_[common::kMaxThreadCount];
     common::LRUMap<BlockViewKey, std::shared_ptr<ViewBlockInfo>> latest_commited_view_lru_map_{ 16 };
     common::LRUMap<std::string, std::shared_ptr<ViewBlockInfo>> latest_commited_hash_lru_map_{ 16 };
     common::LRUMap<BlockViewKey, std::shared_ptr<ViewBlockInfo>> latest_commited_height_lru_map_{ 16 };

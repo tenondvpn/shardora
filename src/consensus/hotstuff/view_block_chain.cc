@@ -125,6 +125,15 @@ Status ViewBlockChain::Store(
         for (int32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
             auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
                 view_block->block_info().address_array(i));
+            SHARDORA_DEBUG("%u_%u_%lu_%lu, success addr info: %s, balance: %lu, nonce: %lu, destrcuted: %d", 
+                view_block->qc().network_id(),
+                view_block->qc().pool_index(),
+                view_block->block_info().height(),
+                view_block->qc().view(),
+                common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
+                new_addr_info->balance(),
+                new_addr_info->nonce(),
+                new_addr_info->destructed());
             prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, shardora_host_ptr->db_batch_);
             (*balane_map_ptr)[new_addr_info->addr()] = new_addr_info;
             SHARDORA_DEBUG("step: %d, success add addr: %s, value: %s", 
@@ -132,7 +141,6 @@ Status ViewBlockChain::Store(
                 common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
                 ProtobufToJson(*new_addr_info).c_str());
         }
-
 
         for (int32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
             auto key = view_block->block_info().key_value_array(i).addr() + 
@@ -241,10 +249,11 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
     }
 
     auto latest_view_block = high_view_block_;
-    if (latest_view_block && latest_view_block->block_info().height() == height) {
+    if (latest_view_block && latest_view_block->block_info().height() == height &&
+            latest_view_block->qc().network_id() == network_id) {
         return latest_view_block;
     }
-    
+
     view_block_ptr = std::make_shared<ViewBlockInfo>();
     view_block_ptr->view_block = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr->view_block;
@@ -269,22 +278,76 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
     return nullptr;
 }
 
+// Fork-aware lookup.  GetViewBlockWithHeight answers "what is at height H?",
+// which is ambiguous when two views produced a block at H and the DB
+// height->hash index only kept whichever was written last.  This variant
+// matches on the (height, view) pair so the caller gets the branch it asked
+// for, or nullptr if this chain never held that branch.
+std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeightAndView(
+        uint32_t network_id,
+        uint64_t height,
+        uint64_t view) {
+    if (height == 0 || view == 0) {
+        return nullptr;
+    }
+
+    // Committed view index: only valid blocks are recorded here, so a hit is
+    // the branch that actually made it into the chain.
+    std::shared_ptr<ViewBlockInfo> view_block_ptr;
+    if (latest_commited_view_lru_map_.Get(
+            BlockViewKey(network_id, pool_index_, view),
+            view_block_ptr)) {
+        if (view_block_ptr->view_block &&
+                view_block_ptr->view_block->block_info().height() == height) {
+            return view_block_ptr->view_block;
+        }
+    }
+
+    // Cached, not-yet-committed candidates for this view: a fork sibling that
+    // never commits still lives here until the cache evicts it.
+    auto view_iter = cached_view_with_blocks_.find(view);
+    if (view_iter != cached_view_with_blocks_.end()) {
+        for (auto& info : view_iter->second) {
+            if (!info || !info->view_block) {
+                continue;
+            }
+
+            if (info->view_block->block_info().height() == height &&
+                    info->view_block->qc().network_id() == network_id &&
+                    !info->view_block->qc().sign_x().empty()) {
+                return info->view_block;
+            }
+        }
+    }
+
+    auto latest_view_block = high_view_block_;
+    if (latest_view_block && latest_view_block->block_info().height() == height &&
+            latest_view_block->qc().network_id() == network_id &&
+            latest_view_block->qc().view() == view) {
+        return latest_view_block;
+    }
+
+    // DB fallback: the height index resolves to one hash, so accept it only if
+    // it is the branch that was asked for.
+    auto view_block = std::make_shared<ViewBlock>();
+    if (prefix_db_->GetBlockWithHeight(network_id, pool_index_, height, view_block.get()) &&
+            view_block->qc().view() == view) {
+        SHARDORA_DEBUG("success get view block by height+view %u_%u_%lu_%lu",
+            view_block->qc().network_id(),
+            view_block->qc().pool_index(),
+            height,
+            view);
+        return view_block;
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<ViewBlock> ViewBlockChain::GetWithHeight(
         uint32_t network_id,
         uint64_t height) {
     if (height == 0) {
         return nullptr;
-    }
-
-    // 1. Check cached_view_with_blocks_ (no queue drain)
-    for (auto& [view, blocks] : cached_view_with_blocks_) {
-        for (auto& info : blocks) {
-            if (info && info->view_block &&
-                    info->view_block->block_info().height() == height &&
-                    info->view_block->qc().network_id() == network_id) {
-                return info->view_block;
-            }
-        }
     }
 
     // 2. Check high_view_block_
@@ -379,6 +442,174 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithView(
 
 void ViewBlockChain::DrainCachedBlockQueue() {
     GetViewBlockWithHash("", true);
+}
+
+void ViewBlockChain::EraseCachedViewBlock(uint64_t view, const std::string& block_hash) {
+    if (block_hash.empty()) {
+        return;
+    }
+
+    auto cached_iter = cached_view_with_blocks_.find(view);
+    if (cached_iter == cached_view_with_blocks_.end()) {
+        return;
+    }
+
+    auto& blocks = cached_iter->second;
+    for (auto bit = blocks.begin(); bit != blocks.end();) {
+        if (*bit != nullptr && (*bit)->view_block != nullptr &&
+                (*bit)->view_block->qc().view_block_hash() == block_hash) {
+            bit = blocks.erase(bit);
+        } else {
+            ++bit;
+        }
+    }
+
+    if (blocks.empty()) {
+        cached_view_with_blocks_.erase(cached_iter);
+    }
+}
+
+void ViewBlockChain::QueueEraseCachedViewBlock(uint64_t view, const std::string& block_hash) {
+    if (block_hash.empty()) {
+        return;
+    }
+
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    PendingViewBlockErase item;
+    item.view = view;
+    item.block_hash = block_hash;
+    pending_erase_cached_view_queues_[thread_idx].push(item);
+    SHARDORA_DEBUG("pool: %d, queue erase cached view block %lu, hash: %s, thread_idx: %u, size: %u",
+        pool_index_,
+        view,
+        common::Encode::HexEncode(block_hash).c_str(),
+        thread_idx,
+        pending_erase_cached_view_queues_[thread_idx].size());
+}
+
+void ViewBlockChain::DrainPendingEraseCachedViewBlocks() {
+    uint32_t erased = 0;
+    for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
+        while (true) {
+            PendingViewBlockErase item;
+            if (!pending_erase_cached_view_queues_[thread_idx].pop(&item)) {
+                break;
+            }
+
+            EraseCachedViewBlock(item.view, item.block_hash);
+            ++erased;
+        }
+    }
+
+    if (erased > 0) {
+        SHARDORA_DEBUG("pool: %d, drained pending erase cached view blocks: %u", pool_index_, erased);
+    }
+}
+
+uint32_t ViewBlockChain::GetViewBlocksFrom(
+        uint32_t network_id,
+        uint64_t start_view,
+        uint32_t max_count,
+        std::vector<std::shared_ptr<ViewBlock>>* out) {
+    if (out == nullptr || max_count == 0 || start_view == 0) {
+        return 0;
+    }
+
+    // Collect candidate views without touching the LRU caches: GetViewBlockWithView
+    // mutates latest_commited_view_lru_map_, so it must not be called while
+    // iterating a container it could reorder.
+    std::vector<uint64_t> views;
+    views.reserve(max_count);
+    auto iter = cached_view_with_blocks_.lower_bound(start_view);
+    while (iter != cached_view_with_blocks_.end() && views.size() < max_count) {
+        views.push_back(iter->first);
+        ++iter;
+    }
+
+    uint32_t added = 0;
+    uint64_t max_added_view = 0;
+    for (uint64_t view : views) {
+        if (added >= max_count) {
+            break;
+        }
+
+        auto view_block = GetViewBlockWithView(network_id, view);
+        if (view_block == nullptr) {
+            // A view with no usable block.  Later views continue the same branch
+            // by parent hash, so their own validity does not depend on this one
+            // being present; skip it rather than stopping the walk.
+            continue;
+        }
+
+        out->push_back(view_block);
+        if (view_block->qc().view() > max_added_view) {
+            max_added_view = view_block->qc().view();
+        }
+
+        ++added;
+    }
+
+    // The cache holds only a bounded window of the newest views, and the local
+    // tip is never placed in it at all (UpdateHighViewBlock only queues it, and
+    // the cache evicts from the bottom).  So the walk above can return blocks
+    // that all sit *below* what the caller asked for, or nothing at all.  The
+    // tip is then the one block that can still satisfy the request, and it is
+    // appended regardless of whether the walk found something -- returning early
+    // on `added > 0` would hand the caller a packet of stale views and leave the
+    // view it actually needs unanswered forever.
+    //
+    // Only a QC-bearing tip is sent: the requester discards a block without one.
+    auto tip = high_view_block_;
+    if (added < max_count &&
+            tip != nullptr &&
+            IsQcTcValid(tip->qc()) &&
+            tip->qc().network_id() == network_id &&
+            tip->qc().view() >= start_view &&
+            tip->qc().view() > max_added_view) {
+        out->push_back(tip);
+        ++added;
+    }
+
+    return added;
+}
+
+uint64_t ViewBlockChain::MinUncommittedViewWithoutQc(uint64_t* out_height) const {
+    // Committed blocks always carry an aggregated QC, so anything at or below
+    // the committed view is already settled and must not be re-requested.
+    uint64_t committed_view = 0;
+    auto committed_block = LatestCommittedBlock();
+    if (committed_block != nullptr && committed_block->has_block_info()) {
+        committed_view = committed_block->qc().view();
+    }
+
+    uint64_t min_view = 0;
+    uint64_t min_height = 0;
+    for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); ++it) {
+        auto& view_block = it->second->view_block;
+        if (view_block == nullptr) {
+            continue;
+        }
+
+        auto view = view_block->qc().view();
+        if (view <= 0 || view <= committed_view) {
+            continue;
+        }
+
+        if (IsQcTcValid(view_block->qc())) {
+            continue;
+        }
+
+        if (min_view == 0 || view < min_view) {
+            min_view = view;
+            min_height = view_block->block_info().height();
+        }
+    }
+
+    if (out_height != nullptr) {
+        *out_height = min_height;
+    }
+
+    return min_view;
 }
 
 std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashStr& hash, bool remove) {
@@ -599,6 +830,203 @@ bool ViewBlockChain::Extends(const ViewBlock& block, const ViewBlock& target) {
     return s == Status::kSuccess && tmp_block->qc().view_block_hash() == target.qc().view_block_hash();
 }
 
+bool ViewBlockChain::ExtendsCommittedTip(const ViewBlock& view_block) const {
+    auto tip = LatestCommittedBlock();
+    if (tip == nullptr || tip->qc().view_block_hash().empty() ||
+            !tip->has_block_info() || tip->block_info().height() == 0) {
+        // Nothing committed yet: every block extends the (empty) chain.
+        return true;
+    }
+
+    const std::string& tip_hash = tip->qc().view_block_hash();
+    const uint64_t tip_height = tip->block_info().height();
+
+    // Start from the block itself rather than from a map lookup: callers hand in
+    // blocks that may have been read straight from the db and never inserted
+    // into view_blocks_info_, and looking them up again would report them as
+    // unknown.  Only parents are resolved through the map.
+    if (!view_block.has_block_info()) {
+        return false;
+    }
+
+    // `current` points at the caller's block on the first iteration and at
+    // `holder` afterwards; `holder` owns whatever the previous lookup returned so
+    // it stays alive for the next one.
+    const ViewBlock* current = &view_block;
+    std::shared_ptr<ViewBlock> holder;
+
+    // Heights strictly decrease along the walk and the loop stops as soon as the
+    // tip's height is reached, so the number of steps is bounded by the distance
+    // from the block to the tip.  The counter is a guard against a malformed
+    // chain that never decreases.
+    uint64_t steps = view_block.block_info().height() + 1;
+    while (steps-- > 0) {
+        if (current->qc().view_block_hash() == tip_hash ||
+                current->parent_hash() == tip_hash) {
+            return true;
+        }
+
+        if (!current->has_block_info() || current->block_info().height() <= tip_height) {
+            // Reached the tip's height (or below) on a different hash: this is a
+            // fork branch, and nothing on it can ever extend the committed chain.
+            return false;
+        }
+
+        // Only uncommitted blocks are walked here (anything at or below the tip's
+        // height has already returned above), and those live solely in
+        // view_blocks_info_ -- committed blocks are the ones written to db.  A
+        // parent that cannot be resolved therefore means the branch cannot be
+        // shown to extend the tip, and it is refused rather than trusted.
+        auto parent_info = Get(current->parent_hash());
+        if (parent_info == nullptr || parent_info->view_block == nullptr) {
+            return false;
+        }
+
+        holder = parent_info->view_block;
+        current = holder.get();
+    }
+
+    return false;
+}
+
+bool ViewBlockChain::ParentHeightCommittedOnOtherBranch(const ViewBlock& view_block) const {
+    if (!view_block.has_block_info() || view_block.block_info().height() <= 1) {
+        return false;
+    }
+
+    const uint64_t parent_height = view_block.block_info().height() - 1;
+    auto tip = LatestCommittedBlock();
+    if (tip == nullptr || !tip->has_block_info() ||
+            tip->qc().view_block_hash().empty() || tip->block_info().height() == 0) {
+        return false;
+    }
+
+    const uint64_t committed_height = tip->block_info().height();
+    if (parent_height > committed_height) {
+        // Nothing at the parent height has committed: the fork there is still
+        // live and the ordinary chain rules decide it.
+        return false;
+    }
+
+    if (parent_height == committed_height) {
+        // The committed tip is authoritative for this height, so the comparison
+        // needs no db read.
+        return view_block.parent_hash() != tip->qc().view_block_hash();
+    }
+
+    // The parent height is below the committed tip: the block is lagging behind
+    // the commit frontier, so the committed hash at that height has to come from
+    // the height index.
+    const uint32_t network_id = view_block.qc().network_id();
+    const uint32_t block_pool_index = view_block.qc().pool_index();
+    if (!BlockHeightCommited(prefix_db_, network_id, block_pool_index, parent_height)) {
+        return false;
+    }
+
+    std::string committed_hash;
+    if (!prefix_db_->GetBlockHashWithBlockHeight(
+            network_id, block_pool_index, parent_height, &committed_hash)) {
+        // Marked committed with no readable hash: an unresolvable entry cannot
+        // bless the block, so it is refused rather than trusted.
+        return true;
+    }
+
+    return committed_hash != view_block.parent_hash();
+}
+
+void ViewBlockChain::CollectMissingHeights(
+        uint32_t network_id,
+        uint32_t max_count,
+        std::vector<uint64_t>* out_heights) {
+    if (out_heights == nullptr || max_count == 0) {
+        return;
+    }
+
+    out_heights->clear();
+
+    auto high_block = high_view_block_;
+    if (high_block == nullptr || !high_block->has_block_info() ||
+            high_block->qc().network_id() != network_id) {
+        return;
+    }
+
+    auto tip = LatestCommittedBlock();
+    uint64_t committed_height = 0;
+    if (tip != nullptr && tip->has_block_info()) {
+        committed_height = tip->block_info().height();
+    }
+
+    const uint64_t high_height = high_block->block_info().height();
+    if (high_height <= committed_height) {
+        return;
+    }
+
+    // Walk down from the high block along parent_hash, which is the only link
+    // that follows the branch rather than the height.  A height whose stored
+    // block is a fork sibling still resolves through GetViewBlockWithHeight,
+    // so presence there proves nothing; the parent pointer is what does.
+    const ViewBlock* current = high_block.get();
+    std::shared_ptr<ViewBlock> holder;
+    std::vector<uint64_t> descending;
+    uint64_t steps = high_height - committed_height;
+    while (steps-- > 0 && descending.size() < max_count) {
+        if (!current->has_block_info()) {
+            break;
+        }
+
+        const uint64_t height = current->block_info().height();
+        if (height <= committed_height) {
+            break;
+        }
+
+        // The gap sits at height - 1 whenever the parent cannot be resolved, or
+        // resolves to something that is not one below.
+        bool parent_missing = true;
+        auto parent_info = Get(current->parent_hash());
+        if (parent_info != nullptr && parent_info->view_block != nullptr &&
+                parent_info->view_block->has_block_info() &&
+                parent_info->view_block->block_info().height() + 1 == height) {
+            parent_missing = false;
+        }
+
+        if (parent_missing) {
+            descending.push_back(height - 1);
+        }
+
+        if (!current->has_parent_hash()) {
+            break;
+        }
+
+        if (parent_info != nullptr && parent_info->view_block != nullptr) {
+            holder = parent_info->view_block;
+            current = holder.get();
+        } else {
+            // The branch is broken here and cannot be followed by hash any
+            // further.  Fall back to the height index for the rest of the
+            // window so a chain with more than one hole still reports all of
+            // them.  height - 1 was just recorded above, so the scan starts
+            // one below it to avoid reporting the same hole twice.
+            if (height >= 2) {
+                for (uint64_t h = height - 1; h > committed_height; --h) {
+                    if (descending.size() >= max_count) {
+                        break;
+                    }
+
+                    if (GetViewBlockWithHeight(network_id, h) == nullptr) {
+                        descending.push_back(h);
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+
+    // Reported ascending so the caller requests the oldest gap first: the
+    // chain cannot commit past the lowest hole, so it is the one that matters.
+    out_heights->assign(descending.rbegin(), descending.rend());
+}
+
 Status ViewBlockChain::GetAll(std::vector<std::shared_ptr<ViewBlock>>& view_blocks) {
     // CheckThreadIdValid();
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
@@ -642,227 +1070,249 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
     block_mgr_->ConsensusAddBlock(block_info_ptr);
 }
 
+std::shared_ptr<ViewBlockInfo> ViewBlockChain::FindChildBlock(
+        const std::shared_ptr<ViewBlock>& parent) const {
+    if (parent == nullptr || parent->qc().view_block_hash().empty()) {
+        return nullptr;
+    }
+
+    // view_with_blocks_ is ordered by view, so a child — whose view is strictly
+    // greater than the parent's — is found by scanning forward from the parent's
+    // view onwards instead of walking the whole map.
+    for (auto iter = view_with_blocks_.upper_bound(parent->qc().view());
+            iter != view_with_blocks_.end(); ++iter) {
+        auto& info = iter->second;
+        if (info == nullptr || info->view_block == nullptr) {
+            continue;
+        }
+
+        if (info->view_block->parent_hash() != parent->qc().view_block_hash()) {
+            continue;
+        }
+
+        // Two forks can descend from the same parent; the height must be
+        // contiguous with the parent, otherwise this is a sibling branch and not
+        // the child this chain extends.
+        if (info->view_block->block_info().height() !=
+                parent->block_info().height() + 1llu) {
+            continue;
+        }
+
+        return info;
+    }
+
+    return nullptr;
+}
+
 void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) {
     // CheckThreadIdValid();
-    std::list<std::shared_ptr<ViewBlockInfo>> to_commit_blocks;
-    std::shared_ptr<ViewBlockInfo> tmp_block_info = v_block_info;
-    while (tmp_block_info != nullptr) {
-        auto tmp_block = tmp_block_info->view_block;
-        SHARDORA_DEBUG("pool: %d, prepare commit view block %u_%u_%lu_%lu, hash: %s, "
-            "parent hash: %s, step: %d, statistic_height: %lu, commited: %d, sign empty: %d", 
-            pool_index_,
-            tmp_block_info->view_block->qc().network_id(), 
-            tmp_block_info->view_block->qc().pool_index(), 
-            tmp_block_info->view_block->block_info().height(),
-            tmp_block_info->view_block->qc().view(),
-            common::Encode::HexEncode(tmp_block_info->view_block->qc().view_block_hash()).c_str(),
-            common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str(),
-            tmp_block_info->view_block->block_info().tx_list_size() > 0 ? tmp_block_info->view_block->block_info().tx_list(0).step(): -1,
-            0,
-            BlockHeightCommited(
-                prefix_db_,
-                tmp_block->qc().network_id(), 
-                tmp_block->qc().pool_index(),
-                tmp_block->block_info().height()),
-            tmp_block->qc().sign_x().empty());
-        if (!BlockHeightCommited(
-                prefix_db_,
-                tmp_block->qc().network_id(), 
-                tmp_block->qc().pool_index(),
-                tmp_block->block_info().height()) &&
-                !tmp_block->qc().sign_x().empty()) {
-            SHARDORA_DEBUG("add to commit list view block %u_%u_%lu_%lu, hash: %s",
-                tmp_block->qc().network_id(), 
-                tmp_block->qc().pool_index(), 
-                tmp_block->block_info().height(),
-                tmp_block->qc().view(),
-                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str());
-            to_commit_blocks.push_front(tmp_block_info);
-        } else {
-            SHARDORA_DEBUG("view block already commited %u_%u_%lu_%lu, hash: %s",
-                tmp_block->qc().network_id(), 
-                tmp_block->qc().pool_index(), 
-                tmp_block->block_info().height(),
-                tmp_block->qc().view(),
-                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str());
-        }
+    if (v_block_info == nullptr || v_block_info->view_block == nullptr) {
+        return;
+    }
 
-        if (tmp_block->qc().sign_x().empty()) {
-            if (tmp_block->qc().view() > 0 && !BlockHeightCommited(
-                    prefix_db_,
-                    tmp_block->qc().network_id(), 
-                    tmp_block->qc().pool_index(),
-                    tmp_block->block_info().height())) {
-                SHARDORA_DEBUG("lack of qc block, add sync view hash: %s, %u_%u_%lu_%lu",
-                    common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
-                    tmp_block->qc().network_id(), 
-                    tmp_block->qc().pool_index(), 
-                    tmp_block->block_info().height(),
-                    tmp_block->qc().view());
-                kv_sync_->AddSyncViewHash(
-                    tmp_block->qc().network_id(), 
-                    tmp_block->qc().pool_index(), 
-                    tmp_block->qc().view_block_hash(), 
+    // The block handed in is already the next contiguous height (CheckCommit
+    // guarantees it) and carries a QC, so it is committed unconditionally and
+    // becomes the anchor the child scan walks forward from.  Every later block
+    // is committed only once the two-chain rule is satisfied for it: it must
+    // carry a QC itself and so must its child.
+    auto tmp_block_info = v_block_info;
+    do {
+        CommitOneBlock(tmp_block_info);
+
+        auto child_info = FindChildBlock(tmp_block_info->view_block);
+        if (child_info == nullptr) {
+            // The child has not arrived.  Ask for the view right after this
+            // block so the chain can keep extending instead of stalling here.
+            if (tmp_block_info->view_block->qc().view() > 0) {
+                kv_sync_->AddSyncView(
+                    tmp_block_info->view_block->qc().network_id(),
+                    tmp_block_info->view_block->qc().pool_index(),
+                    tmp_block_info->view_block->qc().view() + 1llu,
                     0);
             }
-        }
-
-        auto parent_block_info = Get(tmp_block->parent_hash());
-        if (parent_block_info == nullptr) {
-            auto latest_committed_block = LatestCommittedBlock();
-            if (latest_committed_block && latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
-                if (tmp_block->qc().view() > 0 && !BlockHeightCommited(
-                        prefix_db_,
-                        tmp_block->qc().network_id(), 
-                        tmp_block->qc().pool_index(), 
-                        tmp_block->block_info().height() - 1)) {
-                    SHARDORA_DEBUG("lack of qc block, add sync view hash: %s, %u_%u_%lu_%lu",
-                        common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
-                        tmp_block->qc().network_id(), 
-                        tmp_block->qc().pool_index(), 
-                        tmp_block->block_info().height(),
-                        tmp_block->qc().view());
-                    kv_sync_->AddSyncViewHash(
-                        tmp_block->qc().network_id(), 
-                        tmp_block->qc().pool_index(), 
-                        tmp_block->parent_hash(), 
-                        0);
-                }
-            }
-
             break;
         }
 
-        tmp_block_info = parent_block_info;
+        auto child_block = child_info->view_block;
+        if (child_block->qc().sign_x().empty()) {
+            // The child is here but has no aggregated QC, so it cannot be the
+            // second link of the two-chain rule yet.  Request its hash and stop
+            // rather than skipping over it.
+            if (!BlockHeightCommited(
+                    prefix_db_,
+                    child_block->qc().network_id(),
+                    child_block->qc().pool_index(),
+                    child_block->block_info().height())) {
+                kv_sync_->AddSyncViewHash(
+                    child_block->qc().network_id(),
+                    child_block->qc().pool_index(),
+                    child_block->qc().view_block_hash(),
+                    0);
+            }
+            break;
+        }
+
+        // The child is QC-verified; the rule needs one more link on top of it
+        // before the child itself can be committed.
+        auto grandchild_info = FindChildBlock(child_block);
+        if (grandchild_info == nullptr || grandchild_info->view_block == nullptr ||
+                grandchild_info->view_block->qc().sign_x().empty()) {
+            SHARDORA_DEBUG("pool: %d, child block %u_%u_%lu_%lu has no qc-verified "
+                "grandchild yet, stop forward commit, hash: %s",
+                pool_index_,
+                child_block->qc().network_id(),
+                child_block->qc().pool_index(),
+                child_block->block_info().height(),
+                child_block->qc().view(),
+                common::Encode::HexEncode(child_block->qc().view_block_hash()).c_str());
+            break;
+        }
+
+        tmp_block_info = child_info;
+    } while (true);
+}
+
+void ViewBlockChain::CommitOneBlock(const std::shared_ptr<ViewBlockInfo>& info) {
+    auto tmp_block = info->view_block;
+    SHARDORA_DEBUG("now commit view block %u_%u_%lu_%lu, hash: %s, "
+        "parent hash: %s, step: %d, statistic_height: %lu, tx size: %u", 
+        tmp_block->qc().network_id(), 
+        tmp_block->qc().pool_index(), 
+        tmp_block->block_info().height(),
+        tmp_block->qc().view(),
+        common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(tmp_block->parent_hash()).c_str(),
+        tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
+        0,
+        tmp_block->block_info().tx_list_size());
+    //assert(info->shardora_host_ptr);
+    auto& db_batch = info->shardora_host_ptr->db_batch_;
+    new_block_cache_callback_(tmp_block, db_batch);
+    if (tmp_block->qc().view() > commited_max_view_) {
+        commited_max_view_ = tmp_block->qc().view();
     }
 
-    std::shared_ptr<ViewBlockInfo> latest_commited_block = nullptr; 
-    for (auto iter = to_commit_blocks.begin(); iter != to_commit_blocks.end(); ++iter) {
-        auto tmp_block = (*iter)->view_block;
-        SHARDORA_DEBUG("now commit view block %u_%u_%lu_%lu, hash: %s, "
-            "parent hash: %s, step: %d, statistic_height: %lu, tx size: %u", 
-            tmp_block->qc().network_id(), 
-            tmp_block->qc().pool_index(), 
-            tmp_block->block_info().height(),
-            tmp_block->qc().view(),
-            common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
-            common::Encode::HexEncode(tmp_block->parent_hash()).c_str(),
-            tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
-            0,
-            tmp_block->block_info().tx_list_size());
-        //assert((*iter)->shardora_host_ptr);
-        auto& db_batch = (*iter)->shardora_host_ptr->db_batch_;
-        new_block_cache_callback_(tmp_block, db_batch);
-        if (tmp_block->qc().view() > commited_max_view_) {
-            commited_max_view_ = tmp_block->qc().view();
-        }
-
-        AddNewBlock(tmp_block, db_batch);
-        (*iter)->valid = true;
-        // Always update the LRU from address_array in the committed block.
-        // address_array contains post-execution balances/nonces written by DoTransactions.
-        // acc_balance_map_ptr holds pre-execution copies from addTxsToPool and must NOT
-        // be used here — it would overwrite correct post-execution state with stale data.
-        for (int32_t ai = 0; ai < tmp_block->block_info().address_array_size(); ++ai) {
-            auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
-                tmp_block->block_info().address_array(ai));
-            auto acc_ptr = account_lru_map_.get(new_addr_info->addr());
-            if (!acc_ptr ||
-                    acc_ptr->latest_height() < new_addr_info->latest_height() ||
-                    (acc_ptr->latest_height() == new_addr_info->latest_height() &&
-                     acc_ptr->tx_index() < new_addr_info->tx_index())) {
-                account_lru_map_.insert(new_addr_info);
-                SHARDORA_ERROR("success update address: %s,balance: %lu, nonce: %lu, new balance: %lu, new nonce: %lu, "
-                    "latest height: %lu, tx index: %u, new latest height: %lu, new tx index: %u",
-                    common::Encode::HexEncode(new_addr_info->addr()).c_str(),
-                    acc_ptr != nullptr ? acc_ptr->balance() : 0,
-                    acc_ptr != nullptr ? acc_ptr->nonce() : 0,
-                    new_addr_info->balance(),
-                    new_addr_info->nonce(),
-                    acc_ptr != nullptr ? acc_ptr->latest_height() : 0,
-                    acc_ptr != nullptr ? acc_ptr->tx_index() : 0,
-                    new_addr_info->latest_height(),
-                    new_addr_info->tx_index());
-            }
-        }
-
-        for (int32_t i = 0; i < tmp_block->block_info().unique_hashs_size(); ++i) {
-            prefix_db_->SaveOverUniqueHash(tmp_block->block_info().unique_hashs(i), db_batch);
-        }
-
-        // Clean up view_with_blocks_ for the parent view before erasing from view_blocks_info_
-        // FIX: Only erase parent block from view_blocks_info_ if the parent's height is also
-        // committed. Previously we unconditionally erased the parent, which could remove blocks
-        // still needed by pending sync operations or MergeAllPrevBalanceMap() chain walks.
-        auto b_tm = common::TimeUtils::TimestampMs();
-        {
-            auto parent_info = Get(tmp_block->parent_hash());
-            if (parent_info && parent_info->view_block) {
-                auto parent_height = parent_info->view_block->block_info().height();
-                if (BlockHeightCommited(
-                        prefix_db_,
-                        parent_info->view_block->qc().network_id(),
-                        parent_info->view_block->qc().pool_index(),
-                        parent_height)) {
-                    view_with_blocks_.erase(parent_info->view_block->qc().view());
-                    view_blocks_info_.erase(tmp_block->parent_hash());
-                }
-            }
-        }
-        if (BlockHeightCommited(
-                prefix_db_,
-                tmp_block->qc().network_id(), 
-                tmp_block->qc().pool_index(),
-                tmp_block->block_info().height() + 1)) {
-            view_with_blocks_.erase(tmp_block->qc().view());
-            view_blocks_info_.erase(tmp_block->qc().view_block_hash());
-        }
-
-        if (block_acceptor_) {
-            block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
-        }
-
-        commited_view_.insert(tmp_block->qc().view());
-        if (commited_view_.size() >= 102400u) {
-            commited_view_.erase(commited_view_.begin());
-        }
-
-        // Fix: Persist pool_latest_info on every block commit so that on restart,
-        // the pacemaker initializes with the correct view instead of a stale one.
-        // Previously, SaveLatestPoolInfo was only called during genesis/initial sync,
-        // so after restart pool_latest_info.view() was 0 or very old, causing
-        // "propose view not match leader view" errors on all pools.
-        SHARDORA_DEBUG("persist pool_latest_info for %u_%u_%lu, use time: %lu ms", 
+    if (kv_sync_ != nullptr) {
+        kv_sync_->EraseSyncView(
             tmp_block->qc().network_id(),
             tmp_block->qc().pool_index(),
-            tmp_block->qc().view(),
-            common::TimeUtils::TimestampMs() - b_tm);
-        {
-            pools::protobuf::PoolLatestInfo pool_info;
-            pool_info.set_height(tmp_block->block_info().height());
-            pool_info.set_hash(tmp_block->qc().view_block_hash());
-            pool_info.set_timestamp(tmp_block->block_info().timestamp());
-            pool_info.set_view(tmp_block->qc().view());
-            db::DbWriteBatch pool_info_batch;
-            prefix_db_->SaveLatestPoolInfo(
-                tmp_block->qc().network_id(),
-                tmp_block->qc().pool_index(),
-                pool_info,
-                pool_info_batch);
-            if (!db_->Put(pool_info_batch).ok()) {
-                SHARDORA_ERROR("failed to persist pool_latest_info for %u_%u_%lu",
-                    tmp_block->qc().network_id(),
-                    tmp_block->qc().pool_index(),
-                    tmp_block->qc().view());
+            tmp_block->qc().view());
+    }
+
+    AddNewBlock(tmp_block, db_batch);
+    info->valid = true;
+    // Always update the LRU from address_array in the committed block.
+    // address_array contains post-execution balances/nonces written by DoTransactions.
+    // acc_balance_map_ptr holds pre-execution copies from addTxsToPool and must NOT
+    // be used here — it would overwrite correct post-execution state with stale data.
+    for (int32_t ai = 0; ai < tmp_block->block_info().address_array_size(); ++ai) {
+        auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
+            tmp_block->block_info().address_array(ai));
+        auto acc_ptr = account_lru_map_.get(new_addr_info->addr());
+        if (!acc_ptr ||
+                acc_ptr->latest_height() < new_addr_info->latest_height() ||
+                (acc_ptr->latest_height() == new_addr_info->latest_height() &&
+                 acc_ptr->tx_index() < new_addr_info->tx_index())) {
+            account_lru_map_.insert(new_addr_info);
+            SHARDORA_DEBUG("success update address: %s,balance: %lu, "
+                "nonce: %lu, new balance: %lu, new nonce: %lu, "
+                "latest height: %lu, tx index: %u, new latest height: %lu, new tx index: %u",
+                common::Encode::HexEncode(new_addr_info->addr()).c_str(),
+                acc_ptr != nullptr ? acc_ptr->balance() : 0,
+                acc_ptr != nullptr ? acc_ptr->nonce() : 0,
+                new_addr_info->balance(),
+                new_addr_info->nonce(),
+                acc_ptr != nullptr ? acc_ptr->latest_height() : 0,
+                acc_ptr != nullptr ? acc_ptr->tx_index() : 0,
+                new_addr_info->latest_height(),
+                new_addr_info->tx_index());
+        }
+    }
+
+    for (int32_t i = 0; i < tmp_block->block_info().unique_hashs_size(); ++i) {
+        prefix_db_->SaveOverUniqueHash(tmp_block->block_info().unique_hashs(i), db_batch);
+        // The unique hash is now settled on chain, so the pending-statistic
+        // record for it must go.  Same batch as SaveOverUniqueHash: once the
+        // commit is durable, neither the marker nor the record can be seen
+        // without the other, so a restart can never re-admit a committed
+        // statistic.
+        prefix_db_->RemovePendingStatisticTx(
+            tmp_block->block_info().unique_hashs(i), db_batch);
+    }
+
+    // Clean up view_with_blocks_ for the parent view before erasing from view_blocks_info_
+    // FIX: Only erase parent block from view_blocks_info_ if the parent's height is also
+    // committed. Previously we unconditionally erased the parent, which could remove blocks
+    // still needed by pending sync operations or MergeAllPrevBalanceMap() chain walks.
+    auto b_tm = common::TimeUtils::TimestampMs();
+    {
+        auto parent_info = Get(tmp_block->parent_hash());
+        if (parent_info && parent_info->view_block) {
+            auto parent_height = parent_info->view_block->block_info().height();
+            if (BlockHeightCommited(
+                    prefix_db_,
+                    parent_info->view_block->qc().network_id(),
+                    parent_info->view_block->qc().pool_index(),
+                    parent_height)) {
+                view_with_blocks_.erase(parent_info->view_block->qc().view());
+                view_blocks_info_.erase(tmp_block->parent_hash());
             }
         }
-
-        SHARDORA_DEBUG("success SaveLatestPoolInfo %u_%u_%lu_%lu, use time: %lu ms",
+    }
+    if (BlockHeightCommited(
+            prefix_db_,
             tmp_block->qc().network_id(), 
-            tmp_block->qc().pool_index(), 
-            tmp_block->qc().view(), 
-            tmp_block->block_info().height(),
-            (common::TimeUtils::TimestampMs() - b_tm));
+            tmp_block->qc().pool_index(),
+            tmp_block->block_info().height() + 1)) {
+        view_with_blocks_.erase(tmp_block->qc().view());
+        view_blocks_info_.erase(tmp_block->qc().view_block_hash());
+    }
+
+    if (block_acceptor_) {
+        block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
+    }
+
+    commited_view_.insert(tmp_block->qc().view());
+    if (commited_view_.size() >= 102400u) {
+        commited_view_.erase(commited_view_.begin());
+    }
+
+    // Fix: Persist pool_latest_info on every block commit so that on restart,
+    // the pacemaker initializes with the correct view instead of a stale one.
+    // Previously, SaveLatestPoolInfo was only called during genesis/initial sync,
+    // so after restart pool_latest_info.view() was 0 or very old, causing
+    // "propose view not match leader view" errors on all pools.
+    SHARDORA_DEBUG("persist pool_latest_info for %u_%u_%lu, use time: %lu ms", 
+        tmp_block->qc().network_id(),
+        tmp_block->qc().pool_index(),
+        tmp_block->qc().view(),
+        common::TimeUtils::TimestampMs() - b_tm);
+    {
+        pools::protobuf::PoolLatestInfo pool_info;
+        pool_info.set_height(tmp_block->block_info().height());
+        pool_info.set_hash(tmp_block->qc().view_block_hash());
+        pool_info.set_timestamp(tmp_block->block_info().timestamp());
+        pool_info.set_view(tmp_block->qc().view());
+        db::DbWriteBatch pool_info_batch;
+        prefix_db_->SaveLatestPoolInfo(
+            tmp_block->qc().network_id(),
+            tmp_block->qc().pool_index(),
+            pool_info,
+            pool_info_batch);
+        if (!db_->Put(pool_info_batch).ok()) {
+            SHARDORA_ERROR("failed to persist pool_latest_info for %u_%u_%lu",
+                tmp_block->qc().network_id(),
+                tmp_block->qc().pool_index(),
+                tmp_block->qc().view());
+        }
+    }
+
+    SHARDORA_DEBUG("success SaveLatestPoolInfo %u_%u_%lu_%lu, use time: %lu ms",
+        tmp_block->qc().network_id(), 
+        tmp_block->qc().pool_index(), 
+        tmp_block->qc().view(), 
+        tmp_block->block_info().height(),
+        (common::TimeUtils::TimestampMs() - b_tm));
 // #ifndef NDEBUG
 //         for (auto iter = db_batch.data_map_.begin(); iter != db_batch.data_map_.end(); ++iter) {
 //             if (memcmp(iter->first.c_str(), protos::kAddressPrefix.c_str(), protos::kAddressPrefix.size()) == 0) {
@@ -881,80 +1331,231 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 //             }
 //         }
 // #endif
-        const auto db_batch_bytes = db_batch.ApproximateSize();
-        const auto db_put_begin_ms = common::TimeUtils::TimestampMs();
-        if (!db_->Put(db_batch).ok()) {
-            SHARDORA_FATAL("write to db failed!");
+    const auto db_batch_bytes = db_batch.ApproximateSize();
+    const auto db_put_begin_ms = common::TimeUtils::TimestampMs();
+    if (!db_->Put(db_batch).ok()) {
+        SHARDORA_FATAL("write to db failed!");
+    }
+
+    SHARDORA_DEBUG("commit block to db success %u_%u_%lu_%lu, batch_bytes: %lu, "
+        "db_put_ms: %lu, use time: %lu ms",
+        tmp_block->qc().network_id(),
+        tmp_block->qc().pool_index(),
+        tmp_block->qc().view(),
+        tmp_block->block_info().height(),
+        db_batch_bytes,
+        common::TimeUtils::TimestampMs() - db_put_begin_ms,
+        common::TimeUtils::TimestampMs() - b_tm);
+    if (pools_mgr_) {
+        const auto txover_begin_ms = common::TimeUtils::TimestampMs();
+        pools_mgr_->TxOver(pool_index_, *tmp_block);
+        const auto txover_ms = common::TimeUtils::TimestampMs() - txover_begin_ms;
+        if (txover_ms >= 100lu ||
+                tmp_block->block_info().tx_list_size() >= 128) {
+            SHARDORA_DEBUG("commit TxOver %u_%u_%lu, txs: %d, txover_ms: %lu",
+                tmp_block->qc().network_id(),
+                tmp_block->qc().pool_index(),
+                tmp_block->block_info().height(),
+                tmp_block->block_info().tx_list_size(),
+                txover_ms);
+        }
+    }
+
+    SHARDORA_DEBUG("add block to block manager %u_%u_%lu_%lu, use time: %lu ms", 
+        tmp_block->qc().network_id(), 
+        tmp_block->qc().pool_index(), 
+        tmp_block->qc().view(), 
+        tmp_block->block_info().height(),
+        (common::TimeUtils::TimestampMs() - b_tm));
+    block_mgr_->ConsensusAddBlock(info);
+    SHARDORA_DEBUG("success commit view block %u_%u_%lu_%lu, use time: %lu ms",
+        tmp_block->qc().network_id(),
+        tmp_block->qc().pool_index(),
+        tmp_block->qc().view(),
+        tmp_block->block_info().height(),
+        common::TimeUtils::TimestampMs() - b_tm);
+    stored_to_db_view_ = tmp_block->qc().view();
+
+    // This block is now the settled branch at its height, so any sibling it
+    // has at its parent's height is an illegal fork and must go.
+    EraseIllegalForkSiblings(tmp_block);
+    // A committed block whose parent is neither committed nor in memory
+    // leaves a gap this chain cannot close on its own; track it so sync
+    // keeps asking for the parent every round until it lands.
+    TrackParentIfMissing(tmp_block);
+
+    // Advance the committed pointer per block so a block that has to be
+    // committed before the walk can restart still leaves the chain pointing
+    // at the highest settled height.
+    SetLatestCommittedBlock(info);
+}
+
+// A committed block settles which branch is real at its parent's height.  Every
+// in-memory block at that height whose hash is not the committed block's parent
+// belongs to a losing fork: it can never be committed on this chain, and while
+// it stays in the maps it keeps answering "height H-1 is already here", so the
+// valid branch is never re-synced.  Erase it, then ask sync for the valid hash.
+void ViewBlockChain::EraseIllegalForkSiblings(
+        const std::shared_ptr<ViewBlock>& committed_block) {
+    if (committed_block == nullptr || committed_block->parent_hash().empty()) {
+        return;
+    }
+
+    const auto network_id = committed_block->qc().network_id();
+    const auto pool_idx = committed_block->qc().pool_index();
+    const auto committed_height = committed_block->block_info().height();
+    if (committed_height <= 1) {
+        return;
+    }
+
+    const auto parent_height = committed_height - 1;
+    const auto& keep_hash = committed_block->parent_hash();
+    uint32_t erased = 0;
+    for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
+        auto& info = iter->second;
+        if (info == nullptr || info->view_block == nullptr) {
+            ++iter;
+            continue;
         }
 
-        SHARDORA_DEBUG("commit block to db success %u_%u_%lu_%lu, batch_bytes: %lu, "
-            "db_put_ms: %lu, use time: %lu ms",
-            tmp_block->qc().network_id(),
-            tmp_block->qc().pool_index(),
-            tmp_block->qc().view(),
-            tmp_block->block_info().height(),
-            db_batch_bytes,
-            common::TimeUtils::TimestampMs() - db_put_begin_ms,
-            common::TimeUtils::TimestampMs() - b_tm);
-        if (pools_mgr_) {
-            const auto txover_begin_ms = common::TimeUtils::TimestampMs();
-            pools_mgr_->TxOver(pool_index_, *tmp_block);
-            const auto txover_ms = common::TimeUtils::TimestampMs() - txover_begin_ms;
-            if (txover_ms >= 100lu ||
-                    tmp_block->block_info().tx_list_size() >= 128) {
-                SHARDORA_DEBUG("commit TxOver %u_%u_%lu, txs: %d, txover_ms: %lu",
-                    tmp_block->qc().network_id(),
-                    tmp_block->qc().pool_index(),
-                    tmp_block->block_info().height(),
-                    tmp_block->block_info().tx_list_size(),
-                    txover_ms);
-            }
+        auto& vblock = info->view_block;
+        if (vblock->qc().network_id() != network_id ||
+                vblock->qc().pool_index() != pool_idx ||
+                vblock->block_info().height() != parent_height ||
+                iter->first == keep_hash) {
+            ++iter;
+            continue;
         }
 
-        SHARDORA_DEBUG("add block to block manager %u_%u_%lu_%lu, use time: %lu ms", 
-            tmp_block->qc().network_id(), 
-            tmp_block->qc().pool_index(), 
-            tmp_block->qc().view(), 
-            tmp_block->block_info().height(),
-            (common::TimeUtils::TimestampMs() - b_tm));
-        block_mgr_->ConsensusAddBlock(*iter);
-        SHARDORA_DEBUG("success commit view block %u_%u_%lu_%lu, use time: %lu ms", 
-            tmp_block->qc().network_id(), 
-            tmp_block->qc().pool_index(), 
-            tmp_block->qc().view(), 
-            tmp_block->block_info().height(),
-            common::TimeUtils::TimestampMs() - b_tm);
-        stored_to_db_view_ = tmp_block->qc().view();
-        latest_commited_block = *iter;
+        SHARDORA_DEBUG("erase illegal fork sibling %u_%u_%lu, height: %lu, "
+            "hash: %s, keep parent hash: %s",
+            vblock->qc().network_id(),
+            vblock->qc().pool_index(),
+            vblock->qc().view(),
+            vblock->block_info().height(),
+            common::Encode::HexEncode(iter->first).c_str(),
+            common::Encode::HexEncode(keep_hash).c_str());
+
+        // Drop the view-keyed entries first: both cache structures key on view,
+        // and the block must be gone from all three maps before its shared_ptr
+        // is released.
+        auto view = vblock->qc().view();
+        auto view_iter = view_with_blocks_.find(view);
+        if (view_iter != view_with_blocks_.end() && view_iter->second == info) {
+            view_with_blocks_.erase(view_iter);
+        }
+
+        iter = view_blocks_info_.erase(iter);
+        ++erased;
     }
-    
-    if (latest_commited_block) {
-        SetLatestCommittedBlock(latest_commited_block);
+
+    if (erased > 0) {
+        SHARDORA_DEBUG("erased %u illegal fork siblings at %u_%u height: %lu, "
+            "keep parent hash: %s, committed: %s",
+            erased,
+            network_id,
+            pool_idx,
+            parent_height,
+            common::Encode::HexEncode(keep_hash).c_str(),
+            common::Encode::HexEncode(committed_block->qc().view_block_hash()).c_str());
+        if (kv_sync_) {
+            kv_sync_->AddSyncViewHash(network_id, pool_idx, keep_hash, 0);
+        }
     }
-    // std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
-    // auto v_block = v_block_info->view_block;
-// #ifndef NDEBUG
-//     transport::protobuf::ConsensusDebug cons_debug3;
-//     cons_debug3.ParseFromString(v_block->debug());
-//     SHARDORA_DEBUG("success commit view block %u_%u_%lu, "
-//         "height: %lu, now chain: %s, propose_debug: %s",
-//         v_block->qc().network_id(), 
-//         v_block->qc().pool_index(), 
-//         v_block->qc().view(), 
-//         v_block->block_info().height(),
-//         String().c_str(),
-//         ProtobufToJson(cons_debug3).c_str());
-// #endif
+}
+
+void ViewBlockChain::TrackParentIfMissing(
+        const std::shared_ptr<ViewBlock>& committed_block) {
+    if (committed_block == nullptr || committed_block->parent_hash().empty()) {
+        return;
+    }
+
+    const auto network_id = committed_block->qc().network_id();
+    const auto pool_idx = committed_block->qc().pool_index();
+    const auto committed_height = committed_block->block_info().height();
+    if (committed_height <= 1) {
+        return;
+    }
+
+    const auto parent_height = committed_height - 1;
+    const auto& parent_hash = committed_block->parent_hash();
+    // Parent is already committed: the gap this entry would track is closed.
+    if (BlockHeightCommited(prefix_db_, network_id, pool_idx, parent_height)) {
+        auto tracked_iter = tracked_parents_.find(parent_hash);
+        if (tracked_iter != tracked_parents_.end()) {
+            SHARDORA_DEBUG("tracked parent %u_%u_%lu now commited, drop track, hash: %s",
+                network_id, pool_idx, parent_height,
+                common::Encode::HexEncode(parent_hash).c_str());
+            tracked_parents_.erase(tracked_iter);
+        }
+
+        return;
+    }
+
+    // Parent is in memory: the chain can still close the gap by itself.
+    if (view_blocks_info_.find(parent_hash) != view_blocks_info_.end()) {
+        return;
+    }
+
+    TrackedParent tracked;
+    tracked.network_id = network_id;
+    tracked.pool_index = pool_idx;
+    tracked.height = parent_height;
+    auto inserted = tracked_parents_.insert({ parent_hash, tracked }).second;
+    SHARDORA_DEBUG("%s tracked missing parent %u_%u_%lu, hash: %s, "
+        "committed block: %s",
+        inserted ? "add" : "already",
+        network_id, pool_idx, parent_height,
+        common::Encode::HexEncode(parent_hash).c_str(),
+        common::Encode::HexEncode(
+            committed_block->qc().view_block_hash()).c_str());
+}
+
+void ViewBlockChain::RetryTrackedParents() {
+    if (tracked_parents_.empty()) {
+        return;
+    }
+
+    for (auto iter = tracked_parents_.begin(); iter != tracked_parents_.end();) {
+        const auto& parent_hash = iter->first;
+        auto& tracked = iter->second;
+        // The gap closed: the parent's height is committed, or the block
+        // arrived in memory and the normal commit path will carry it forward.
+        if (BlockHeightCommited(
+                prefix_db_, tracked.network_id, tracked.pool_index, tracked.height) ||
+                view_blocks_info_.find(parent_hash) != view_blocks_info_.end()) {
+            SHARDORA_DEBUG("tracked parent %u_%u_%lu resolved, stop retry, hash: %s",
+                tracked.network_id, tracked.pool_index, tracked.height,
+                common::Encode::HexEncode(parent_hash).c_str());
+            iter = tracked_parents_.erase(iter);
+            continue;
+        }
+
+        if (kv_sync_) {
+            kv_sync_->AddSyncViewHash(
+                tracked.network_id, tracked.pool_index, parent_hash, 0);
+            SHARDORA_DEBUG("retry tracked parent %u_%u_%lu, hash: %s",
+                tracked.network_id, tracked.pool_index, tracked.height,
+                common::Encode::HexEncode(parent_hash).c_str());
+        }
+
+        ++iter;
+    }
 }
 
 void ViewBlockChain::HandleTimerMessage() {
     // CheckThreadIdValid();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (prev_check_timeout_blocks_ms_ + 3000u > now_tm_ms) { 
+    if (prev_check_timeout_blocks_ms_ + 3000u > now_tm_ms) {
         return;
     }
 
     prev_check_timeout_blocks_ms_ = now_tm_ms;
+
+    // Keep asking for parents that a committed block depends on but that never
+    // arrived.  Must run before the early return below: the gap can exist while
+    // view_with_blocks_ is nearly empty.
+    RetryTrackedParents();
 
     if (view_with_blocks_.size() <= 1) {
         return;
@@ -988,33 +1589,38 @@ void ViewBlockChain::HandleTimerMessage() {
 
     for (auto iter = view_with_blocks_.rbegin(); iter != view_with_blocks_.rend();) {
         bool commited = false;
+        auto cur_view = iter->first;
         auto view_block = iter->second->view_block;
         if (view_block) {
             bool height_commited = BlockHeightCommited(
                 prefix_db_,
-                view_block->qc().network_id(), 
+                view_block->qc().network_id(),
                 view_block->qc().pool_index(),
                 view_block->block_info().height());
             SHARDORA_DEBUG("network: %d, pool: %d, height: %lu, height_commited: %d, "
-                "now check view_with_blocks_ size: %d", 
+                "now check view_with_blocks_ size: %d",
                 view_with_blocks_.begin()->second->view_block->qc().network_id(),
-                pool_index_, 
+                pool_index_,
                 view_block->block_info().height(),
                 height_commited,
-                view_with_blocks_.size());      
+                view_with_blocks_.size());
             if (height_commited) {
-                auto it_to_erase = std::next(iter).base();
-                auto next_valid_forward = view_with_blocks_.erase(it_to_erase);
-                iter = std::make_reverse_iterator(next_valid_forward);
+                view_with_blocks_.erase(cur_view);
+                // Erasing invalidates `iter`; resume the reverse walk at the
+                // largest remaining view below the one just removed.
+                iter = std::make_reverse_iterator(view_with_blocks_.lower_bound(cur_view));
                 continue;
             }
 
             auto view_block_ptr = CheckCommit(view_block->qc());
             if (view_block_ptr) {
                 Commit(view_block_ptr);
-                auto it_to_erase = std::next(iter).base();
-                auto next_valid_forward = view_with_blocks_.erase(it_to_erase);
-                iter = std::make_reverse_iterator(next_valid_forward);
+                // Commit walks forward and, for every block it commits, erases
+                // that block's parent from view_with_blocks_ — which can be the
+                // very node `iter` points at (the committed block's parent is
+                // always already committed, so that erase always fires).  Erase
+                // by key rather than through the now-dangling iterator.
+                view_with_blocks_.erase(cur_view);
                 commited = true;
                 break;
             }
@@ -1044,6 +1650,84 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
         return nullptr;
     }
 
+    // Blocks must be committed in strictly increasing, contiguous height order.
+    // The only block this function may hand back is the one at exactly
+    // latest committed height + 1; anything else (a block above a gap, or one
+    // whose height is already committed) returns nullptr.  Without this gate a
+    // block can be committed while its predecessor is still missing, and when
+    // that predecessor lands later its older state overwrites the newer state
+    // already written by AddAddressInfo, SaveTemporaryKv,
+    // SaveNodeVerificationVector and AddBlsVerifyG2.
+    const uint64_t next_height = GetMaxHeight() + 1llu;
+
+    // Height alone does not identify the parent: two different blocks can sit at
+    // the same height when the leader changes mid-view (a fork).  Matching only
+    // on `next_height` therefore lets a block whose parent hash never equals the
+    // committed tip be committed, and its descendants commit on top of it,
+    // leaving a parent-hash break in the stored chain.  Anchor every candidate
+    // to the tip's hash so only the branch that actually extends the committed
+    // chain can be committed.
+    auto extends_committed_tip = [&](const std::shared_ptr<ViewBlock>& candidate) {
+        if (candidate == nullptr) {
+            return false;
+        }
+
+        // Nothing committed yet (genesis): there is no tip hash to match.
+        auto tip = LatestCommittedBlock();
+        if (tip == nullptr || !tip->has_block_info() ||
+                tip->block_info().height() == 0) {
+            return true;
+        }
+
+        if (candidate->parent_hash() == tip->qc().view_block_hash()) {
+            return true;
+        }
+
+        SHARDORA_DEBUG("pool: %d, fork rejected: block %u_%u_%lu, height: %lu, "
+            "parent hash: %s does not extend committed tip: %s, tip height: %lu",
+            pool_index_,
+            candidate->qc().network_id(), candidate->qc().pool_index(),
+            candidate->qc().view(),
+            candidate->block_info().height(),
+            common::Encode::HexEncode(candidate->parent_hash()).c_str(),
+            common::Encode::HexEncode(tip->qc().view_block_hash()).c_str(),
+            tip->block_info().height());
+
+        // The candidate's parent sits at the committed tip's height but is a
+        // different block, so the whole branch below the candidate is a losing
+        // fork.  Nothing on it can ever commit; leaving it in the maps makes it
+        // keep answering "this height is already here" and blocks re-sync of the
+        // real branch.  Erase the parent and let its descendants be dropped with
+        // it -- keyed on the parent's own hash, never on the tip's.
+        auto parent_info = Get(candidate->parent_hash());
+        if (parent_info != nullptr && parent_info->view_block != nullptr) {
+            auto parent_view = parent_info->view_block->qc().view();
+            auto view_iter = view_with_blocks_.find(parent_view);
+            if (view_iter != view_with_blocks_.end() && view_iter->second == parent_info) {
+                view_with_blocks_.erase(view_iter);
+            }
+
+            // cached_view_with_blocks_ belongs to the key-value sync timer
+            // thread, so the removal is queued rather than done here on a
+            // hotstuff thread.
+            QueueEraseCachedViewBlock(parent_view, candidate->parent_hash());
+
+            if (kv_sync_) {
+                // Queued, not called inline: DropSyncedCandidate touches maps
+                // that only the key-value sync timer thread owns.
+                kv_sync_->AddDropSyncedCandidate(
+                    parent_info->view_block->qc().network_id(),
+                    parent_info->view_block->qc().pool_index(),
+                    parent_info->view_block->block_info().height(),
+                    candidate->parent_hash());
+            }
+
+            view_blocks_info_.erase(candidate->parent_hash());
+        }
+
+        return false;
+    };
+
     //assert(!qc.view_block_hash().empty());
     auto v_block1_info = Get(qc.view_block_hash());
     if (!v_block1_info || v_block1_info->view_block->qc().view() <= 0llu){
@@ -1057,6 +1741,25 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
     }
 
     if (ViewBlockIsCheckedParentHash(prefix_db_, qc.view_block_hash())) {
+        if (v_block1_info->view_block->block_info().height() != next_height) {
+            SHARDORA_DEBUG("pool: %d, v block 1 is not the next height to commit: %s, "
+                "%u_%u_%lu, height: %lu, next height: %lu",
+                pool_index_,
+                common::Encode::HexEncode(qc.view_block_hash()).c_str(),
+                qc.network_id(), qc.pool_index(), qc.view(),
+                v_block1_info->view_block->block_info().height(), next_height);
+            return nullptr;
+        }
+
+        if (!extends_committed_tip(v_block1_info->view_block)) {
+            // A different block already committed at this height; this block
+            // belongs to a losing branch and must never be committed.  Leave the
+            // maps alone here: the committed tip sits at the same height as this
+            // block's parent, so any sibling cleanup keyed on that height would
+            // erase the tip itself.
+            return nullptr;
+        }
+
         return v_block1_info;
     }
 
@@ -1070,6 +1773,47 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
         qc.network_id(), qc.pool_index(), qc.view(), ProtobufToJson(cons_debug).c_str());
 #endif
     //assert(v_block1->parent_hash() != qc.view_block_hash());
+    //
+    // The lookup below answers "commit the parent of the QC'd block", so it can
+    // only ever commit a block one height below the QC.  That leaves the QC'd
+    // block itself permanently uncommittable through this path: once its parent
+    // is committed, next_height moves up to its own height and the parent check
+    // (height == next_height - 1) can never pass again, so the chain stalls with
+    // a QC'd block sitting exactly at next_height.
+    //
+    // The two-chain rule does not actually require the parent to be the block we
+    // commit here.  It requires the block being committed to be QC-verified and
+    // to have a QC-verified child on top of it — that is what fast HotStuff's
+    // two-chain (B1 <- B2 <- B3, commit B1) means, and the child is the link that
+    // proves B1 is not a fork that will be superseded.  So when the QC'd block is
+    // itself next_height, hand it back directly if its child carries a valid QC.
+    if (v_block1->block_info().height() == next_height) {
+        auto child_info = FindChildBlock(v_block1);
+        if (child_info != nullptr && child_info->view_block != nullptr &&
+                !child_info->view_block->qc().sign_x().empty() &&
+                extends_committed_tip(v_block1)) {
+            SHARDORA_DEBUG("pool: %d, commit qc block itself, height: %lu, view: %lu, "
+                "child height: %lu, hash: %s",
+                pool_index_,
+                v_block1->block_info().height(),
+                v_block1->qc().view(),
+                child_info->view_block->block_info().height(),
+                common::Encode::HexEncode(qc.view_block_hash()).c_str());
+            return v_block1_info;
+        }
+
+        // No QC-verified child yet, so the two-chain rule is not satisfied and
+        // B1 may still lose to a sibling.  Ask for the child's view and stop
+        // rather than committing on one link.
+        SHARDORA_DEBUG("pool: %d, qc block is next height but has no qc child yet, "
+            "height: %lu, view: %lu, hash: %s",
+            pool_index_,
+            v_block1->block_info().height(),
+            v_block1->qc().view(),
+            common::Encode::HexEncode(qc.view_block_hash()).c_str());
+        return nullptr;
+    }
+
     auto v_block2_info = Get(v_block1->parent_hash());
     if (!v_block2_info) {
         SHARDORA_DEBUG("pool: %d, Failed get v block 2 block hash: %s, %u_%u_%lu, now chain: %s", 
@@ -1097,6 +1841,20 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
             common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
             v_block2->block_info().height(),
             v_block1->block_info().height());
+        return nullptr;
+    }
+
+    if (v_block2->block_info().height() != next_height) {
+        SHARDORA_DEBUG("pool: %d, v block 2 is not the next height to commit: %s, "
+            "%u_%u_%lu, height: %lu, next height: %lu",
+            pool_index_,
+            common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
+            qc.network_id(), qc.pool_index(), qc.view(),
+            v_block2->block_info().height(), next_height);
+        return nullptr;
+    }
+
+    if (!extends_committed_tip(v_block2)) {
         return nullptr;
     }
 
@@ -1553,8 +2311,73 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
             view_block_ptr->block_info().height());
     }
 
+    // A QC at the same height as the committed block can belong to a fork
+    // sibling.  Advancing high_view_block_ to it would make the leader propose
+    // on that fork and backups vote on it, so the branch must first be shown to
+    // extend the committed tip.  A block that does not is still stored above
+    // (it may be needed to answer sync), but it never becomes the high block.
+    //
+    // The parent-height check catches the case one level further out: when the
+    // parent's height is already committed, the QC proves a quorum voted for a
+    // block whose branch lost at that height, which the tip walk alone may not
+    // see if the parent is still in memory with a stale status.
+    if (!ExtendsCommittedTip(*view_block_ptr) ||
+            ParentHeightCommittedOnOtherBranch(*view_block_ptr)) {
+        auto committed_tip = LatestCommittedBlock();
+        SHARDORA_DEBUG("pool: %d, reject high view block on fork branch: %u_%u_%lu, "
+            "height: %lu, parent hash: %s, committed tip: %s, tip height: %lu",
+            pool_index_,
+            view_block_ptr->qc().network_id(),
+            view_block_ptr->qc().pool_index(),
+            view_block_ptr->qc().view(),
+            view_block_ptr->block_info().height(),
+            common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
+            committed_tip ? common::Encode::HexEncode(
+                committed_tip->qc().view_block_hash()).c_str() : "",
+            committed_tip && committed_tip->has_block_info() ?
+                committed_tip->block_info().height() : 0);
+        return;
+    }
+
+    // The candidate is on the committed branch.  It replaces the current high
+    // block when it is taller, or equally tall with a higher view -- and also
+    // when the current high block is stale or sits on a fork branch, because a
+    // fork branch usually carries the *higher* view, so view order alone would
+    // never let the valid branch take the pointer back.
+    bool high_block_on_fork = high_view_block_ != nullptr &&
+        (!ExtendsCommittedTip(*high_view_block_) ||
+            ParentHeightCommittedOnOtherBranch(*high_view_block_));
+
+    // Self-heal: the high block may have been promoted onto a branch whose parent
+    // height has since committed to a different block.  Left alone it would keep
+    // pulling the leader onto a dead branch, and no later candidate can displace
+    // it (the dead branch carries the higher view), so it is repointed at the
+    // committed tip, which is the only parent that can still extend the chain.
+    if (high_block_on_fork) {
+        auto committed_tip = LatestCommittedBlock();
+        if (committed_tip != nullptr && committed_tip->has_block_info() &&
+                committed_tip->qc().view_block_hash() !=
+                    high_view_block_->qc().view_block_hash()) {
+            SHARDORA_WARN("pool: %d, high view block %s is on a dead branch "
+                "(view: %lu, height: %lu, parent: %s), repoint to committed tip "
+                "(view: %lu, height: %lu, hash: %s)",
+                pool_index_,
+                common::Encode::HexEncode(
+                    high_view_block_->qc().view_block_hash()).c_str(),
+                high_view_block_->qc().view(),
+                high_view_block_->block_info().height(),
+                common::Encode::HexEncode(high_view_block_->parent_hash()).c_str(),
+                committed_tip->qc().view(),
+                committed_tip->block_info().height(),
+                common::Encode::HexEncode(
+                    committed_tip->qc().view_block_hash()).c_str());
+            high_view_block_ = committed_tip;
+            high_view_block_view_.store(committed_tip->qc().view());
+            high_block_on_fork = false;
+        }
+    }
     if (high_view_block_ == nullptr || high_view_block_->qc().sign_x().empty() ||
-            !high_view_block_->block_info().has_height() ||
+            !high_view_block_->block_info().has_height() || high_block_on_fork ||
             high_view_block_->block_info().height() < view_block_ptr->block_info().height() ||
             high_view_block_->qc().view() < view_block_ptr->qc().view()) {
 #ifndef NDEBUG
@@ -1586,47 +2409,6 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
             common::Encode::HexEncode(high_view_block_->parent_hash()).c_str(),
             high_view_block_->block_info().tx_list_size());
         high_view_block_view_.store(high_view_block_->qc().view());
-        // Persist high_view_block_ to DB so it can be recovered after restart.
-        // Save both the hash pointer AND the block itself, because the block
-        // may not have been committed yet (SaveBlock only happens on commit).
-        // Without saving the block, RecoverHighViewBlock's GetBlock(hash)
-        // fails and the node restarts with a stale view.
-        db::DbWriteBatch db_batch;
-        prefix_db_->SaveHighViewBlock(
-            high_view_block_->qc().network_id(),
-            pool_index_,
-            high_view_block_->qc().view_block_hash(),
-            db_batch);
-        // For the LOCAL chain only: eagerly flush this block's EVM storage and
-        // AddressInfo to DB so that QueryContract / cross-shard kNormalTo TXs
-        // can read fresh state without waiting for the two-phase commit.
-        // A QC'd block is on the canonical chain (HotStuff safety) so the write
-        // is safe; the normal commit path writes the same values again
-        // (idempotent).
-        //
-        // Do NOT flush for cross-shard (kCrossShardingChain) or root-chain
-        // (kCrossRootChian) instances — they share the same physical DB but
-        // carry state that belongs to THEIR OWN shard.  Writing their
-        // address_array / key_value_array here would corrupt the local shard's
-        // account state with foreign data.
-        if (chain_type_ == kLocalChain) {
-            for (int i = 0; i < high_view_block_->block_info().key_value_array_size(); ++i) {
-                const auto& kv = high_view_block_->block_info().key_value_array(i);
-                prefix_db_->SaveTemporaryKv(kv.addr() + kv.key(), kv.SerializeAsString(), db_batch);
-            }
-            for (int i = 0; i < high_view_block_->block_info().address_array_size(); ++i) {
-                const auto& addr_info = high_view_block_->block_info().address_array(i);
-                prefix_db_->AddAddressInfo(addr_info.addr(), addr_info, db_batch);
-            }
-        }
-        auto st = db_->Put(db_batch);
-        if (!st.ok()) {
-            SHARDORA_ERROR("failed to persist high view block %u_%u_%lu, hash: %s",
-                high_view_block_->qc().network_id(),
-                pool_index_,
-                high_view_block_->qc().view(),
-                common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str());
-        }
     }
 }
 
