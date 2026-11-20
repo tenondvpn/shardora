@@ -83,5 +83,5 @@ bash start_miner.sh <RAW_HEX_PRIVATE_KEY>
 * **Shardora Contract **： [crossTransfer](https://github.com/tenondvpn/shardora/blob/master/docs/crossTransfer.md)
 * **100000 nodes per sharding **: [100000 nodes](https://github.com/tenondvpn/shardora/blob/master/docs/UNIFIED_FORMAL_PROOF.md)
 * **Shardora Storage **: [Shardora Storage](https://github.com/tenondvpn/shardora/blob/master/docs/shardora_vs_ipfs_analysis.md)
-* **Shardora PRIVACY **: [PRIVACY](https://github.com/tenondvpn/shardora/blob/master/docs/PRIVACY_TX_COMPLETE.md)
+* **Shardora Privacy Tx**: [PRIVACY TX](https://github.com/tenondvpn/shardora/blob/master/docs/PRIVACY_TX_COMPLETE.md)
   
