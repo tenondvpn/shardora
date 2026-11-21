@@ -84,4 +84,10 @@ bash start_miner.sh <RAW_HEX_PRIVATE_KEY>
 * **Shardora/Shardora (TNSE 2026)**: [Shardora: Scaling Blockchain Sharding via 2D Parallelism](https://github.com/user-attachments/files/26715054/Shardora_TNSE_revised2nd_pure.pdf)
 * **Shardora NMFT (TIFS 2025)**: [NMFT: A Copyrighted Data Trading Protocol based on NFT and AI-powered Merkle Feature Tree](https://ieeexplore.ieee.org/document/11275867/)
 * **Shardora SCoRE**: [SCoRE: A Runtime System for Service-Oriented Smart Contracts in Sharded Blockchains](https://sosp26.hotcrp.com/doc/sosp26-paper501.pdf)
-* **Shardora BFT（TDSC 2026）**: [Boosting Sharded Blockchain via Multi-Leader Parallel Pipelines](https://github.com/user-attachments/files/24961427/Akaverse.Boosting.Sharded.Blockchain.via.Multi-Leader.Parallel.Pipelines.pdf)
+* **Shardora BFT（TDSC 2026**: [Boosting Sharded Blockchain via Multi-Leader Parallel Pipelines](https://github.com/user-attachments/files/24961427/Akaverse.Boosting.Sharded.Blockchain.via.Multi-Leader.Parallel.Pipelines.pdf)
+* **Shardora Contract**： [crossTransfer](https://github.com/tenondvpn/shardora/blob/master/docs/crossTransfer.md)
+* **100000 nodes per sharding**: [100000 nodes](https://github.com/tenondvpn/shardora/blob/master/docs/UNIFIED_FORMAL_PROOF.md)
+* **Shardora Storage**: [Shardora Storage](https://github.com/tenondvpn/shardora/blob/master/docs/shardora_vs_ipfs_analysis.md)
+* **Shardora Privacy Tx**: [PRIVACY TX](https://github.com/tenondvpn/shardora/blob/master/docs/PRIVACY_TX_COMPLETE.md)
+  
+
