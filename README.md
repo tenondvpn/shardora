@@ -85,4 +85,3 @@ bash start_miner.sh <RAW_HEX_PRIVATE_KEY>
 * **Shardora Storage**: [Shardora Storage](https://github.com/tenondvpn/shardora/blob/master/docs/shardora_vs_ipfs_analysis.md)
 * **Shardora Privacy Tx**: [PRIVACY TX](https://github.com/tenondvpn/shardora/blob/master/docs/PRIVACY_TX_COMPLETE.md)
   
-
