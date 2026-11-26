@@ -1,4 +1,8 @@
 #include <algorithm>
+#include <chrono>
+#include <cstring>
+#include <random>
+#include <thread>
 #include <common/encode.h>
 #include <iostream>
 #include <fstream>
@@ -227,6 +231,36 @@ static void LoadAllAccounts(int32_t shardnum=3) {
     delete[]read_buf;
 }
 
+// Fast per-thread incompressible filler (xorshift64*, 8 bytes per step).
+// Seeded per thread (random_device ^ time ^ thread id) so threads never emit
+// the same stream, and lock-free so it does not throttle the send loop.
+static inline void FillRandomBytes(std::string* out, size_t size) {
+    static thread_local uint64_t state = [] {
+        std::random_device rd;
+        uint64_t seed = ((uint64_t)rd() << 32) ^ rd();
+        seed ^= (uint64_t)std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        seed ^= std::hash<std::thread::id>()(std::this_thread::get_id()) * 0x9E3779B97F4A7C15ULL;
+        return seed == 0 ? 0x2545F4914F6CDD1DULL : seed;
+    }();
+    out->resize(size);
+    char* p = &(*out)[0];
+    size_t i = 0;
+    for (; i + 8 <= size; i += 8) {
+        state ^= state >> 12;
+        state ^= state << 25;
+        state ^= state >> 27;
+        uint64_t v = state * 0x2545F4914F6CDD1DULL;
+        memcpy(p + i, &v, 8);
+    }
+    if (i < size) {
+        state ^= state >> 12;
+        state ^= state << 25;
+        state ^= state >> 27;
+        uint64_t v = state * 0x2545F4914F6CDD1DULL;
+        memcpy(p + i, &v, size - i);
+    }
+}
+
 int tx_main(int argc, char** argv) {
     // ./txcli 0 $net_id $pool_id $ip $port $delay_us $multi_pool [$tps] [$max_tx_count]
     auto ip = kBroadcastIp;
@@ -335,9 +369,10 @@ int tx_main(int argc, char** argv) {
         std::cout << "Leader routing unavailable, using default node" << std::endl;
     }
 
-    // Default: every tx writes a fixed key with a 1KB value.
-    const std::string key = "stress_key";  // chain limit: key <= 12 bytes
-    const std::string value(1024, 'v');
+    // Every tx writes a fresh random key (chain limit: key <= 12 bytes) and a
+    // fresh random 1KB value, so storage cannot dedupe or compress it away.
+    const uint32_t kKeySize = 12u;
+    const uint32_t kValueSize = 1024u;
 
     // Compute per-thread sleep interval to achieve target TPS
     // interval_us = kThreadCount * 1000000 / target_tps
@@ -357,6 +392,8 @@ int tx_main(int argc, char** argv) {
         uint32_t count = 0;
         uint32_t batch_count = 256;
         auto addr = thread_security->GetAddress();
+        std::string key;    // reused buffers: no per-tx allocation
+        std::string value;
         while (!global_stop) {
             if (max_tx_count > 0 && sent_total.load(std::memory_order_relaxed) >= max_tx_count) {
                 break;
@@ -396,6 +433,8 @@ int tx_main(int argc, char** argv) {
                 to = g_addrs[random_idx];
             } while (to == addr && g_addrs.size() > 1);  // Avoid sending to self if there are other options
 
+            FillRandomBytes(&key, kKeySize);
+            FillRandomBytes(&value, kValueSize);
             auto tx_msg_ptr = CreateTransactionWithAttr(
                 thread_security,
                 ++prikey_with_nonce[addr],
