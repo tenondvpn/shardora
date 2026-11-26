@@ -1,0 +1,64 @@
+3.1：5个命令
+
+1.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/k8s_workflow.py --run r20261114-layout01 --scenario normal --concurrency    
+K8s正常业务与真实并发
+启动server、sender1、sender2、receiver真实业务Pod；两个计算节点训练/推理、监控摘要、双向确认、DAG、批次及链上终态；额外同步两个发送者产生真实重叠请求。
+
+2.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/k8s_workflow.py --run r20261114-layout02 --scenario anomaly
+K8s权重异常业务
+同一业务链路中注入模型权重异常，保留正常聚合与异常即时摘要对应的实际交易，不将异常监控数据直接丢弃。
+
+3.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/k8s_workflow.py --run r20261114-layout03 --scenario crash
+K8s容器崩溃恢复
+业务有持久化记录后，向server容器实际发送SIGKILL；验证同一Pod中的容器重启、数据库目录复用及后续业务终态。
+
+4.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/verification.py --run r20261114-layout04 --module sandbox
+沙箱依赖、声明部署与参数边界
+真实K8s工具任务中检查RPC/工厂、ABI、证明资源；保留依赖错误拒绝；验证声明部署、资源/节点/副本配置与非法参数边界。
+
+5.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/verification.py --run r20261114-layout13 --module concurrency --source-run r20261114-layout01 --scenario normal
+真实并发请求与版本连续性核对
+只读取已执行的真实并发请求区间、签名交易、确认DAG和提交版本，检查无丢失、无串扰、nonce及版本链；不新建业务。
+
+3.2:8个命令
+
+6.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/model_monitor.py --run r20261114-layout05 --scenario normal
+正常模型运行时监控
+直接运行原Verifier和正常模型；收集层/阶段指标、基准比较、缓冲和聚合回调。无需先运行1或2，也不发送链上交易。
+
+7.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/model_monitor.py --run r20261114-layout06 --scenario anomaly --anomaly input
+异常模型运行时监控
+复用同一个model_monitor.py，按参数注入输入、权重、激活或梯度异常；展示监测分类、即时回调和正常聚合。此项本次13命令实际测试input；权重业务由2覆盖。
+
+8.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/model_monitor.py --run r20261114-layout07 --scenario baseline-missing
+基准缺失自动生成与重载
+不提供已挂载基准，调用原Verifier自动采集20批次、保存并重新加载基准，再进行正常与受控异常检查。
+
+9.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/verification.py --run r20261114-layout08 --module state-channel --only smv
+状态通道SMV模型验证
+调用NuSMV验证6个显式协议模型的104条性质，并运行错误性质的反例控制。
+
+10.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/verification.py --run r20261114-layout09 --module contracts --only smt
+链上关键函数SMT验证
+调用solc CHC/SMT核对状态更新、争议更新等关键函数的11条断言，保留正例与变异反例及抽象边界。
+
+11.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/state_channel_paths.py --run r20261114-layout10 --source-run r20261114-layout01 --scenario normal
+指定业务运行的状态通道路径约束
+读取既有业务的server/app.log、function_traces及配套数据验证协议路径；不重新启动业务、不补资金。
+
+12.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/verification.py --run r20261114-layout11 --module security
+签名、身份、重放与哈希安全验证
+执行原服务端哈希/签名/身份/nonce边界函数、授权生命周期、SHA有限样本及64项资源/路径单元检查；不写链。
+
+13.python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/verification.py --run r20261114-layout12 --module batch-integrity --source-run r20261111-flow01 --proof-run r20261111-cover01
+批次成员与根篡改对照
+重新执行真实历史批次的witness计算和Groth16验证，核对批内/批外成员、修改根的反例与该批次锚定证据。
+
+
+依赖关系：5依赖1或2，11依赖1或2，13依赖1或2
+每次点击重新执行时，可由Linux执行器使用下列命令生成新编号（run后面紧跟的）：
+以13为例：
+python3 -u -B /data2/pbx-acceptance-20261031/security-repair-f/k8s-31-32-20261110/interfaces/verification.py --run "r$(date +%Y%m%d%H%M%S%6N)-12" --module batch-integrity --source-run r20261111-flow01 --proof-run r20261111-cover01
+
+
+

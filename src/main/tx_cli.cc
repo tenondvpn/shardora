@@ -1,3 +1,8 @@
+#include <algorithm>
+#include <chrono>
+#include <cstring>
+#include <random>
+#include <thread>
 #include <common/encode.h>
 #include <iostream>
 #include <fstream>
@@ -226,6 +231,36 @@ static void LoadAllAccounts(int32_t shardnum=3) {
     delete[]read_buf;
 }
 
+// Fast per-thread incompressible filler (xorshift64*, 8 bytes per step).
+// Seeded per thread (random_device ^ time ^ thread id) so threads never emit
+// the same stream, and lock-free so it does not throttle the send loop.
+static inline void FillRandomBytes(std::string* out, size_t size) {
+    static thread_local uint64_t state = [] {
+        std::random_device rd;
+        uint64_t seed = ((uint64_t)rd() << 32) ^ rd();
+        seed ^= (uint64_t)std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        seed ^= std::hash<std::thread::id>()(std::this_thread::get_id()) * 0x9E3779B97F4A7C15ULL;
+        return seed == 0 ? 0x2545F4914F6CDD1DULL : seed;
+    }();
+    out->resize(size);
+    char* p = &(*out)[0];
+    size_t i = 0;
+    for (; i + 8 <= size; i += 8) {
+        state ^= state >> 12;
+        state ^= state << 25;
+        state ^= state >> 27;
+        uint64_t v = state * 0x2545F4914F6CDD1DULL;
+        memcpy(p + i, &v, 8);
+    }
+    if (i < size) {
+        state ^= state >> 12;
+        state ^= state << 25;
+        state ^= state >> 27;
+        uint64_t v = state * 0x2545F4914F6CDD1DULL;
+        memcpy(p + i, &v, size - i);
+    }
+}
+
 int tx_main(int argc, char** argv) {
     // ./txcli 0 $net_id $pool_id $ip $port $delay_us $multi_pool [$tps] [$max_tx_count]
     auto ip = kBroadcastIp;
@@ -303,6 +338,8 @@ int tx_main(int argc, char** argv) {
         return 1;
     }
 
+    // Use all loaded accounts (rotating), regardless of which pool they belong to.
+    global_pool_idx = -1;
     UpdateAddressNonce();
     std::atomic<uint32_t> all_count = 0;
     std::atomic<uint64_t> sent_total = 0;
@@ -332,9 +369,11 @@ int tx_main(int argc, char** argv) {
         std::cout << "Leader routing unavailable, using default node" << std::endl;
     }
 
-    const std::string key = "";
-    const std::string value = "";
-    
+    // Every tx writes a fresh random key (chain limit: key <= 12 bytes) and a
+    // fresh random 1KB value, so storage cannot dedupe or compress it away.
+    const uint32_t kKeySize = 12u;
+    const uint32_t kValueSize = 1024u;
+
     // Compute per-thread sleep interval to achieve target TPS
     // interval_us = kThreadCount * 1000000 / target_tps
     uint64_t tps_interval_us = 0;  // 0 = no sleep (unlimited)
@@ -353,6 +392,8 @@ int tx_main(int argc, char** argv) {
         uint32_t count = 0;
         uint32_t batch_count = 256;
         auto addr = thread_security->GetAddress();
+        std::string key;    // reused buffers: no per-tx allocation
+        std::string value;
         while (!global_stop) {
             if (max_tx_count > 0 && sent_total.load(std::memory_order_relaxed) >= max_tx_count) {
                 break;
@@ -392,6 +433,8 @@ int tx_main(int argc, char** argv) {
                 to = g_addrs[random_idx];
             } while (to == addr && g_addrs.size() > 1);  // Avoid sending to self if there are other options
 
+            FillRandomBytes(&key, kKeySize);
+            FillRandomBytes(&value, kValueSize);
             auto tx_msg_ptr = CreateTransactionWithAttr(
                 thread_security,
                 ++prikey_with_nonce[addr],
@@ -461,13 +504,28 @@ int tx_main(int argc, char** argv) {
         auto from_prikey = g_prikeys[i];
         std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
         thread_security->SetPrivateKey(from_prikey);
-        if (common::GetAddressPoolIndex(thread_security->GetAddress()) == global_pool_idx) {
+        if (std::find(all_valid_keys.begin(), all_valid_keys.end(), from_prikey) == all_valid_keys.end()) {
             all_valid_keys.push_back(from_prikey);
         }
     }
 
     if (all_valid_keys.empty()) {
+        std::cout << "no private key belongs to pool " << global_pool_idx
+                  << ", nothing to send" << std::endl;
+        global_stop = true;
+        update_nonce_con.notify_all();
+        transport::TcpTransport::Instance()->Stop();
         return 1;
+    }
+
+    if (all_valid_keys.size() < kThreadCount) {
+        kThreadCount = all_valid_keys.size();
+    }
+    if (target_tps > 0) {
+        tps_interval_us = (uint64_t)kThreadCount * 1000000ULL / target_tps;
+        if (tps_interval_us == 0) tps_interval_us = 1;
+        std::cout << "TPS interval (final): " << tps_interval_us << "us/thread ("
+                  << kThreadCount << " threads)" << std::endl;
     }
 
     uint32_t start = 0;
@@ -545,9 +603,6 @@ int tx_main(int argc, char** argv) {
         thread_vec[i].join();
     }
     waker.join();
-    for (uint32_t i = 0; i < thread_vec.size(); ++i) {
-        thread_vec[i].join();
-    }
 
     // All worker threads have exited — safe to stop the transport now.
     transport::TcpTransport::Instance()->Stop();
@@ -753,7 +808,20 @@ int main(int argc, char** argv) {
 
         // Limit thread count to number of funded accounts to avoid nonce collisions.
         // Each funder must be used by exactly one thread.
-        uint32_t create_threads_count = std::min(num_threads, (uint32_t)g_prikeys.size());
+        // g_prikeys is padded with copies of g_prikeys[0] up to kImmutablePoolSize,
+        // so de-duplicate first: the same funder in two threads would produce
+        // interleaved / duplicate nonces and most txs would be dropped.
+        std::vector<std::string> unique_funder_prikeys;
+        for (auto& pk : g_prikeys) {
+            if (std::find(unique_funder_prikeys.begin(), unique_funder_prikeys.end(), pk) ==
+                    unique_funder_prikeys.end()) {
+                unique_funder_prikeys.push_back(pk);
+            }
+        }
+        uint32_t create_threads_count = std::min(num_threads, (uint32_t)unique_funder_prikeys.size());
+        if (create_threads_count == 0) {
+            create_threads_count = 1;
+        }
         uint32_t accounts_per_create_thread = kAccountCount / create_threads_count;
 
         // Use existing funded accounts to send initial coins to test accounts
@@ -764,7 +832,7 @@ int main(int argc, char** argv) {
             ShardoraSDK thread_sdk(global_chain_node_ip, global_chain_node_http_port);
 
             // Each thread gets a unique funder (thread_id < g_prikeys.size() guaranteed)
-            std::string funder_prikey = g_prikeys[thread_id];
+            std::string funder_prikey = unique_funder_prikeys[thread_id];
             std::shared_ptr<security::Security> funder_sec = std::make_shared<security::Ecdsa>();
             funder_sec->SetPrivateKey(funder_prikey);
             std::string funder_addr = funder_sec->GetAddress();
@@ -1044,6 +1112,9 @@ int main(int argc, char** argv) {
             uint32_t consecutive_failures = 0;
             static const uint32_t kFailureThreshold = 10;  // After 10 consecutive failures, assume node is down
             uint32_t pos = 0;
+            // Reused per-thread buffers: random key (chain limit 12B) + random 1KB value.
+            std::string kv_key;
+            std::string kv_value;
             while (!global_stop) {
                 if (max_tx_count > 0 && tx_count.load(std::memory_order_relaxed) >= max_tx_count) {
                     global_stop = true;
@@ -1071,12 +1142,14 @@ int main(int argc, char** argv) {
                 from_sec->SetPrivateKey(from_prikey);
 
                 uint64_t amount = 1 + (common::Random::RandomUint32() % 10);
+                FillRandomBytes(&kv_key, 12u);
+                FillRandomBytes(&kv_value, 1024u);
                 auto tx_msg_ptr = CreateTransactionWithAttr(
                     from_sec,
                     ++prikey_with_nonce[from_addr],
                     from_prikey,
                     to_addr,
-                    "", "", amount, 210000, 1, shardnum);
+                    kv_key, kv_value, amount, 210000, 1, shardnum);
 
                 if (!tx_msg_ptr) {
                     --prikey_with_nonce[from_addr];

@@ -756,7 +756,9 @@ TcpTransport::TcpTransport() {
     tcp_transport = this;
 }
 
-TcpTransport::~TcpTransport() {}
+TcpTransport::~TcpTransport() {
+    Stop();
+}
 
 int TcpTransport::Init(
         const std::string& ip_port,

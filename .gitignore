@@ -1,4 +1,7 @@
-
+dleaf/
+p2p-network/
+p2p_vpn
+shardora-vpn
 third_party/boost/
 schedule
 src/explorer/explorer.cc.bak.20260924-101629
