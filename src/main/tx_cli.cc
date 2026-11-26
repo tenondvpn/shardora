@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <common/encode.h>
 #include <iostream>
 #include <fstream>
@@ -303,6 +304,8 @@ int tx_main(int argc, char** argv) {
         return 1;
     }
 
+    // Use all loaded accounts (rotating), regardless of which pool they belong to.
+    global_pool_idx = -1;
     UpdateAddressNonce();
     std::atomic<uint32_t> all_count = 0;
     std::atomic<uint64_t> sent_total = 0;
@@ -462,13 +465,28 @@ int tx_main(int argc, char** argv) {
         auto from_prikey = g_prikeys[i];
         std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
         thread_security->SetPrivateKey(from_prikey);
-        if (common::GetAddressPoolIndex(thread_security->GetAddress()) == global_pool_idx) {
+        if (std::find(all_valid_keys.begin(), all_valid_keys.end(), from_prikey) == all_valid_keys.end()) {
             all_valid_keys.push_back(from_prikey);
         }
     }
 
     if (all_valid_keys.empty()) {
+        std::cout << "no private key belongs to pool " << global_pool_idx
+                  << ", nothing to send" << std::endl;
+        global_stop = true;
+        update_nonce_con.notify_all();
+        transport::TcpTransport::Instance()->Stop();
         return 1;
+    }
+
+    if (all_valid_keys.size() < kThreadCount) {
+        kThreadCount = all_valid_keys.size();
+    }
+    if (target_tps > 0) {
+        tps_interval_us = (uint64_t)kThreadCount * 1000000ULL / target_tps;
+        if (tps_interval_us == 0) tps_interval_us = 1;
+        std::cout << "TPS interval (final): " << tps_interval_us << "us/thread ("
+                  << kThreadCount << " threads)" << std::endl;
     }
 
     uint32_t start = 0;
@@ -546,9 +564,6 @@ int tx_main(int argc, char** argv) {
         thread_vec[i].join();
     }
     waker.join();
-    for (uint32_t i = 0; i < thread_vec.size(); ++i) {
-        thread_vec[i].join();
-    }
 
     // All worker threads have exited — safe to stop the transport now.
     transport::TcpTransport::Instance()->Stop();
