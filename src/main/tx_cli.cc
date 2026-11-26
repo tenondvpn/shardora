@@ -332,9 +332,10 @@ int tx_main(int argc, char** argv) {
         std::cout << "Leader routing unavailable, using default node" << std::endl;
     }
 
-    const std::string key = "";
-    const std::string value = "";
-    
+    // Default: every tx writes a fixed key with a 1KB value.
+    const std::string key = "stress_test_key";
+    const std::string value(1024, 'v');
+
     // Compute per-thread sleep interval to achieve target TPS
     // interval_us = kThreadCount * 1000000 / target_tps
     uint64_t tps_interval_us = 0;  // 0 = no sleep (unlimited)
