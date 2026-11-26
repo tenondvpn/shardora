@@ -1099,6 +1099,9 @@ int main(int argc, char** argv) {
             uint32_t consecutive_failures = 0;
             static const uint32_t kFailureThreshold = 10;  // After 10 consecutive failures, assume node is down
             uint32_t pos = 0;
+            // Reused per-thread buffers: random key (chain limit 12B) + random 1KB value.
+            std::string kv_key;
+            std::string kv_value;
             while (!global_stop) {
                 if (max_tx_count > 0 && tx_count.load(std::memory_order_relaxed) >= max_tx_count) {
                     global_stop = true;
@@ -1126,12 +1129,14 @@ int main(int argc, char** argv) {
                 from_sec->SetPrivateKey(from_prikey);
 
                 uint64_t amount = 1 + (common::Random::RandomUint32() % 10);
+                FillRandomBytes(&kv_key, 12u);
+                FillRandomBytes(&kv_value, 1024u);
                 auto tx_msg_ptr = CreateTransactionWithAttr(
                     from_sec,
                     ++prikey_with_nonce[from_addr],
                     from_prikey,
                     to_addr,
-                    "", "", amount, 210000, 1, shardnum);
+                    kv_key, kv_value, amount, 210000, 1, shardnum);
 
                 if (!tx_msg_ptr) {
                     --prikey_with_nonce[from_addr];
