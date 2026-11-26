@@ -808,7 +808,20 @@ int main(int argc, char** argv) {
 
         // Limit thread count to number of funded accounts to avoid nonce collisions.
         // Each funder must be used by exactly one thread.
-        uint32_t create_threads_count = std::min(num_threads, (uint32_t)g_prikeys.size());
+        // g_prikeys is padded with copies of g_prikeys[0] up to kImmutablePoolSize,
+        // so de-duplicate first: the same funder in two threads would produce
+        // interleaved / duplicate nonces and most txs would be dropped.
+        std::vector<std::string> unique_funder_prikeys;
+        for (auto& pk : g_prikeys) {
+            if (std::find(unique_funder_prikeys.begin(), unique_funder_prikeys.end(), pk) ==
+                    unique_funder_prikeys.end()) {
+                unique_funder_prikeys.push_back(pk);
+            }
+        }
+        uint32_t create_threads_count = std::min(num_threads, (uint32_t)unique_funder_prikeys.size());
+        if (create_threads_count == 0) {
+            create_threads_count = 1;
+        }
         uint32_t accounts_per_create_thread = kAccountCount / create_threads_count;
 
         // Use existing funded accounts to send initial coins to test accounts
@@ -819,7 +832,7 @@ int main(int argc, char** argv) {
             ShardoraSDK thread_sdk(global_chain_node_ip, global_chain_node_http_port);
 
             // Each thread gets a unique funder (thread_id < g_prikeys.size() guaranteed)
-            std::string funder_prikey = g_prikeys[thread_id];
+            std::string funder_prikey = unique_funder_prikeys[thread_id];
             std::shared_ptr<security::Security> funder_sec = std::make_shared<security::Ecdsa>();
             funder_sec->SetPrivateKey(funder_prikey);
             std::string funder_addr = funder_sec->GetAddress();
