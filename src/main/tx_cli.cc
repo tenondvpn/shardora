@@ -336,7 +336,7 @@ int tx_main(int argc, char** argv) {
     }
 
     // Default: every tx writes a fixed key with a 1KB value.
-    const std::string key = "stress_test_key";
+    const std::string key = "stress_key";  // chain limit: key <= 12 bytes
     const std::string value(1024, 'v');
 
     // Compute per-thread sleep interval to achieve target TPS
